@@ -8,7 +8,7 @@
 #  IBM Corporation - initial API and implementation
 ###############################################################################
 */
-package cm
+package package commandsRunner
 
 import (
 	"bytes"

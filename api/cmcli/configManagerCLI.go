@@ -8,7 +8,7 @@
 #  IBM Corporation - initial API and implementation
 ###############################################################################
 */
-package cm
+package commandsRunner
 
 import (
 	"errors"
@@ -43,7 +43,6 @@ func main() {
 	var state string
 	var newStatus string
 	var stateTimeout string
-	var configPath string
 	var searchStatus string
 	var fromState, toState string
 	var extensionName string
@@ -55,12 +54,6 @@ func main() {
 	var insertExtensionName string
 	var statePosition int
 	var stateName string
-
-	var keyFilePath string
-	var certificateFilePath string
-	var rootCAFilePath string
-
-	var sizingReportOutputFile string
 
 	var curlMethod string
 	var curlDataPath string
@@ -178,35 +171,6 @@ func main() {
 			return errClient
 		}
 		fmt.Println(data)
-		return nil
-	}
-
-	setCertificates := func(c *cli.Context) error {
-		client, errClient := configManagerClient.NewClient(url, outputFormat, timeout, insecureSSL)
-		if errClient != nil {
-			fmt.Println(errClient.Error())
-			return errClient
-		}
-		if c.Bool("mgt") && c.Bool("apps") {
-			err := errors.New("(m)gt and (a)pps can not be set together")
-			fmt.Println(err.Error())
-			return err
-		}
-		if !c.Bool("mgt") && !c.Bool("apps") {
-			err := errors.New("(m)gt or (a)pps must be set")
-			fmt.Println(err.Error())
-			return err
-		}
-		domainType := global.DomainTypeEnv
-		if c.Bool("apps") {
-			domainType = global.DomainTypeApps
-		}
-		data, err := client.SetCertificates(configPath, domainType, keyFilePath, certificateFilePath, rootCAFilePath)
-		if err != nil {
-			fmt.Println(err.Error())
-			return err
-		}
-		fmt.Print(data)
 		return nil
 	}
 
@@ -463,21 +427,6 @@ func main() {
 			return errClient
 		}
 		data, err := client.GetExtensions(extensionsToList, c.Bool("catalog"))
-		if err != nil {
-			fmt.Println(err.Error())
-			return err
-		}
-		fmt.Print(data)
-		return nil
-	}
-
-	updateCertificates := func(c *cli.Context) error {
-		client, errClient := configManagerClient.NewClient(url, outputFormat, timeout, insecureSSL)
-		if errClient != nil {
-			fmt.Println(errClient.Error())
-			return errClient
-		}
-		data, err := client.UpdateCertificates()
 		if err != nil {
 			fmt.Println(err.Error())
 			return err
