@@ -70,25 +70,25 @@ generate_ui_json:: pre-req
 
 .PHONY: go-test
 go-test:: 
-	go test -v github.ibm.com/IBMPrivateCloud/commands-runner/api/cm/bmxConfigManager && \
-	go test -v github.ibm.com/IBMPrivateCloud/commands-runner/api/cm/cfpManager && \
-	go test -v github.ibm.com/IBMPrivateCloud/commands-runner/api/cm/stateManager && \
-	go test -v github.ibm.com/IBMPrivateCloud/commands-runner/api/cm/uiConfigManager && \
-	go test -v github.ibm.com/IBMPrivateCloud/commands-runner/api/cm
+	go test -v github.ibm.com/IBMPrivateCloud//cfp-commands-runner-test/api/cm/bmxConfigManager && \
+	go test -v github.ibm.com/IBMPrivateCloud//cfp-commands-runner-test/api/cm/cfpManager && \
+	go test -v github.ibm.com/IBMPrivateCloud//cfp-commands-runner-test/api/cm/stateManager && \
+	go test -v github.ibm.com/IBMPrivateCloud//cfp-commands-runner-test/api/cm/uiConfigManager && \
+	go test -v github.ibm.com/IBMPrivateCloud//cfp-commands-runner-test/api/cm
 
 .PHONY: go-build
 go-build:: go-test
 	mkdir -p _build/cm/linux_amd64
-	env GOOS=linux GOARCH=amd64 go build -o ./_build/cm/linux_amd64/cmserver github.ibm.com/IBMPrivateCloud/commands-runner/api/cm
-	env GOOS=linux GOARCH=amd64 go build -o ./_build/cm/linux_amd64/cm github.ibm.com/IBMPrivateCloud/commands-runner/api/cmcli
+	env GOOS=linux GOARCH=amd64 go build -o ./_build/cm/linux_amd64/cmserver github.ibm.com/IBMPrivateCloud//cfp-commands-runner-test/api/cm
+	env GOOS=linux GOARCH=amd64 go build -o ./_build/cm/linux_amd64/cm github.ibm.com/IBMPrivateCloud//cfp-commands-runner-test/api/cmcli
 #	cp ./_build/linux_amd64/cm ./_build/cm
 	mkdir -p _build/cm/darwin_amd64
-	env GOOS=darwin GOARCH=amd64 go build -o ./_build/cm/darwin_amd64/cmserver github.ibm.com/IBMPrivateCloud/commands-runner/api/cm
-	env GOOS=darwin GOARCH=amd64 go build -o ./_build/cm/darwin_amd64/cm github.ibm.com/IBMPrivateCloud/commands-runner/api/cmcli
+	env GOOS=darwin GOARCH=amd64 go build -o ./_build/cm/darwin_amd64/cmserver github.ibm.com/IBMPrivateCloud//cfp-commands-runner-test/api/cm
+	env GOOS=darwin GOARCH=amd64 go build -o ./_build/cm/darwin_amd64/cm github.ibm.com/IBMPrivateCloud//cfp-commands-runner-test/api/cmcli
 	mkdir -p _build/cm/windows_amd64
-	env GOOS=windows GOARCH=amd64 go build -o ./_build/cm/windows_amd64/cm github.ibm.com/IBMPrivateCloud/commands-runner/api/cmcli
+	env GOOS=windows GOARCH=amd64 go build -o ./_build/cm/windows_amd64/cm github.ibm.com/IBMPrivateCloud//cfp-commands-runner-test/api/cmcli
 	mkdir -p _build/cm/windows_386
-	env GOOS=windows GOARCH=386 go build -o ./_build/cm/windows_386/cm github.ibm.com/IBMPrivateCloud/commands-runner/api/cmcli
+	env GOOS=windows GOARCH=386 go build -o ./_build/cm/windows_386/cm github.ibm.com/IBMPrivateCloud//cfp-commands-runner-test/api/cmcli
 
 .PHONY: verify_bom
 verify_bom::
@@ -134,8 +134,8 @@ publish-release: push
 .PHONY: dependency-graph-text
 dependency-graph-text:
 	go get github.com/kisielk/godepgraph
-	godepgraph  -p github.com,gonum.org,gopkg.in -s github.ibm.com/IBMPrivateCloud/commands-runner/api/cmcli | sed 's/github.ibm.com\/IBMPrivateCloud\/commands-runner\/api\///' > cmcli-dependency-graph.txt
-	godepgraph  -p github.com,gonum.org,gopkg.in -s github.ibm.com/IBMPrivateCloud/commands-runner/api/cm | sed 's/github.ibm.com\/IBMPrivateCloud\/commands-runner\/api\///' > cm-dependency-graph.txt
+	godepgraph  -p github.com,gonum.org,gopkg.in -s github.ibm.com/IBMPrivateCloud//cfp-commands-runner-test/api/cmcli | sed 's/github.ibm.com\/IBMPrivateCloud\//cfp-commands-runner-test\/api\///' > cmcli-dependency-graph.txt
+	godepgraph  -p github.com,gonum.org,gopkg.in -s github.ibm.com/IBMPrivateCloud//cfp-commands-runner-test/api/cm | sed 's/github.ibm.com\/IBMPrivateCloud\//cfp-commands-runner-test\/api\///' > cm-dependency-graph.txt
 
 .PHONY: dependency-graph
 dependency-graph: dependency-graph-text
