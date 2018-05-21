@@ -117,8 +117,8 @@ func getAddStateManager(extensionName string) (*stateManager.States, error) {
 }
 
 //getExtensionName from request
-func getExtensionNameFromRequest(req *http.Request) (string, url.Values, error) {
-	log.Debug("Entering in getExtensionNameFromRequest")
+func GetExtensionNameFromRequest(req *http.Request) (string, url.Values, error) {
+	log.Debug("Entering in GetExtensionNameFromRequest")
 	m, errRQ := url.ParseQuery(req.URL.RawQuery)
 	if errRQ != nil {
 		return "", m, errRQ
@@ -136,7 +136,7 @@ func getExtensionNameFromRequest(req *http.Request) (string, url.Values, error) 
 func getStateManagerFromRequest(req *http.Request) (*stateManager.States, url.Values, error) {
 	log.Debug("Entering in getStateManagerFromRequest")
 	log.Debug(req.URL.Path)
-	extensionName, m, err := getExtensionNameFromRequest(req)
+	extensionName, m, err := GetExtensionNameFromRequest(req)
 	if err != nil {
 		return nil, nil, err
 	}
