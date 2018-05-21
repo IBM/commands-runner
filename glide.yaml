@@ -1,4 +1,4 @@
-package: github.ibm.com/IBMPrivateCloud/commands-runner
+package: github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test
 import:
 - package: gonum.org/v1/gonum
   repo: https://github.com/gonum/gonum
