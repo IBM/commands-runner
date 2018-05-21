@@ -1,0 +1,35 @@
+uiconfig:
+  address_range: 192.168.100.10-192.168.100.40
+  bluemix_env_domain: local.bluemix.net
+  bluemix_env_domain_cert: |
+    -----BEGIN CERTIFICATE-----
+    MY CERTIFICATE
+    -----END CERTIFICATE-----
+  bluemix_env_domain_cert_ca: |
+    -----BEGIN CERTIFICATE-----
+    MY CERTIFICATE
+    -----END CERTIFICATE-----
+  bluemix_env_domain_cert_rsa_key: |
+    -----BEGIN CERTIFICATE-----
+    MY CA CERTIFICATE
+    -----END CERTIFICATE-----
+  cf_custom: |-
+    mycf_custom:
+      myparam: "myvalue"
+  cloud_config_custom: |-
+    mycloudconfig_custom:
+      myparam: "myvalue"
+  cluster_name: mycluser
+  developer_mode: true
+  diego_cell_instances: 1
+  diego_custom: |-
+    mydiego_custom:
+      myparam: "myvalue"
+  director_custom: |-
+    mydirector_custom:
+      myparam: "myvalue"
+  director_ip: 192.168.100.2
+  external_dns: 8.8.8.8,8.8.4.4
+  ntp_servers: ntp0.test.com
+  resource_pool: mypool
+  subnet: 192.168.100.0/24

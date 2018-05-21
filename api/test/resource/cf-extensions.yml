@@ -1,0 +1,3 @@
+extensions:
+- repo: "cfp-ext-template:DVE_UI_EXT:CFP_EXTENSION_TEMPLATE_KEY_64"
+- repo: "cfp-ext-template:practice-template:CFP_EXTENSION_TEMPLATE_KEY_64"

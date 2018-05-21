@@ -1,0 +1,164 @@
+{
+  "address_range": {
+    "name": "address_range",
+    "value": "192.168.100.130-192.168.100.159",
+    "error": "",
+    "error_type": ""
+  },
+  "bluemix_apps_domain": {
+    "name": "bluemix_apps_domain",
+    "value": "local.mybluemix.net",
+    "error": "",
+    "error_type": ""
+  },
+  "bluemix_env_domain": {
+    "name": "bluemix_env_domain",
+    "value": "local.bluemix.net",
+    "error": "",
+    "error_type": ""
+  },
+  "bluemix_env_domain_cert": {
+    "name": "bluemix_env_domain_cert",
+    "value": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCgotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCgo=",
+    "error": "",
+    "error_type": ""
+  },
+  "bluemix_env_domain_cert_ca": {
+    "name": "bluemix_env_domain_cert_ca",
+    "value": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCgotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCgo=",
+    "error": "",
+    "error_type": ""
+  },
+  "bluemix_env_domain_cert_rsa_key": {
+    "name": "bluemix_env_domain_cert_rsa_key",
+    "value": "LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQoKLS0tLS1FTkQgUlNBIFBSSVZBVEUgS0VZLS0tLS0KCg==",
+    "error": "",
+    "error_type": ""
+  },
+  "cluster_name": {
+    "name": "cluster_name",
+    "value": "cfp",
+    "error": "",
+    "error_type": ""
+  },
+  "datacenter_name": {
+    "name": "datacenter_name",
+    "value": "CIL-1",
+    "error": "",
+    "error_type": ""
+  },
+  "datastore_pattern": {
+    "name": "datastore_pattern",
+    "value": "ICPDS*",
+    "error": "",
+    "error_type": ""
+  },
+  "diego_cell_instances": {
+    "name": "diego_cell_instances",
+    "value": "1",
+    "error": "",
+    "error_type": ""
+  },
+  "director_ip": {
+    "name": "director_ip",
+    "value": "192.168.100.130",
+    "error": "",
+    "error_type": ""
+  },
+  "disk_path": {
+    "name": "disk_path",
+    "value": "/dev-dom",
+    "error": "",
+    "error_type": ""
+  },
+  "external_dns": {
+    "name": "external_dns",
+    "value": "8.8.8.8",
+    "error": "",
+    "error_type": ""
+  },
+  "gateway": {
+    "name": "gateway",
+    "value": "192.168.100.1",
+    "error": "",
+    "error_type": ""
+  },
+  "haproxy_ip": {
+    "name": "haproxy_ip",
+    "value": "192.168.100.131",
+    "error": "",
+    "error_type": ""
+  },
+  "main_user_name": {
+    "name": "main_user_name",
+    "value": "dddd",
+    "error": "",
+    "error_type": ""
+  },
+  "main_user_password": {
+    "name": "main_user_password",
+    "value": "ssss",
+    "error": "",
+    "error_type": ""
+  },
+  "ntp_servers": {
+    "name": "ntp_servers",
+    "value": "time1.google.com,time2.google.com,time3.google.com,time4.google.com",
+    "error": "",
+    "error_type": ""
+  },
+  "persistent_datastore_pattern": {
+    "name": "persistent_datastore_pattern",
+    "value": "ICPDS*",
+    "error": "",
+    "error_type": ""
+  },
+  "portgroup": {
+    "name": "portgroup",
+    "value": "VM Network",
+    "error": "",
+    "error_type": ""
+  },
+  "resource_pool": {
+    "name": "resource_pool",
+    "value": "dev-dom",
+    "error": "",
+    "error_type": ""
+  },
+  "subnet": {
+    "name": "subnet",
+    "value": "192.168.100.0/24",
+    "error": "",
+    "error_type": ""
+  },
+  "template_folder": {
+    "name": "template_folder",
+    "value": "dev-dom",
+    "error": "",
+    "error_type": ""
+  },
+  "vm_folder": {
+    "name": "vm_folder",
+    "value": "dev-dom",
+    "error": "",
+    "error_type": ""
+  },
+  "vmware_address": {
+    "name": "vmware_address",
+    "value": "192.168.100.9",
+    "error": "",
+    "error_type": ""
+  },
+  "vmware_password": {
+    "name": "vmware_password",
+    "value": "dali",
+    "error": "",
+    "error_type": ""
+  },
+  "vmware_username": {
+    "name": "vmware_username",
+    "value": "renoir",
+    "error": "",
+    "error_type": ""
+  }
+}

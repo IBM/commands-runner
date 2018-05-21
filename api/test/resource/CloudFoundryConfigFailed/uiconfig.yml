@@ -1,0 +1,46 @@
+uiconfig:
+  address_range: 192.168.100.130-192.168.100.159
+  bluemix_apps_domain: local.mybluemix.net
+  bluemix_env_domain: local.bluemix.net
+  bluemix_env_domain_cert: |+
+    -----BEGIN CERTIFICATE-----
+
+    -----END CERTIFICATE-----
+
+
+
+  bluemix_env_domain_cert_ca: |+
+    -----BEGIN CERTIFICATE-----
+
+    -----END CERTIFICATE-----
+
+
+
+  bluemix_env_domain_cert_rsa_key: |+
+    -----BEGIN RSA PRIVATE KEY-----
+
+    -----END RSA PRIVATE KEY-----
+
+
+
+  cluster_name: cfp
+  datacenter_name: CIL-1
+  datastore_pattern: ICPDS*
+  diego_cell_instances: 1
+  director_ip: 192.168.100.130
+  disk_path: /dev-dom
+  external_dns: 8.8.8.8
+  gateway: 192.168.100.1
+  haproxy_ip: 192.168.100.131
+  main_user_name: dddd
+  main_user_password: ssss
+  ntp_servers: time1.google.com,time2.google.com,time3.google.com,time4.google.com
+  persistent_datastore_pattern: ICPDS*
+  portgroup: VM Network
+  resource_pool: dev-dom
+  subnet: 192.168.100.0/24
+  template_folder: dev-dom
+  vm_folder: dev-dom
+  vmware_address: 192.168.100.9
+  vmware_password: dali
+  vmware_username: renoir

@@ -1,0 +1,3 @@
+extensions:
+- extension: "image:image_tag:cfp-ext-template:master:CFP_EXTENSION_TEMPLATE_KEY_64"
+#- extension: "image1::cfp-ext-template:DVE_UI_EXT:CFP_EXTENSION_TEMPLATE_KEY_64"

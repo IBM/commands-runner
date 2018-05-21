@@ -1,0 +1,21 @@
+states:
+- name: director
+  phase: ""
+  label: Director
+  log_path: ""
+  status: READY
+  start_time: ""
+  end_time: ""
+  reason: ""
+  script: ""
+  script_timeout: 0
+- name: cf
+  phase: ""
+  label: CloudFoundry
+  log_path: ""
+  status: READY
+  start_time: ""
+  end_time: ""
+  reason: ""
+  script: ""
+  script_timeout: 0

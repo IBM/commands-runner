@@ -1,0 +1,12 @@
+states-malformed
+  - name: director
+    log_path: "/tmp/sample-director.log"
+  - name: CloudFoundry
+    log_path: "/tmp/sample-cf.log"
+  - name: nologpath
+  - nome: emptylogpath
+    log_path: ""
+  - nome: nillogpath
+    log_path: ""
+  - name: wronglogpath
+    log_path:  "/tmp/sample-not-exists.log"

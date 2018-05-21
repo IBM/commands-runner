@@ -1,0 +1,265 @@
+groups:
+  - name: "New Cloud Foundry environment"
+    title: "Create a Cloud Foundry environment"
+    properties:
+    - name: "env_name"
+      label: "Environment name"
+      description: "The name of the environment, for example my-env-name"
+      type: "text"
+      validation-regex: ".*"
+      mandatory: true
+      sample-value: "E.g. my-env-name"
+      default: "my-env-name"
+    - name: "host_directory"
+      label: "Host home environment directory"
+      description: "The directory that hosts the persistent data, for example /root/cloudfoundry-config"
+      type: "text"
+      validation-regex: ".*"
+      mandatory: true
+      hidden: false
+      sample-value: "E.g. /root/cloudfoundry-config"
+    - name: "api_port"
+      label: "Configuration manager API port number"
+      description: "The port number that the configuration manager API runs on"
+      type: "text"
+      validation-regex: "^(?:[0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$"
+      mandatory: true
+      hidden: false
+      sample-value: "E.g. 35880"
+    - name: "token"
+      label: "Docker access token"
+      description: "The token to access the IBM container repository."
+      type: "textarea"
+      mandatory: true
+      hidden: false
+      sample-value: "E.g. eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJmZTg4MzNkNi1lZmTTHQHWEKRI4LTVhYzItORYTYLMC1mOGEzM2Y3NjVlZTAiLCJpc3MiOYKENT3RyeS5ibHVlbWl4Lm5ldCJ9.RO9ZuPFRFXpEevC4r157sBVAhvrFg8vmjCBqLakQcSA"
+  - name: "Bluemix configuration"
+    title: "Bluemix configuration (credentials and sizing...)"
+    properties:
+    - name: "main_user_name"
+      label: "Admin user name"
+      description: "The user name of the Cloud Foundry administrator"
+      type: "text"
+      mandatory: true
+      sample-value: "E.g. admin"
+      default: "admin"
+    - name: "main_user_password"
+      label: "Administrator password"
+      description: "The Cloud Foundry administrator password"
+      type: password
+      mandatory: true
+      sample-value: "E.g. mypassword"
+      default: "admin"
+    - name: "diego_cell_instances"
+      label: "Number of Diego cell instances"
+      description: "Number of 32 Gb Diego cell instances"
+      type: integer
+      validation-regex: "^(?:[1-9]|[1-2][0-9]|3[0-2])$"
+      mandatory: true
+      #The value is an integer, but the UI expects a string value.
+      sample-value: "E.g. 1" #range from 1-32
+      default: "1"
+    - name: "developer_mode"
+      label: "Developer mode"
+      description: "If checked, then an environment with reduced size is deployed"
+      type: "checkbox"
+      mandatory: true
+      hidden: false
+      sample-value: "E.g. false"
+      default: "false"
+  - name: "Wildcards domain certificates"
+    title: "Wildcards domain certificates"
+    properties:
+    - name: "bluemix_env_domain"
+      label: "Management domain"
+      description: "Cloud Foundry management domain"
+      type: "text"
+      mandatory: true
+      sample-value: "E.g. local.bluemix.net"
+      default: "mgt.cloud.private.mycompany.com"
+    - name: "bluemix_env_domain_cert_ca"
+      label: "Management domain CA certificate"
+      description: "CA certificate for the Cloud Foundry management domain"
+      type: "file"
+      encode: "base64"
+      mandatory: true
+      sample-value: "E.g. ---- CA CERTIFICATE ---"
+      default: ""
+    - name: "bluemix_env_domain_cert_rsa_key"
+      label: "Management domain private key"
+      description: "RSA Private Key for the Cloud Foundry management domain"
+      type: "file"
+      encode: "base64"
+      mandatory: true
+      sample-value: "E.g. ---- RSA KEY ---"
+      default: ""
+    - name: "bluemix_env_domain_cert"
+      label: "Management domain certificate"
+      description: "Certificate for the Cloud Foundry management domain"
+      type: "file"
+      encode: "base64"
+      mandatory: true
+      sample-value: "E.g. ---- CERTIFICATE ---"
+      default: ""
+    - name: "bluemix_apps_domain"
+      label: "Application domain"
+      description: "Cloud Foundry default application domain"
+      type: "text"
+      mandatory: true
+      sample-value: "E.g. local.mybluemix.net"
+      default: "apps.cloud.private.mycompany.com"
+    - name: "bluemix_apps_domain_cert_ca"
+      label: "Application domain CA certificate"
+      description: "CA certificate for the Cloud Foundry application domain"
+      type: "file"
+      encode: "base64"
+      mandatory: true
+      sample-value: "E.g. ---- CA CERTIFICATE ---"
+      default: ""
+    - name: "bluemix_apps_domain_cert_rsa_key"
+      label: "Application domain private key"
+      description: "RSA Private Key for the Cloud Foundry application domain"
+      type: "file"
+      encode: "base64"
+      mandatory: true
+      sample-value: "E.g. ---- RSA KEY ---"
+      default: ""
+    - name: "bluemix_apps_domain_cert"
+      label: "Application domain certificate"
+      description: "Certificate for the Cloud Foundry application domain"
+      type: "file"
+      encode: "base64"
+      mandatory: true
+      sample-value: "E.g. ---- CERTIFICATE ---"
+      default: ""
+  - name: "OpenStack configuration"
+    title: "OpenStack configuration parameters"
+    properties:
+    - name: "openstack_auth_url"
+      label: "OpenStack API url"
+      description: "The url to the Openstack end-point"
+      type: "text"
+      mandatory: true
+      sample-value: "Eg: https://<IP>:5000/v3" #Could be also a hostname
+    - name: "openstack_username"
+      label: "OpenStack user"
+      description: "OpenStack user to accessr"
+      type: "text"
+      mandatory: true
+      sample-value: "Eg: openstack_user"
+    - name: "openstack_password"
+      label: "OpenStack user password"
+      description: "OpenStack password for the specified user"
+      type: "text"
+      mandatory: true
+      sample-value: "E.g. openstack_password"
+    - name: "openstack_domain"
+      label: "OpenStack domain"
+      description: "OpenStack domain to target"
+      type: "text"
+      mandatory: false
+      sample-value: "E.g. MyDomain"
+    - name: "openstack_project"
+      label: "OpenStack project"
+      description: "OpenStack project to target"
+      type: "text"
+      mandatory: true
+      sample-value: "E.g. MyProject"
+    - name: "openstack_key_name"
+      label: "OpenStack key name"
+      description: "The key name to access vms."
+      type: "text"
+      mandatory: true
+      sample-value: "E.g. MyKeyName"
+    - name: "openstack_security_groups"
+      label: "Security Groups"
+      description: "CSV list of security groups"
+      type: "text"
+      mandatory: true
+      sample-value: "E.g. MySec1,MySec2"
+  - name: "Network configuration"
+    title: "Network configuration (subnet, dns, ...)"
+    properties:
+    - name: "external_dns"
+      label: "External DNS"
+      description: "Comma-separated list of DNS values to resolve external domains. Provide IP addresses."
+      type: "text"
+      validation-regex: "^(?:(?:(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]))(?:,|$))+$"
+      mandatory: true
+      sample-value: "E.g. 10.12.13.14,10.12.13.15,10.12.13.16"
+    - name: "ntp_servers"
+      label: "NTP servers"
+      description: "Comma-separated list of NTP servers"
+      type: text
+      validation-regex: "^(?:(?:[a-z,0-9,\\.,-]+)(?:,|$))+$"
+      mandatory: true
+      sample-value: "E.g. ntp1,myntp2.com"
+    - name: "subnet"
+      label: "Cloud Foundry subnet"
+      description: "The subnet that Cloud Foundry runs on, for example 10.155.194.129/27"
+      type: text
+      validation-regex: "^(?:(?:(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]))(?:[/])(?:(?:[0-9])|(?:[1-2][0-9])|(?:3[0-2])))$"
+      mandatory: true
+      sample-value: "E.g. 10.155.194.129/27"
+    - name: "address_range"
+      label: "Address range"
+      description: "Address range to use inside the subnet, for example 10.155.194.135-10.155.194.155"
+      type: text
+      validation-regex: "^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])-(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$"
+      mandatory: false
+      sample-value: "E.g. 10.155.194.130-10.155.194.155"
+    - name: "gateway"
+      label: "Network gateway"
+      description: "Customer gateway within the subnet"
+      type: text
+      validation-regex: "^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$"
+      mandatory: true
+      sample-value: "E.g. 10.155.194.1"
+    - name: "director_ip"
+      label: "Director IP"
+      description: "The IP address for the BOSH Director"
+      type: text
+      validation-regex: "^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$"
+      mandatory: true
+      sample-value: "E.g. 10.155.194.2"
+    - name: "haproxy_ip"
+      label: "HAPROXY IP"
+      description: "The dedicated IP address for the haproxy"
+      type: text
+      validation-regex: "^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$"
+      mandatory: true
+      sample-value: "E.g. 10.155.194.3"
+  - name: "Cloud Foundry and Director customization"
+    title: "Cloud Foundry and Director customization"
+    properties:
+    - name: "cloud_config_custom"
+      label: "Cloud configuration customization"
+      description: "Enter Cloud configuration customization in .yaml format"
+      type: textarea
+      encode: "base64"
+      sample-value: "RS5nLgpjb21waWxhdGlvbjoKICBjbG91ZF9wcm9wZXJ0aWVzOgogICAgY3B1OiAyCiAgICBkaXNrOiA4MDk2CiAgICByYW06IDIwNDgKICBuZXR3b3JrOiBkZWZhdWx0CiAgcmV1c2VfY29tcGlsYXRpb25fdm1zOiB0cnVlCiAgd29ya2VyczogNQoK"
+      characteristics:
+        maxchar: 4096
+    - name: "director_custom"
+      label: "Director customization"
+      description: "Enter Director customization in .yaml format"
+      type: textarea
+      encode: "base64"
+      sample-value: "RS5nLgpqb2JzOgotIG5hbWU6IGJvc2gKICB0ZW1wbGF0ZXM6CiAgLSAoKCBkZWxldGUgcG9zdGdyZXNzICkpCiAgLSAoKCBkZWxldGUgcmVnaXN0cnkgKSkKCnByb3BlcnRpZXM6CiAgZGlyZWN0b3I6CiAgICBkYjogJmRiCiAgICAgIGxpc3Rlbl9hZGRyZXNzOiB+CiAgICAgIGhvc3Q6IDxob3N0PgogICAgICBwb3J0OiA8cG9ydD4KICAgICAgdXNlcjogPHVzZXI+CiAgICAgIHBhc3N3b3JkOiA8cGFzc3dvcmQ+CiAgICAgIGRhdGFiYXNlOiBib3NoCiAgICAgIGFkYXB0ZXI6IFtwb3N0Z3Jlc3xteXNxbF0K"
+      characteristics:
+        maxchar: 4096
+    - name: "cf_custom"
+      label: "Cloud Foundry customization"
+      description: "Enter Cloud Foundry customization in .yaml format"
+      type: textarea
+      encode: "base64"
+      sample-value: "RS5nLgpwcm9wZXJ0aWVzOgogIGxvZ2luc2VydmVyOgogICAgTkc6CiAgICAtIHR5cGU6IExEQVAKICAgICAgaWQ6IENVU1RPTUVSX0xEQVAgICAgICAgICAgICMgQXJiaXRyYXJ5IGxhYmVsCiAgICAgIGRlZmF1bHQ6IHRydWUgICAgICAgICAgICAgICAjIFVzZWQgdG8gbWFrZSBlbnRyeSB0aGUgZGVmYXVsdCBhdXRoZW50aWNhdGlvbiBkb21haW4KICAgICAgY2xpU2VhcmNoT3JkZXI6IDIwICAgICAgICAgICMgVXNlZCB0byBwcm92aWRlIGEgcHJpb3JpdHkgb3JkZXIgZm9yIG11bGl0cGxlIExEQVAgc2VydmVycy4gMC0xMDAsIDEwMCA9IGhpZ2hlc3QgcHJpb3JpdHkgKFVBQSBjbGlTZWFyY2hPcmRlcjogMTApCiAgICAgIGdyb3VwOiAgICAgICAgICAgICAgICAgICAgICAjIEFyYml0cmFyeSBsYWJlbAogICAgICBMREFQOgogICAgICAgIHVybDogbGRhcHM6Ly8xLjEuMS4xICAgICAgICAgICAgICAjIEhvc3RuYW1lIG9yIElQIGZvciB0aGUgTERBUCBzZXJ2ZXIuIChsZGFwOi8vIGluc2VjdXJlIG9yIGxkYXBzOi8vIHNlY3VyZSkKICAgICAgICB1c2VySWQ6IGNuPWFkbWluLGRjPWljcCxkYz1uZXQgICAgIyBVc2VybmFtZSB3aXRoIHBlcm1pc3Npb24gdG8gc2VhcmNoIHRoZSBMREFQIGRvbWFpbgogICAgICAgIHBhc3N3b3JkOiAqKioqKiAgICAgICAgICAgICAgICAgICAjIFBhc3N3b3JkIGZvciB0aGUgdXNlciB0aGF0IHdpbGwgc2VhcmNoIHRoZSBMREFQIGRvbWFpbgogICAgICAgIG9iakNsczogaW5ldE9yZ1BlcnNvbiAgICAgICAgICAgICAjIE9iamVjdCBjbGFzcyBmb3IgdXNlcnMgaW4gdGhlIExEQVAgZG9tYWluCiAgICAgICAgdXNlck5hbWVBdHRyOiB1c2VySWQgICAgICAgICAgICAgICMgVGhlIGF0dHJpYnV0ZSBuYW1lIGluIHRoZSBMREFQIGRvbWFpbiB0aGF0IHdpbGwgYmUgc2VhcmNoZWQgdG8gbWF0Y2ggdGhlIHVzZXIncyBJRAogICAgICAgIG1haWxBdHRyOiBjbiAgICAgICAgICAgICAgICAgICAgICAjIFRoZSBhdHRyaWJ1dGUgbmFtZSBpbiB0aGUgTERBUCB0aGF0IGNvbnRhaW5zIHRoZSB1c2VyJ3MgZW1haWwuIFVzZSBhbm90aGVyIGF0dHJpYnV0ZSBpZiBubyBlbWFpbCBhdHRyaWJ1dGUgaXMgYXZhaWxhYmxlCiAgICAgICAgZmlyc3ROYW1lQXR0cjogZ2l2ZW5OYW1lICAgICAgICAgICMgVGhlIGF0dHJpYnV0ZSBuYW1lIGluIHRoZSBMREFQIHRoYXQgY29udGFpbnMgdGhlIHVzZXIncyBnaXZlbiBuYW1lCiAgICAgICAgbGFzdE5hbWVBdHRyOiBjbiAgICAgICAgICAgICAgICAgICMgVGhlIGF0dHJpYnV0ZSBuYW1lIGluIHRoZSBMREFQIHRoYXQgY29udGFpbnMgdGhlIHVzZXIncyBzdXJuYW1lCiAgICAgICAgc2VhcmNoQ3R4OiBvdS11c2VycyxkYz1pY3AsZGM9bmV0ICMgVGhlIHNlYXJjaCBwYXRoIHRvIHRoZSB1c2VyIHJlY29yZHMgaW4gdGhlIExEQVAgZG9tYWluCiAgICAtIFVBQToKICAgICAgICB1c2VyUGF0dGVybjogTUFJTl9VU0VSX05BTUUgICAgICAgIyBUaGUgQ2xvdWQgRm91bmRyeSBBZG1pbmlzdHJhdG9yIG5hbWUsIGRlZmluZWQgZHVyaW5nIGluc3RhbGxhdGlvbgogICAgICAgIHVzZXJzTElzdDogVVNFUjEsVVNFUjIgICAgICAgICAgICAjIEEgY29tbWEgc2VwYXJhdGVkIGxpc3Qgb2YgVUFBIHVzZXJzLCB0aGF0IHdpbGwgbm90IGJlIGNoZWNrZWQgYWdhaW5zdCBMREFQCiAgICAgIGRlZmF1bHQ6IGZhbHNlCiAgICBhdXRvUHJvdmlzaW9uVXNlcnM6IC4qICAgICAgICAgICAgICAgICMgQW55IHVzZXIgdGhhdCBpcyBhdXRoZW50aWNhdGVkIHZpYSB0aGUgTERBUCB3aWxsIHJlY2VpdmUgYSBPUkdBTklaQVRJT04gaW4ge3tzaXRlLmRhdGEua2V5d29yZC5pY3BjZn19CiAgICBjZXJ0aWZpY2F0ZXM6ICAgICAgICAgICAgICAgICAgICAgICAgICMgW09QVElPTkFMXSBXaGVuIHVzaW5nIGxkYXBzOi8vIGFuZCB0aGUgTERBUCBzZXJ2ZXIgcmVxdWlyZXMgYW4gU1NMIGNlcnRpZmljYXRlLgogICAgLSBsZGFwX2NlcnQ6IHwgICAgICAgICAgICAgICAgICAgICAgICAjICAgICAgICAgICAgVXN1YWxseSBhcHBsaWVzIHRvIHNlbGYgc2lnbmVkIG9yIENvcnBvcmF0ZSBzaWduZWQgY2VydGlmaWNhdGVzLgogICAgICAtLS0tLUJFR0lOIENFUlRJRklDQVRFLS0tLS0KICAgICAgLi4uCiAgICAgIC0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K"
+      characteristics:
+        maxchar: 4096
+    - name: "diego_custom"
+      label: "Diego customization"
+      description: "Enter Diego customization in .yaml format"
+      type: textarea
+      encode: "base64"
+      characteristics:
+        maxchar: 4096
