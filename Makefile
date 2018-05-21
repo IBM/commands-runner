@@ -70,11 +70,8 @@ generate_ui_json:: pre-req
 
 .PHONY: go-test
 go-test:: 
-	go test -v github.ibm.com/IBMPrivateCloud//cfp-commands-runner-test/api/cm/bmxConfigManager && \
-	go test -v github.ibm.com/IBMPrivateCloud//cfp-commands-runner-test/api/cm/cfpManager && \
-	go test -v github.ibm.com/IBMPrivateCloud//cfp-commands-runner-test/api/cm/stateManager && \
-	go test -v github.ibm.com/IBMPrivateCloud//cfp-commands-runner-test/api/cm/uiConfigManager && \
-	go test -v github.ibm.com/IBMPrivateCloud//cfp-commands-runner-test/api/cm
+	go test -v github.ibm.com/IBMPrivateCloud//cfp-commands-runner-test/api/commandsRunner/stateManager && \
+	go test -v github.ibm.com/IBMPrivateCloud//cfp-commands-runner-test/api/commandsRunner
 
 .PHONY: go-build
 go-build:: go-test
@@ -141,6 +138,3 @@ dependency-graph-text:
 dependency-graph: dependency-graph-text
 	cat cmcli-dependency-graph.txt | dot -Tpng -o cmcli-dependency-graph.png
 	cat cm-dependency-graph.txt | dot -Tpng -o cm-dependency-graph.png
-
-
-include Makefile.docker

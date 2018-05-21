@@ -21,7 +21,7 @@ import (
 
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunner/global"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunner/resourceManager"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunnerCLI/clientConfigManager"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunnerCLI/configManagerClient"
 )
 
 const COPYRIGHT string = `###############################################################################

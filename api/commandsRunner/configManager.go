@@ -124,6 +124,7 @@ func Init(port string, portSSL string, configDir string, certificatePath string,
 	AddHandler("/cm/v1/pcm/", handlePCM, true)
 	AddHandler("/cm/v1/extension", handleExtension, true)
 	AddHandler("/cm/v1/extensions/", handleExtensions, true)
+	AddHandler("/cm/v1/status", handleStatus, true)
 }
 
 func main() {

@@ -1,0 +1,83 @@
+###############################################################################
+# Licensed Materials - Property of IBM Copyright IBM Corporation 2017, 2018. All Rights Reserved.
+# U.S. Government Users Restricted Rights - Use, duplication or disclosure restricted by GSA ADP
+# Schedule Contract with IBM Corp.
+#
+# Contributors:
+#  IBM Corporation - initial API and implementation
+###############################################################################
+DOCKER_SERVER ?= registry.ng.bluemix.net
+DOCKER_USERNAME ?= token
+DOCKER_PASSWORD ?=
+FILE_ENCRYPTION_KEY ?=
+FILE_SERVER ?= file.w3.bluemix.net
+FILE_SERVER_SSH_KEY_64 ?=
+FILE_SERVER_USER ?= cfp-cm
+FILE_SERVER_DIR = /var/files/releases/cfp-cm
+FILE_SERVER_DEV ?= file.w3.bluemix.net
+FILE_SERVER_SSH_KEY_64_DEV ?=
+FILE_SERVER_USER_DEV ?= cfp-cm
+FILE_SERVER_DIR_DEV = /var/files/build/artifacts/cfp-cm
+CFP_EXTENSION_KEY_64 ?=
+###### DO NOT TOUCH ABOVE ######
+
+#Add variables to detect the GITCOMMIT value as well as determine if the TRAVIS_TEST_CF_DEPLOY message is present.
+$(eval GIT_COMMIT := $(shell git rev-parse --short HEAD))
+$(eval PUSH_RELEASE_REQUESTED := $(shell git rev-list --format=%B --max-count=1 $(GIT_COMMIT) | grep PUBLISH_RELEASE > /dev/null && echo true || echo false))
+
+#Version of the ovftool release to be used.
+RELEASE_VERSION ?= 3.1.0-0003
+
+#Change this if you need the docker image tag to be different then the release version. For example when a release is only
+# associated with some of the BOSH jobs. Use something like: RELEASE_TAG ?= 0.2-4-fix
+# The default is RELEASE_TAG ?= $(RELEASE_VERSION)
+RELEASE_TAG ?= $(RELEASE_VERSION)
+
+#The following is used to generate the platform-$(RELEASE_NAME).yml files
+#The format is RAW YAML. *** MAKE SURE YOU USE SPACES FOR INDENTS ***
+### THIS BECOMES THE platform-$(RELEASE_NAME).yml FILE ####
+$(eval GIT_COMMIT := $(shell git rev-parse --short HEAD))
+YAML_VERSION_TAG = $(RELEASE_VERSION)-$(GIT_COMMIT)
+ifeq (master,$(TRAVIS_BRANCH))
+ifeq (false,$(TRAVIS_PULL_REQUEST))
+  YAML_VERSION_TAG = $(RELEASE_VERSION)
+endif
+endif
+ifeq (true,$(PUSH_RELEASE_REQUESTED))
+  YAML_VERSION_TAG = $(RELEASE_VERSION)
+endif
+
+define CFP_YAML
+---
+$(RELEASE_NAME):
+- name: $(RELEASE_NAME)
+  version: $(RELEASE_VERSION)
+  location: "file:///repo_local/platform-$(RELEASE_NAME)/$(YAML_VERSION_TAG)/cm"
+  script: "file:///repo_local/platform-$(RELEASE_NAME)/$(YAML_VERSION_TAG)/install.sh"
+endef
+
+#Export so it is available to the shell
+export CFP_YAML
+
+#Name of the CF release to be used. Value is defined in $(RELEASE_NAME).tgz/release.MF/name
+RELEASE_NAME ?= config-manager
+
+#### CONSTANT VALUES BELOW ####
+
+IMAGE_NAME = platform-$(RELEASE_NAME)
+IMAGE_DESCRIPTION = Provides a docker volume holding the platform-inception-engine artifact.
+
+IMAGE_REPO ?= registry.ng.bluemix.net/mdelder
+GIT_REMOTE_URL = $(shell git config --get remote.origin.url)
+
+#Remote server url
+ARTIFACT_SERVER =  http://file.w3.bluemix.net
+#Remote server uri
+ARTIFACT_PATH = /releases/$(RELEASE_NAME)/"$(RELEASE_VERSION)"/
+#Stores the rate limiter
+
+RATE_LIMIT=
+ifeq ("$(USER)","travis")
+	#Disable rate limiting for performance reasons.
+	RATE_LIMIT=--limit-rate=15m --wait=1s
+endif
