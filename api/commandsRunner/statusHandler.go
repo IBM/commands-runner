@@ -37,12 +37,12 @@ func handleStatus(w http.ResponseWriter, req *http.Request) {
 
 /*
 Retrieve all Status
-URL: /cm/v1/status/
+URL: /cr/v1/status/
 Method: GET
 */
 func getStatusesEndpoint(w http.ResponseWriter, req *http.Request) {
 	//Check format
-	regexp.MustCompile("/cm/v1/(status)$")
+	regexp.MustCompile("/cr/v1/(status)$")
 	//Retrieve statuses
 	log.Debug("Check status")
 	statuses, err := statusManager.GetStatuses()
@@ -56,12 +56,12 @@ func getStatusesEndpoint(w http.ResponseWriter, req *http.Request) {
 
 /*
 Set a Status
-URL: /cm/v1/status/
+URL: /cr/v1/status/
 Method: PUT
 */
 func setStatusesEndpoint(w http.ResponseWriter, req *http.Request) {
 	//Check format
-	regexp.MustCompile("/cm/v1/(status)$")
+	regexp.MustCompile("/cr/v1/(status)$")
 	query, _ := url.ParseQuery(req.URL.RawQuery)
 	log.Debugf("Query: %s", query)
 

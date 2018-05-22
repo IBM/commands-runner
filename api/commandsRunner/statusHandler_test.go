@@ -23,7 +23,7 @@ import (
 func TestGetStatusesEndpoint(t *testing.T) {
 	log.SetLevel(log.InfoLevel)
 	t.Log("Entering................. TestGetStatusesEndpoint")
-	req, err := http.NewRequest("GET", "/cm/v1/status", nil)
+	req, err := http.NewRequest("GET", "/cr/v1/status", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -56,7 +56,7 @@ func TestGetStatusesEndpoint(t *testing.T) {
 func TestSetStatusesEndpoint(t *testing.T) {
 	log.SetLevel(log.InfoLevel)
 	t.Log("Entering................. TestSetStatusesEndpoint")
-	req, err := http.NewRequest("PUT", "/cm/v1/status?name="+statusManager.CMStatus+"&status=newStatus", nil)
+	req, err := http.NewRequest("PUT", "/cr/v1/status?name="+statusManager.CMStatus+"&status=newStatus", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,7 +69,7 @@ func TestSetStatusesEndpoint(t *testing.T) {
 	// directly and pass in our Request and ResponseRecorder.
 	handler.ServeHTTP(rr, req)
 
-	req, err = http.NewRequest("GET", "/cm/v1/status", nil)
+	req, err = http.NewRequest("GET", "/cr/v1/status", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -95,7 +95,7 @@ func TestSetStatusesEndpoint(t *testing.T) {
 
 func TestGetStatusesEndpointWrongMethod(t *testing.T) {
 	t.Log("Entering................. TestGetStatusesEndpointWrongMethod")
-	req, err := http.NewRequest("POST", "/cm/v1/status", nil)
+	req, err := http.NewRequest("POST", "/cr/v1/status", nil)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -30,9 +30,9 @@ func TestStatesOk(t *testing.T) {
 	t.Log("Entering................. TestStatesOk")
 	extensionManager.SetExtensionPath("../test/data/extensions/")
 	SetStatePath("../test/resource/states.yaml")
-	req, err := http.NewRequest("GET", "/cm/v1/states", nil)
+	req, err := http.NewRequest("GET", "/cr/v1/states", nil)
 	//	addStateManagerToMap("TestStatesOk", "../test/resource/states.yaml")
-	//	req, err := http.NewRequest("GET", "/cm/v1/states?extension-name=TestStatesOk", nil)
+	//	req, err := http.NewRequest("GET", "/cr/v1/states?extension-name=TestStatesOk", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -77,11 +77,11 @@ func TestStateOk(t *testing.T) {
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
 	//	addStateManagerToMap("TestStateOk", "../test/resource/states.yaml")
-	//	req, err := http.NewRequest("GET", "/cm/v1/state/director?extension-name=TestStateOk", nil)
+	//	req, err := http.NewRequest("GET", "/cr/v1/state/director?extension-name=TestStateOk", nil)
 	SetStatePath("../test/resource/states.yaml")
 	extensionManager.SetExtensionPath("../test/data/extensions/")
 	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/ibm-test-extensions.txt")
-	req, err := http.NewRequest("GET", "/cm/v1/state/director", nil)
+	req, err := http.NewRequest("GET", "/cr/v1/state/director", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -120,7 +120,7 @@ func TestInsertDeleteStateStates(t *testing.T) {
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
 	//	addStateManagerToMap("TestStateOk", "../test/resource/states.yaml")
-	//	req, err := http.NewRequest("GET", "/cm/v1/state/director?extension-name=TestStateOk", nil)
+	//	req, err := http.NewRequest("GET", "/cr/v1/state/director?extension-name=TestStateOk", nil)
 	stateFile := "../test/resource/states-insert-delete.yaml"
 	extensionManager.SetExtensionPath("../test/data/extensions/")
 	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/ibm-test-extensions.txt")
@@ -128,7 +128,7 @@ func TestInsertDeleteStateStates(t *testing.T) {
 	addStateManagerToMap("cfp-ext-template", stateFile)
 	inFileData, err := ioutil.ReadFile(stateFile)
 	t.Log(string(inFileData))
-	req, err := http.NewRequest("PUT", "/cm/v1/states?extension-name=cfp-ext-template&action=insert&pos=1&before=true", strings.NewReader(stateJson))
+	req, err := http.NewRequest("PUT", "/cr/v1/states?extension-name=cfp-ext-template&action=insert&pos=1&before=true", strings.NewReader(stateJson))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -150,7 +150,7 @@ func TestInsertDeleteStateStates(t *testing.T) {
 	middleFileData, err := ioutil.ReadFile(stateFile)
 	t.Log(string(middleFileData))
 
-	req, err = http.NewRequest("PUT", "/cm/v1/states?extension-name=cfp-ext-template&action=delete&pos=1", strings.NewReader(stateJson))
+	req, err = http.NewRequest("PUT", "/cr/v1/states?extension-name=cfp-ext-template&action=delete&pos=1", strings.NewReader(stateJson))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -182,7 +182,7 @@ func TestInsertDeleteStateStatesByName(t *testing.T) {
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
 	//	addStateManagerToMap("TestStateOk", "../test/resource/states.yaml")
-	//	req, err := http.NewRequest("GET", "/cm/v1/state/director?extension-name=TestStateOk", nil)
+	//	req, err := http.NewRequest("GET", "/cr/v1/state/director?extension-name=TestStateOk", nil)
 	stateFile := "../test/resource/states-insert-delete.yaml"
 	extensionManager.SetExtensionPath("../test/data/extensions/")
 	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/ibm-test-extensions.txt")
@@ -190,7 +190,7 @@ func TestInsertDeleteStateStatesByName(t *testing.T) {
 	addStateManagerToMap("cfp-ext-template", stateFile)
 	inFileData, err := ioutil.ReadFile(stateFile)
 	t.Log("inFileData:\n" + string(inFileData))
-	req, err := http.NewRequest("PUT", "/cm/v1/states?extension-name=cfp-ext-template&action=insert&pos=0&before=true&state-name=task1", strings.NewReader(stateJson))
+	req, err := http.NewRequest("PUT", "/cr/v1/states?extension-name=cfp-ext-template&action=insert&pos=0&before=true&state-name=task1", strings.NewReader(stateJson))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -212,7 +212,7 @@ func TestInsertDeleteStateStatesByName(t *testing.T) {
 	middleFileData, err := ioutil.ReadFile(stateFile)
 	t.Log("middleFileData:\n" + string(middleFileData))
 
-	req, err = http.NewRequest("PUT", "/cm/v1/states?extension-name=cfp-ext-template&action=delete&pos=0&state-name=cfp-ext-template", strings.NewReader(stateJson))
+	req, err = http.NewRequest("PUT", "/cr/v1/states?extension-name=cfp-ext-template&action=delete&pos=0&state-name=cfp-ext-template", strings.NewReader(stateJson))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -242,7 +242,7 @@ func TestInsertDeleteStateStatesByName(t *testing.T) {
 func TestStatesPutJson(t *testing.T) {
 	t.Log("Entering................. TestStatesPutJson")
 	addStateManagerToMap("TestStatesPutJson", "../test/resource/states-post-sample-from-json.yaml")
-	req, err := http.NewRequest("PUT", "/cm/v1/states?extension-name=TestStatesPutJson", strings.NewReader(statesJson))
+	req, err := http.NewRequest("PUT", "/cr/v1/states?extension-name=TestStatesPutJson", strings.NewReader(statesJson))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -268,7 +268,7 @@ func TestStatesPutYaml(t *testing.T) {
 	addStateManagerToMap("TestStatesPutYaml", "../test/resource/states-post-sample-from-yaml.yaml")
 	statesYaml, _ := ioutil.ReadFile("../test/resource/states-post-sample.yaml")
 	t.Logf("statesYaml:\n%s", string(statesYaml))
-	req, err := http.NewRequest("PUT", "/cm/v1/states?extension-name=TestStatesPutYaml", bytes.NewReader(statesYaml))
+	req, err := http.NewRequest("PUT", "/cr/v1/states?extension-name=TestStatesPutYaml", bytes.NewReader(statesYaml))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -298,9 +298,9 @@ func TestStateNotMethodDELETE(t *testing.T) {
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
 	//	addStateManagerToMap("TestStateNotMethodDELETE", "../test/resource/states.yaml")
-	//	req, err := http.NewRequest("DELETE", "/cm/v1/state/director?extension-name=TestStateNotMethodDELETE", nil)
+	//	req, err := http.NewRequest("DELETE", "/cr/v1/state/director?extension-name=TestStateNotMethodDELETE", nil)
 	SetStatePath("../test/resource/states.yaml")
-	req, err := http.NewRequest("DELETE", "/cm/v1/state/director", nil)
+	req, err := http.NewRequest("DELETE", "/cr/v1/state/director", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -325,9 +325,9 @@ func TestStateNOk(t *testing.T) {
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
 	//	addStateManagerToMap("TestStateNOk", "../test/resource/states.yaml")
-	//	req, err := http.NewRequest("GET", "/cm/v1/state/not-exists?extension-name=TestStateNOk", nil)
+	//	req, err := http.NewRequest("GET", "/cr/v1/state/not-exists?extension-name=TestStateNOk", nil)
 	SetStatePath("../test/resource/states.yaml")
-	req, err := http.NewRequest("GET", "/cm/v1/state/not-exists", nil)
+	req, err := http.NewRequest("GET", "/cr/v1/state/not-exists", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -352,10 +352,10 @@ func TestPutState(t *testing.T) {
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
 	//	addStateManagerToMap("TestPutState", "../test/resource/states.yaml")
-	//	req, err := http.NewRequest("PUT", "/cm/v1/state/director?status=TEST&extension-name=TestPutState", nil)
+	//	req, err := http.NewRequest("PUT", "/cr/v1/state/director?status=TEST&extension-name=TestPutState", nil)
 	extensionManager.SetExtensionPath("../test/data/extensions/")
 	SetStatePath("../test/resource/states.yaml")
-	req, err := http.NewRequest("PUT", "/cm/v1/state/director?status=FAILED", nil)
+	req, err := http.NewRequest("PUT", "/cr/v1/state/director?status=FAILED", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -376,7 +376,7 @@ func TestPutState(t *testing.T) {
 
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
-	req, err = http.NewRequest("GET", "/cm/v1/state/director", nil)
+	req, err = http.NewRequest("GET", "/cr/v1/state/director", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -402,7 +402,7 @@ func TestPutState(t *testing.T) {
 			state.Status, "FAILED")
 	}
 
-	req, err = http.NewRequest("PUT", "/cm/v1/engine?action=reset", nil)
+	req, err = http.NewRequest("PUT", "/cr/v1/engine?action=reset", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -425,10 +425,10 @@ func TestStatusNotMethodPOST(t *testing.T) {
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
 	//	addStateManagerToMap("TestStatusNotMethodPOST", "../test/resource/states.yaml")
-	//	req, err := http.NewRequest("POST", "/cm/v1/state/director?status=TEST&extension-name=TestStatusNotMethodPOST", nil)
+	//	req, err := http.NewRequest("POST", "/cr/v1/state/director?status=TEST&extension-name=TestStatusNotMethodPOST", nil)
 	extensionManager.SetExtensionPath("../test/data/extensions/")
 	SetStatePath("../test/resource/states.yaml")
-	req, err := http.NewRequest("POST", "/cm/v1/state/director?status=TEST", nil)
+	req, err := http.NewRequest("POST", "/cr/v1/state/director?status=TEST", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -453,10 +453,10 @@ func TestStatusNotMethodDELETE(t *testing.T) {
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
 	//	addStateManagerToMap("TestStatusNotMethodDELETE", "../test/resource/states.yaml")
-	//	req, err := http.NewRequest("DELETE", "/cm/v1/state/director?status=TEST&extension-name=TestStatusNotMethodDELETE", nil)
+	//	req, err := http.NewRequest("DELETE", "/cr/v1/state/director?status=TEST&extension-name=TestStatusNotMethodDELETE", nil)
 	extensionManager.SetExtensionPath("../test/data/extensions/")
 	SetStatePath("../test/resource/states.yaml")
-	req, err := http.NewRequest("DELETE", "/cm/v1/state/director?status=TEST", nil)
+	req, err := http.NewRequest("DELETE", "/cr/v1/state/director?status=TEST", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -481,10 +481,10 @@ func TestInvalidSubcommand(t *testing.T) {
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
 	//	addStateManagerToMap("TestInvalidSubcommand", "../test/resource/states.yaml")
-	//	req, err := http.NewRequest("GET", "/cm/v1/state/director/invalidsubcmd?status=TEST&extension-name=TestInvalidSubcommand", nil)
+	//	req, err := http.NewRequest("GET", "/cr/v1/state/director/invalidsubcmd?status=TEST&extension-name=TestInvalidSubcommand", nil)
 	extensionManager.SetExtensionPath("../test/data/extensions/")
 	SetStatePath("../test/resource/states.yaml")
-	req, err := http.NewRequest("GET", "/cm/v1/state/director/invalidsubcmd?status=TEST", nil)
+	req, err := http.NewRequest("GET", "/cr/v1/state/director/invalidsubcmd?status=TEST", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -531,9 +531,9 @@ func TestStateLogOk(t *testing.T) {
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
 	//	addStateManagerToMap("TestStateLogOk", "../test/resource/states.yaml")
-	//	req, err := http.NewRequest("GET", "/cm/v1/state/director/log?extension-name=TestStateLogOk", nil)
+	//	req, err := http.NewRequest("GET", "/cr/v1/state/director/log?extension-name=TestStateLogOk", nil)
 	SetStatePath("../test/resource/states.yaml")
-	req, err := http.NewRequest("GET", "/cm/v1/state/director/log", nil)
+	req, err := http.NewRequest("GET", "/cr/v1/state/director/log", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -559,9 +559,9 @@ func TestStateLogNOk(t *testing.T) {
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
 	//	addStateManagerToMap("TestStateLogNOk", "../test/resource/states.yaml")
-	//	req, err := http.NewRequest("GET", "/cm/v1/state/not-exists/log?extension-name=TestStateLogNOk", nil)
+	//	req, err := http.NewRequest("GET", "/cr/v1/state/not-exists/log?extension-name=TestStateLogNOk", nil)
 	SetStatePath("../test/resource/states.yaml")
-	req, err := http.NewRequest("GET", "/cm/v1/state/not-exists/log", nil)
+	req, err := http.NewRequest("GET", "/cr/v1/state/not-exists/log", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -586,9 +586,9 @@ func TestStateLogNotMethodPUT(t *testing.T) {
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
 	//	addStateManagerToMap("TestStateLogNotMethodPUT", "../test/resource/states.yaml")
-	//	req, err := http.NewRequest("PUT", "/cm/v1/state/not-exists/log?extension-name=TestStateLogNotMethodPUT", nil)
+	//	req, err := http.NewRequest("PUT", "/cr/v1/state/not-exists/log?extension-name=TestStateLogNotMethodPUT", nil)
 	SetStatePath("../test/resource/states.yaml")
-	req, err := http.NewRequest("PUT", "/cm/v1/state/not-exists/log", nil)
+	req, err := http.NewRequest("PUT", "/cr/v1/state/not-exists/log", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -613,9 +613,9 @@ func TestStateLogNotMethodPOST(t *testing.T) {
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
 	//	addStateManagerToMap("TestStateLogNotMethodPOST", "../test/resource/states.yaml")
-	//	req, err := http.NewRequest("POST", "/cm/v1/state/not-exists/log?extension-name=TestStateLogNotMethodPOST", nil)
+	//	req, err := http.NewRequest("POST", "/cr/v1/state/not-exists/log?extension-name=TestStateLogNotMethodPOST", nil)
 	SetStatePath("../test/resource/states.yaml")
-	req, err := http.NewRequest("POST", "/cm/v1/state/not-exists/log", nil)
+	req, err := http.NewRequest("POST", "/cr/v1/state/not-exists/log", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -640,9 +640,9 @@ func TestStateLogNotMethodDELETE(t *testing.T) {
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
 	//	addStateManagerToMap("TestStateLogNotMethodDELETE", "../test/resource/states.yaml")
-	//	req, err := http.NewRequest("DELETE", "/cm/v1/state/not-exists/log?extension-name=TestStateLogNotMethodDELETE", nil)
+	//	req, err := http.NewRequest("DELETE", "/cr/v1/state/not-exists/log?extension-name=TestStateLogNotMethodDELETE", nil)
 	SetStatePath("../test/resource/states.yaml")
-	req, err := http.NewRequest("DELETE", "/cm/v1/state/not-exists/log", nil)
+	req, err := http.NewRequest("DELETE", "/cr/v1/state/not-exists/log", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -667,9 +667,9 @@ func TestStateLogFromToOk(t *testing.T) {
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
 	//	addStateManagerToMap("TestStateLogFromToOk", "../test/resource/states.yaml")
-	//	req, err := http.NewRequest("GET", "/cm/v1/state/director/log?first-line=2&length=2&extension-name=TestStateLogFromToOk", nil)
+	//	req, err := http.NewRequest("GET", "/cr/v1/state/director/log?first-line=2&length=2&extension-name=TestStateLogFromToOk", nil)
 	SetStatePath("../test/resource/states.yaml")
-	req, err := http.NewRequest("GET", "/cm/v1/state/director/log?first-line=2&length=2", nil)
+	req, err := http.NewRequest("GET", "/cr/v1/state/director/log?first-line=2&length=2", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -704,9 +704,9 @@ func TestStateLogFromNotInteger(t *testing.T) {
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
 	//	addStateManagerToMap("TestStateLogFromNotInteger", "../test/resource/states.yaml")
-	//	req, err := http.NewRequest("GET", "/cm/v1/state/director/log?first-line=a&extension-name=TestStateLogFromNotInteger", nil)
+	//	req, err := http.NewRequest("GET", "/cr/v1/state/director/log?first-line=a&extension-name=TestStateLogFromNotInteger", nil)
 	SetStatePath("../test/resource/states.yaml")
-	req, err := http.NewRequest("GET", "/cm/v1/state/director/log?first-line=a", nil)
+	req, err := http.NewRequest("GET", "/cr/v1/state/director/log?first-line=a", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -731,9 +731,9 @@ func TestStateLogToNotInteger(t *testing.T) {
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
 	//	addStateManagerToMap("TestStateLogToNotInteger", "../test/resource/states.yaml")
-	//	req, err := http.NewRequest("GET", "/cm/v1/state/director/log?length=v&extension-name=TestStateLogToNotInteger", nil)
+	//	req, err := http.NewRequest("GET", "/cr/v1/state/director/log?length=v&extension-name=TestStateLogToNotInteger", nil)
 	SetStatePath("../test/resource/states.yaml")
-	req, err := http.NewRequest("GET", "/cm/v1/state/director/log?length=v", nil)
+	req, err := http.NewRequest("GET", "/cr/v1/state/director/log?length=v", nil)
 	if err != nil {
 		t.Fatal(err)
 	}

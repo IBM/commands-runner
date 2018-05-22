@@ -24,7 +24,7 @@ import (
 func handleEngine(w http.ResponseWriter, req *http.Request) {
 	log.Debug("Entering in handleEngine")
 	//Check format
-	//validatePath := regexp.MustCompile("/cm/v1/engine.*$")
+	//validatePath := regexp.MustCompile("/cr/v1/engine.*$")
 	//Retreive the requested state
 	log.Debug("req.URL.Path:%s", req.URL.Path)
 	//params := validatePath.FindStringSubmatch(req.URL.Path)
@@ -71,7 +71,7 @@ func handleEngine(w http.ResponseWriter, req *http.Request) {
 
 /*
 Start the engine
-URL: /cm/v1/egine?action=<action>&from_state=<from_state>&to_state=<to_state>
+URL: /cr/v1/egine?action=<action>&from_state=<from_state>&to_state=<to_state>
 Method: PUT
 action: 'start'
 first-state default = first state
@@ -114,7 +114,7 @@ func PutStartEngineEndpoint(w http.ResponseWriter, req *http.Request) {
 
 /*
 Reset the engine
-URL: /cm/v1/engine?action=<action>
+URL: /cr/v1/engine?action=<action>
 Method: PUT
 action: 'reset'
 */
@@ -137,7 +137,7 @@ func PutResetEngineEndpoint(w http.ResponseWriter, req *http.Request) {
 
 /*
 Check if engine is running
-URL: /cm/v1/engine
+URL: /cr/v1/engine
 Method: GET
 */
 func GetIsRunningEndpoint(w http.ResponseWriter, req *http.Request) {

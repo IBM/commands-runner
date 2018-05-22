@@ -154,7 +154,7 @@ func handleStates(w http.ResponseWriter, req *http.Request) {
 	log.Debugf("handleStates req.URL.Path:%s", req.URL.Path)
 	log.Debugf("handleStates RawQuery:%s", req.URL.RawQuery)
 	//Check format
-	//validatePath := regexp.MustCompile("/cm/v1/states")
+	//validatePath := regexp.MustCompile("/cr/v1/states")
 	//Retreive the requested state
 	m, errRQ := url.ParseQuery(req.URL.RawQuery)
 	if errRQ != nil {
@@ -208,12 +208,12 @@ func handleStates(w http.ResponseWriter, req *http.Request) {
 
 /*
 Retrieve the states
-URL: /cm/v1/states
+URL: /cr/v1/states
 Method: GET
 */
 func GetStatesEndpoint(w http.ResponseWriter, req *http.Request) {
 	//Check format
-	//validatePath := regexp.MustCompile("/cm/v1/states")
+	//validatePath := regexp.MustCompile("/cr/v1/states")
 	//Retreive the requested state
 	log.Debug(req.URL.Path)
 	sm, m, errSM := getStateManagerFromRequest(req)
@@ -246,7 +246,7 @@ func GetStatesEndpoint(w http.ResponseWriter, req *http.Request) {
 
 /*
 PUT the states
-URL: /cm/v1/states?overwrite=<true|false>
+URL: /cr/v1/states?overwrite=<true|false>
 Method: GET
 */
 func PutStatesEndpoint(w http.ResponseWriter, req *http.Request) {
@@ -303,7 +303,7 @@ func PutStatesEndpoint(w http.ResponseWriter, req *http.Request) {
 
 /*
 PUT insert a state in a state file
-URL: /cm/v1/states?extension-name=<extension-name>&action=insert&pos=<int>&before=<bool>
+URL: /cr/v1/states?extension-name=<extension-name>&action=insert&pos=<int>&before=<bool>
 Method: PUT
 */
 func PutInsertStateStatesEndpoint(w http.ResponseWriter, req *http.Request) {
@@ -421,7 +421,7 @@ func PutInsertStateStatesEndpoint(w http.ResponseWriter, req *http.Request) {
 
 /*
 PUT delete a state in a state file
-URL: /cm/v1/states?extension-name=<extension-name>&action=delete&pos=<int>
+URL: /cr/v1/states?extension-name=<extension-name>&action=delete&pos=<int>
 Method: PUT
 */
 func PutDeleteStateStatesEndpoint(w http.ResponseWriter, req *http.Request) {
@@ -462,7 +462,7 @@ func PutDeleteStateStatesEndpoint(w http.ResponseWriter, req *http.Request) {
 
 /*
 PUT set a range of states to a specific status
-URL: /cm/v1/states?extension-name=<extension-name>&action=set-statuses&status=<status>&from-state-name=<state_from>&from-inclusive=<bool>&to-state-name=<state_to>&to-inclusive=<bool>
+URL: /cr/v1/states?extension-name=<extension-name>&action=set-statuses&status=<status>&from-state-name=<state_from>&from-inclusive=<bool>&to-state-name=<state_to>&to-inclusive=<bool>
 Method: PUT
 */
 func PutSetStatusesStatesEndpoint(w http.ResponseWriter, req *http.Request) {
@@ -527,7 +527,7 @@ func PutSetStatusesStatesEndpoint(w http.ResponseWriter, req *http.Request) {
 func handleState(w http.ResponseWriter, req *http.Request) {
 	log.Debug("Entering.... in handleState")
 	//Check format
-	validatePath := regexp.MustCompile("/cm/v1/state/([^/]+)/([^/]+).*$")
+	validatePath := regexp.MustCompile("/cr/v1/state/([^/]+)/([^/]+).*$")
 	//Retreive the requested state
 	log.Debugf("req.URL.Path:%s", req.URL.Path)
 	params := validatePath.FindStringSubmatch(req.URL.Path)
@@ -562,13 +562,13 @@ func handleState(w http.ResponseWriter, req *http.Request) {
 
 /*
 Retrieve the state record of a state
-URL: /cm/v1/state/<state>
+URL: /cr/v1/state/<state>
 Method: GET
 */
 func GetStateEndpoint(w http.ResponseWriter, req *http.Request) {
 	log.Debug("Entering.... in GetStateEndpoint")
 	//Check format
-	validatePath := regexp.MustCompile("/cm/v1/state/(.*)$")
+	validatePath := regexp.MustCompile("/cr/v1/state/(.*)$")
 	//Retreive the requested state
 	log.Debug(req.URL.Path)
 	params := validatePath.FindStringSubmatch(req.URL.Path)
@@ -604,7 +604,7 @@ func GetStateEndpoint(w http.ResponseWriter, req *http.Request) {
 
 /*
 Retrieve n lines of a log for a given state starting from line s
-URL: /cm/v1/log/state?first-line=s&lines=n
+URL: /cr/v1/log/state?first-line=s&lines=n
 Method: GET
 first-line default = 0
 lines default = MaxInt64
@@ -612,7 +612,7 @@ lines default = MaxInt64
 func GetStateLogEndpoint(w http.ResponseWriter, req *http.Request) {
 	log.Debug("Entering.... in GetStateLogEndpoint")
 	//Check format
-	validatePath := regexp.MustCompile("/cm/v1/state/([^/]+)/log")
+	validatePath := regexp.MustCompile("/cr/v1/state/([^/]+)/log")
 	//Retreive the requested state
 	log.Debug(req.URL.Path)
 	params := validatePath.FindStringSubmatch(req.URL.Path)
@@ -672,14 +672,14 @@ func GetStateLogEndpoint(w http.ResponseWriter, req *http.Request) {
 
 /*
 Set the status for a state
-URL: /cm/v1/state/<state>?status=newStatus
+URL: /cr/v1/state/<state>?status=newStatus
 Method: PUT
 status: newStatus
 */
 func PutStateEndpoint(w http.ResponseWriter, req *http.Request) {
 	log.Debug("Entering..... PutStateEndpoint")
 	//Check format
-	validatePath := regexp.MustCompile("/cm/v1/state/([^/]+)")
+	validatePath := regexp.MustCompile("/cr/v1/state/([^/]+)")
 	//Retreive the requested state
 	log.Debug(req.URL.Path)
 	params := validatePath.FindStringSubmatch(req.URL.Path)

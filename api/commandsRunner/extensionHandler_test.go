@@ -120,11 +120,11 @@ func createFileUploadRequest(pathToFile, extensionName string, t *testing.T) *ht
 		*/
 		body, _ := os.Open(pathToFile)
 		writer := multipart.NewWriter(body)
-		req, _ = http.NewRequest("POST", "/cm/v1/extension/action=register", body)
+		req, _ = http.NewRequest("POST", "/cr/v1/extension/action=register", body)
 		req.Header.Set("Content-Type", writer.FormDataContentType())
 		req.Header.Set("Content-Disposition", "upload; filename="+filepath.Base(pathToFile))
 	} else {
-		req, _ = http.NewRequest("POST", "/cm/v1/extension/action=register", nil)
+		req, _ = http.NewRequest("POST", "/cr/v1/extension/action=register", nil)
 	}
 	req.Header.Set("Extension-Name", extensionName)
 	return req
@@ -338,7 +338,7 @@ func TestDeletionEndpointExists(t *testing.T) {
 	_ = os.Mkdir(extensionManager.GetExtensionPathCustom(), 0777)
 	_ = os.Mkdir(extensionManager.GetExtensionPathCustom()+extensionName, 0777)
 
-	req, err := http.NewRequest("DELETE", "/cm/v1/extension/action=unregister?name="+extensionName, nil)
+	req, err := http.NewRequest("DELETE", "/cr/v1/extension/action=unregister?name="+extensionName, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -362,7 +362,7 @@ func TestDeletionExtensionExists(t *testing.T) {
 	_ = os.Mkdir(extensionManager.GetExtensionPathCustom(), 0777)
 	_ = os.Mkdir(extensionManager.GetExtensionPathCustom()+"/dummy-extension", 0777)
 
-	req, err := http.NewRequest("DELETE", "/cm/v1/extension/action=unregister?name="+extensionName, nil)
+	req, err := http.NewRequest("DELETE", "/cr/v1/extension/action=unregister?name="+extensionName, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -399,7 +399,7 @@ func TestDeletionFromFileSystem(t *testing.T) {
 	os.Create(extensionManager.GetExtensionPathCustom() + dontDeleteFile)
 	os.Create(extensionManager.GetExtensionPathCustom() + "/dummy-extension/" + deleteFile)
 
-	req, err := http.NewRequest("DELETE", "/cm/v1/extension/action=unregister?name="+extensionName, nil)
+	req, err := http.NewRequest("DELETE", "/cr/v1/extension/action=unregister?name="+extensionName, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -425,7 +425,7 @@ func TestDeletionFromFileSystem(t *testing.T) {
 }
 
 func TestListEndpointExists(t *testing.T) {
-	req, err := http.NewRequest("GET", "/cm/v1/extensions/", nil)
+	req, err := http.NewRequest("GET", "/cr/v1/extensions/", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -465,7 +465,7 @@ func TestListAllExensions(t *testing.T) {
 	t.Log("TESTING..................... TestListAllExensions")
 	setupFileStructureLists()
 
-	req, err := http.NewRequest("GET", "/cm/v1/extensions?catalog=false", nil)
+	req, err := http.NewRequest("GET", "/cr/v1/extensions?catalog=false", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -521,7 +521,7 @@ func TestListCustomerExensionsWithEmbeddedFolders(t *testing.T) {
 	t.Log("TESTING..................... TestListCustomerExensionsWithEmbeddedFolders")
 	setupFileStructureLists()
 
-	req, err := http.NewRequest("GET", "/cm/v1/extensions/?filter="+extensionManager.CustomExtensions, nil)
+	req, err := http.NewRequest("GET", "/cr/v1/extensions/?filter="+extensionManager.CustomExtensions, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -569,7 +569,7 @@ func TestListIBMExensions(t *testing.T) {
 	setupFileStructureLists()
 	extensionManager.SetExtensionPath("../test/resource/tmp/")
 
-	req, err := http.NewRequest("GET", "/cm/v1/extensions?filter="+extensionManager.EmbeddedExtensions+"&catalog=true", nil)
+	req, err := http.NewRequest("GET", "/cr/v1/extensions?filter="+extensionManager.EmbeddedExtensions+"&catalog=true", nil)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -28,7 +28,7 @@ func TestEngineStartPUT(t *testing.T) {
 	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/ibm-test-extensions.txt")
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
-	req, err := http.NewRequest("PUT", "/cm/v1/engine?action=start&extension-name=TestEngineStartPUT", nil)
+	req, err := http.NewRequest("PUT", "/cr/v1/engine?action=start&extension-name=TestEngineStartPUT", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -48,7 +48,7 @@ func TestEngineStartPUT(t *testing.T) {
 	}
 	time.Sleep(10 * time.Second)
 
-	req, err = http.NewRequest("PUT", "/cm/v1/engine?action=reset&extension-name=TestEngineStartPUT", nil)
+	req, err = http.NewRequest("PUT", "/cr/v1/engine?action=reset&extension-name=TestEngineStartPUT", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -64,7 +64,7 @@ func TestEngineStartPUT(t *testing.T) {
 		t.Errorf("Can not revert test")
 	}
 
-	req, err = http.NewRequest("GET", "/cm/v1/engine?extension-name=TestEngineStartPUT", nil)
+	req, err = http.NewRequest("GET", "/cr/v1/engine?extension-name=TestEngineStartPUT", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -92,7 +92,7 @@ func TestEngineStartExtensonPUT(t *testing.T) {
 	extension := "cfp-ext-template"
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
-	req, err := http.NewRequest("PUT", "/cm/v1/engine?action=start&extension-name="+extension, nil)
+	req, err := http.NewRequest("PUT", "/cr/v1/engine?action=start&extension-name="+extension, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -112,7 +112,7 @@ func TestEngineStartExtensonPUT(t *testing.T) {
 	}
 	time.Sleep(10 * time.Second)
 
-	req, err = http.NewRequest("PUT", "/cm/v1/engine?action=reset&extension-name="+extension, nil)
+	req, err = http.NewRequest("PUT", "/cr/v1/engine?action=reset&extension-name="+extension, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -128,7 +128,7 @@ func TestEngineStartExtensonPUT(t *testing.T) {
 		t.Errorf("Can not revert test")
 	}
 
-	req, err = http.NewRequest("GET", "/cm/v1/engine?extension-name="+extension, nil)
+	req, err = http.NewRequest("GET", "/cr/v1/engine?extension-name="+extension, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -152,7 +152,7 @@ func TestEnginePUTRunning(t *testing.T) {
 	addStateManagerToMap("TestEnginePUTRunning", "../test/resource/engine-run-running.yaml")
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
-	req, err := http.NewRequest("PUT", "/cm/v1/engine?action=start&extension-name=TestEnginePUTRunning", nil)
+	req, err := http.NewRequest("PUT", "/cr/v1/engine?action=start&extension-name=TestEnginePUTRunning", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -171,7 +171,7 @@ func TestEnginePUTRunning(t *testing.T) {
 			status, http.StatusConflict)
 	}
 
-	req, err = http.NewRequest("GET", "/cm/v1/engine?extension-name=TestEnginePUTRunning", nil)
+	req, err = http.NewRequest("GET", "/cr/v1/engine?extension-name=TestEnginePUTRunning", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -199,7 +199,7 @@ func TestEngineResetRunning(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	req, errState := http.NewRequest("PUT", "/cm/v1/state/task1?status=RUNNING&extension-name=TestEngineResetRunning", nil)
+	req, errState := http.NewRequest("PUT", "/cr/v1/state/task1?status=RUNNING&extension-name=TestEngineResetRunning", nil)
 	if errState != nil {
 		t.Fatal(errState)
 	}
@@ -211,7 +211,7 @@ func TestEngineResetRunning(t *testing.T) {
 
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
-	req, err := http.NewRequest("PUT", "/cm/v1/engine?action=reset&extension-name=TestEngineResetRunning", nil)
+	req, err := http.NewRequest("PUT", "/cr/v1/engine?action=reset&extension-name=TestEngineResetRunning", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -237,7 +237,7 @@ func TestEngineReset(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	req, errState := http.NewRequest("PUT", "/cm/v1/state/task1?status=FAILED&extension-name=TestEngineReset", nil)
+	req, errState := http.NewRequest("PUT", "/cr/v1/state/task1?status=FAILED&extension-name=TestEngineReset", nil)
 	if errState != nil {
 		t.Fatal(errState)
 	}
@@ -247,7 +247,7 @@ func TestEngineReset(t *testing.T) {
 		t.Errorf("Can not revert test")
 	}
 
-	req, errState = http.NewRequest("PUT", "/cm/v1/state/task2?status=SKIP&extension-name=TestEngineReset", nil)
+	req, errState = http.NewRequest("PUT", "/cr/v1/state/task2?status=SKIP&extension-name=TestEngineReset", nil)
 	if errState != nil {
 		t.Fatal(errState)
 	}
@@ -257,7 +257,7 @@ func TestEngineReset(t *testing.T) {
 		t.Errorf("Can not revert test")
 	}
 
-	req, errState = http.NewRequest("PUT", "/cm/v1/state/task3?status=READY&extension-name=TestEngineReset", nil)
+	req, errState = http.NewRequest("PUT", "/cr/v1/state/task3?status=READY&extension-name=TestEngineReset", nil)
 	if errState != nil {
 		t.Fatal(errState)
 	}
@@ -269,7 +269,7 @@ func TestEngineReset(t *testing.T) {
 
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
-	req, err := http.NewRequest("PUT", "/cm/v1/engine?action=reset&extension-name=TestEngineReset", nil)
+	req, err := http.NewRequest("PUT", "/cr/v1/engine?action=reset&extension-name=TestEngineReset", nil)
 	if err != nil {
 		t.Fatal(err)
 	}

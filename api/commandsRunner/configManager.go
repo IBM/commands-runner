@@ -117,14 +117,14 @@ func Init(port string, portSSL string, configDir string, certificatePath string,
 	serverCertificatePath = certificatePath
 	serverKeyPath = keyPath
 	SetStatePath(stateFilePath)
-	AddHandler("/cm/v1/state", handleState, true)
-	AddHandler("/cm/v1/state/", handleState, true)
-	AddHandler("/cm/v1/states", handleStates, true)
-	AddHandler("/cm/v1/engine", handleEngine, true)
-	AddHandler("/cm/v1/pcm/", handlePCM, true)
-	AddHandler("/cm/v1/status", handleStatus, true)
-	AddHandler("/cm/v1/extension", handleExtension, true)
-	AddHandler("/cm/v1/extensions/", handleExtensions, true)
+	AddHandler("/cr/v1/state", handleState, true)
+	AddHandler("/cr/v1/state/", handleState, true)
+	AddHandler("/cr/v1/states", handleStates, true)
+	AddHandler("/cr/v1/engine", handleEngine, true)
+	AddHandler("/cr/v1/pcm/", handlePCM, true)
+	AddHandler("/cr/v1/status", handleStatus, true)
+	AddHandler("/cr/v1/extension", handleExtension, true)
+	AddHandler("/cr/v1/extensions/", handleExtensions, true)
 }
 
 func main() {

@@ -24,7 +24,7 @@ import (
 
 func handlePCM(w http.ResponseWriter, req *http.Request) {
 	log.Debug("Entering in handlePCM")
-	validatePath := regexp.MustCompile("/cm/v1/(pcm)/log/([\\w]*)$")
+	validatePath := regexp.MustCompile("/cr/v1/(pcm)/log/([\\w]*)$")
 	log.Debug(req.URL.Path)
 	params := validatePath.FindStringSubmatch(req.URL.Path)
 	log.Debug(params)
