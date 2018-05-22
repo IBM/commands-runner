@@ -13,6 +13,7 @@ package extensionManager
 
 import (
 	"archive/zip"
+	"bytes"
 	"errors"
 	"io"
 	"io/ioutil"
@@ -390,45 +391,26 @@ func ListEmbeddedExtensions() (*Extensions, error) {
 	if extensionEmbeddedFile == "" {
 		return nil, errors.New("extensionEmbeddedFile not defined")
 	}
-	//resource, err := ioutil.ReadFile(extensionEmbeddedFile)
+	resource, err := ioutil.ReadFile(extensionEmbeddedFile)
+	if err != nil {
+		log.Debug(err.Error())
+		return nil, err
+	}
 	//resource, err := resourceManager.Asset(extensionEmbeddedFile)
-	cfg, err := config.ParseYamlFile(extensionEmbeddedFile)
-	if err != nil {
-		log.Debug(err.Error())
-		return nil, err
-	}
-	extensionListFound, err := cfg.List("extensions")
-	if err != nil {
-		log.Debug(err.Error())
-		return nil, err
-	}
-	for index, _ := range extensionListFound {
-		extensionSpecification, err := cfg.String("extensions." + strconv.Itoa(index) + ".extension")
-		if err != nil {
-			log.Debug(err.Error())
-			return nil, err
-		}
-		extensionFields := strings.Split(extensionSpecification, ":")
-		var extension Extension
-		extension.Name = extensionFields[2]
-		extension.Type = EmbeddedExtensions
-		extensionList.Extensions[extension.Name] = extension
 
-	}
-	/*
-		log.Debug("Extension file content:\n" + string(resource))
-		resourceArray := bytes.Split(resource, []byte("\n"))
+	log.Debug("Extension file content:\n" + string(resource))
+	resourceArray := bytes.Split(resource, []byte("\n"))
 
-		for _, byteArr := range resourceArray {
-			log.Debug("byteArr:" + string(byteArr))
-			if string(byteArr) != "" {
-				var extension Extension
-				extension.Name = string(byteArr)
-				extension.Type = EmbeddedExtensions
-				extensionList.Extensions[extension.Name] = extension
-			}
+	for _, byteArr := range resourceArray {
+		log.Debug("byteArr:" + string(byteArr))
+		if string(byteArr) != "" {
+			var extension Extension
+			extension.Name = string(byteArr)
+			extension.Type = EmbeddedExtensions
+			extensionList.Extensions[extension.Name] = extension
 		}
-	*/
+	}
+
 	return &extensionList, nil
 }
 

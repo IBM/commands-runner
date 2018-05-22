@@ -44,16 +44,12 @@ resource-manager:
 go-test:: 
 	go test -v github.ibm.com/IBMPrivateCloud//cfp-commands-runner/api/commandsRunner
 
-.PHONE: glide-up
-glide-up::
-	glide up
-
 .PHONY: copyright-check
 copyright-check:
 	./build-tools/copyright-check.sh
 
 .PHONY: all
-all:: pre-req set-app-version copyright-check resource-manager go-test glide-up
+all:: pre-req set-app-version copyright-check resource-manager go-test
 
 #This requires Graphitz and    ''
 .PHONY: dependency-graph-text
