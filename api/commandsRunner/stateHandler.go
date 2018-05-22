@@ -54,7 +54,7 @@ func SetStatePath(statesPath string) {
 //get the cf-pie path
 func getStatePath(extensionName string) string {
 	var statesPath string
-	if extensionName == global.CloudFoundryPieName || extensionName == "" {
+	if extensionName == global.CommandsRunnerStatesName || extensionName == "" {
 		statesPath = pieStatesPath
 	} else {
 		statesPath = extensionManager.GetRootExtensionPath(extensionManager.GetExtensionPath(), extensionName)
@@ -123,7 +123,7 @@ func GetExtensionNameFromRequest(req *http.Request) (string, url.Values, error) 
 	if errRQ != nil {
 		return "", m, errRQ
 	}
-	extensionName := global.CloudFoundryPieName
+	extensionName := global.CommandsRunnerStatesName
 	extensionNameFound, okExtensionName := m["extension-name"]
 	if okExtensionName {
 		log.Debugf("ExtensionName:%s", extensionNameFound)

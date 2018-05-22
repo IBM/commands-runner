@@ -10,10 +10,6 @@
 */
 package global
 
-import (
-	"path/filepath"
-)
-
 const COPYRIGHT string = `###############################################################################
 # Licensed Materials - Property of IBM Copyright IBM Corporation 2017, 2018. All Rights Reserved.
 # U.S. Government Users Restricted Rights - Use, duplication or disclosure restricted by GSA ADP
@@ -34,22 +30,6 @@ const DefaultInsecureSSL = false
 const SSLCertFileName = "cm-cfp-cert.crt"
 const SSLKeyFileName = "cm-cfp-key.pem"
 const TokenFileName = "cm-cfp-token"
-const CloudFoundryPieName = "pie-cf-deploy"
-const DomainTypeEnv = "env"
-const DomainTypeApps = "apps"
+const CommandsRunnerStatesName = "crs-name"
 
-const CFPWorkload = "CFP"
-const VMWareTarget = "vmware"
-const OpenStackTarget = "openstack"
-const MockTarget = "mock"
-
-const ErrorTypeError = "error"
-const ErrorTypeWarning = "warning"
-
-const GeneratedUIConfigPath = "/data/CloudFoundry/uiconfig.yml"
-
-const UIConfigJsonFileName = "uiconfig.json"
 const UIConfigYamlFileName = "uiconfig.yml"
-
-const OpenstackAPIVersion = 3
-const OpenstackCloudYamlDirPath = ".config" + string(filepath.Separator) + "openstack" + string(filepath.Separator)

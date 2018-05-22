@@ -29,7 +29,7 @@ type Properties map[string]interface{}
 //get the cf-pie path
 func GetConfigPath(extensionName string) string {
 	var configPath string
-	if extensionName == global.CloudFoundryPieName || extensionName == "" {
+	if extensionName == global.CommandsRunnerStatesName || extensionName == "" {
 		configPath = extensionManager.GetRootExtensionPath(global.ConfigDirectory, extensionName)
 	} else {
 		configPath = extensionManager.GetRootExtensionPath(extensionManager.GetExtensionPath(), extensionName)

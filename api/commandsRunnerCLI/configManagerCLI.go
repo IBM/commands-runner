@@ -227,7 +227,7 @@ func main() {
 
 	setState := func(c *cli.Context) error {
 		if extensionName == "" {
-			extensionName = global.CloudFoundryPieName
+			extensionName = global.CommandsRunnerStatesName
 		}
 		client, errClient := configManagerClient.NewClient(url, outputFormat, timeout, insecureSSL)
 		if errClient != nil {
@@ -259,7 +259,7 @@ func main() {
 
 	getStates := func(c *cli.Context) error {
 		if extensionName == "" {
-			extensionName = global.CloudFoundryPieName
+			extensionName = global.CommandsRunnerStatesName
 		}
 		client, errClient := configManagerClient.NewClient(url, outputFormat, timeout, insecureSSL)
 		if errClient != nil {
@@ -277,7 +277,7 @@ func main() {
 
 	setStates := func(c *cli.Context) error {
 		if extensionName == "" {
-			extensionName = global.CloudFoundryPieName
+			extensionName = global.CommandsRunnerStatesName
 		}
 		client, errClient := configManagerClient.NewClient(url, outputFormat, timeout, insecureSSL)
 		if errClient != nil {
@@ -295,7 +295,7 @@ func main() {
 
 	setStatesStatuses := func(c *cli.Context) error {
 		if extensionName == "" {
-			extensionName = global.CloudFoundryPieName
+			extensionName = global.CommandsRunnerStatesName
 		}
 		client, errClient := configManagerClient.NewClient(url, outputFormat, timeout, insecureSSL)
 		if errClient != nil {
@@ -313,7 +313,7 @@ func main() {
 
 	mergeStates := func(c *cli.Context) error {
 		if extensionName == "" {
-			extensionName = global.CloudFoundryPieName
+			extensionName = global.CommandsRunnerStatesName
 		}
 		client, errClient := configManagerClient.NewClient(url, outputFormat, timeout, insecureSSL)
 		if errClient != nil {
@@ -331,7 +331,7 @@ func main() {
 
 	insertStateStates := func(c *cli.Context) error {
 		if extensionName == "" {
-			extensionName = global.CloudFoundryPieName
+			extensionName = global.CommandsRunnerStatesName
 		}
 		// if statePath == "" {
 		// 	err := errors.New("statePath must be provided")
@@ -354,7 +354,7 @@ func main() {
 
 	deleteStateStates := func(c *cli.Context) error {
 		if extensionName == "" {
-			extensionName = global.CloudFoundryPieName
+			extensionName = global.CommandsRunnerStatesName
 		}
 		client, errClient := configManagerClient.NewClient(url, outputFormat, timeout, insecureSSL)
 		if errClient != nil {

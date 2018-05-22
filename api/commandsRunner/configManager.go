@@ -11,19 +11,14 @@
 package commandsRunner
 
 import (
-	"errors"
 	"io/ioutil"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
-	cli "gopkg.in/urfave/cli.v1"
 
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/logger"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/resourceManager"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/statusManager"
 )
 
@@ -127,6 +122,7 @@ func Init(port string, portSSL string, configDir string, certificatePath string,
 	AddHandler("/cr/v1/extensions/", handleExtensions, true)
 }
 
+/*
 func main() {
 	var bmxConfigDir string
 	var port string
@@ -207,4 +203,6 @@ func main() {
 	if errRun != nil {
 		os.Exit(1)
 	}
+
 }
+*/

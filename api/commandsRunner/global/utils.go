@@ -11,19 +11,12 @@
 package global
 
 import (
-	"errors"
 	"io"
-	"net"
 	"os"
 	"os/user"
 	"path/filepath"
-	"strconv"
-	"strings"
-	"time"
 
 	log "github.com/sirupsen/logrus"
-
-	"github.com/olebedev/config"
 )
 
 //CopyRecursive copy one file (file or dir) to a destDir.
@@ -66,49 +59,6 @@ func CopyRecursive(src, destDir string) error {
 	return nil
 }
 
-func CalculateErrorType(currentError string, newError string) string {
-	if currentError == ErrorTypeError || newError == ErrorTypeError {
-		return ErrorTypeError
-	}
-	if currentError == ErrorTypeWarning {
-		return ErrorTypeWarning
-	}
-	return newError
-}
-
-//Check if a port is accessible for a given IP and protocol
-func CheckPort(ip string, protocol string, port int16) error {
-	conn, err := net.DialTimeout(protocol, strings.TrimSpace(ip)+":"+strconv.FormatInt(int64(port), 10), time.Duration(5)*time.Second)
-	if err != nil {
-		return err
-	}
-	conn.Close()
-	return nil
-}
-
-func GetComponentVersion(componentName string) (string, error) {
-	log.Debug("Entering... getComponentVersion")
-	log.Debug(BOMPath)
-	cfgBOM, err := config.ParseYamlFile(BOMPath)
-	if err != nil {
-		return "", err
-	}
-	componentsBOM, err := cfgBOM.List("bluemix_bom.volume_images")
-	log.Debug(componentsBOM)
-	for index := range componentsBOM {
-		component, err := cfgBOM.String("bluemix_bom.volume_images." + strconv.Itoa(index) + ".image")
-		log.Debug(component)
-		if err != nil {
-			return "", err
-		}
-		componentArray := strings.Split(component, ":")
-		if componentName == componentArray[0] {
-			return componentArray[1], nil
-		}
-	}
-	return "", errors.New("Component " + componentName + " not found")
-}
-
 func GetHomeDir() string {
 	homeDir := os.Getenv("HOME")
 	if homeDir == "" {
@@ -122,15 +72,4 @@ func GetHomeDir() string {
 	}
 	log.Debug("HomeDir=" + homeDir)
 	return homeDir
-}
-
-func CSVSplit(val string, separator string) []string {
-	log.Debug("Entering.... CSVSplit")
-	elems := strings.Split(val, separator)
-	for i := 0; i < len(elems); i++ {
-		log.Debug("Trimming: " + elems[i])
-		elems[i] = strings.TrimSpace(elems[i])
-	}
-	log.Debug("Elems:%v", elems)
-	return elems
 }

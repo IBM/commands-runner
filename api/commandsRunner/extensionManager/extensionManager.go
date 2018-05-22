@@ -130,7 +130,7 @@ func GetRootExtensionPath(rootDir string, extensionName string) string {
 		rootDir += string(filepath.Separator)
 	}
 	extensionPath := rootDir
-	if extensionName != global.CloudFoundryPieName && extensionName != "" {
+	if extensionName != global.CommandsRunnerStatesName && extensionName != "" {
 		extensionPath += GetRelativeExtensionPath(extensionName)
 	}
 	return extensionPath
@@ -144,7 +144,7 @@ func SetExtensionEmbeddedFile(_extensionEmbeddedFile string) {
 //IsExtensionRegistered Check if an extension is register by browzing the extensions directory
 func IsExtensionRegistered(extensionName string) bool {
 	log.Debug("Entering in... IsExtensionRegistered")
-	return extensionName == global.CloudFoundryPieName || IsEmbeddedExtensionRegistered(extensionName) || IsCustomExtensionRegistered(extensionName)
+	return extensionName == global.CommandsRunnerStatesName || IsEmbeddedExtensionRegistered(extensionName) || IsCustomExtensionRegistered(extensionName)
 }
 
 //IsCustomExtensionRegistered Check if an extension is register by browzing the extensions directory
