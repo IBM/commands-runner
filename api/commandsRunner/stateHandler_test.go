@@ -19,9 +19,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunner/extensionManager"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunner/global"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunner/stateManager"
+	log "github.com/sirupsen/logrus"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/extensionManager"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/stateManager"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -79,6 +80,7 @@ func TestStateOk(t *testing.T) {
 	//	req, err := http.NewRequest("GET", "/cm/v1/state/director?extension-name=TestStateOk", nil)
 	SetStatePath("../test/resource/states.yaml")
 	extensionManager.SetExtensionPath("../test/data/extensions/")
+	extensionManager.SetExtensionEmbeddedFile("../resource/bom-extensions.yml")
 	req, err := http.NewRequest("GET", "/cm/v1/state/director", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -121,6 +123,7 @@ func TestInsertDeleteStateStates(t *testing.T) {
 	//	req, err := http.NewRequest("GET", "/cm/v1/state/director?extension-name=TestStateOk", nil)
 	stateFile := "../test/resource/states-insert-delete.yaml"
 	extensionManager.SetExtensionPath("../test/data/extensions/")
+	extensionManager.SetExtensionEmbeddedFile("../resource/bom-extensions.yml")
 	SetStatePath(stateFile)
 	addStateManagerToMap("cfp-ext-template", stateFile)
 	inFileData, err := ioutil.ReadFile(stateFile)
@@ -174,6 +177,7 @@ func TestInsertDeleteStateStates(t *testing.T) {
 }
 
 func TestInsertDeleteStateStatesByName(t *testing.T) {
+	log.SetLevel(log.DebugLevel)
 	t.Log("Entering................. TestInsertDeleteStateStatesByName")
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
@@ -181,8 +185,9 @@ func TestInsertDeleteStateStatesByName(t *testing.T) {
 	//	req, err := http.NewRequest("GET", "/cm/v1/state/director?extension-name=TestStateOk", nil)
 	stateFile := "../test/resource/states-insert-delete.yaml"
 	extensionManager.SetExtensionPath("../test/data/extensions/")
+	extensionManager.SetExtensionEmbeddedFile("../resource/bom-extensions.yml")
 	SetStatePath(stateFile)
-	addStateManagerToMap("cfp-ext-templat", stateFile)
+	addStateManagerToMap("cfp-ext-template", stateFile)
 	inFileData, err := ioutil.ReadFile(stateFile)
 	t.Log("inFileData:\n" + string(inFileData))
 	req, err := http.NewRequest("PUT", "/cm/v1/states?extension-name=cfp-ext-template&action=insert&pos=0&before=true&state-name=task1", strings.NewReader(stateJson))
@@ -512,7 +517,7 @@ func TestAddStateManagerIBM(t *testing.T) {
 	if err != nil {
 		t.Error("Unable to retrieve state manager " + extension)
 	}
-	expected := "../test/data/extensions/IBM/" + extension + "/pie-" + extension + ".yml"
+	expected := "../test/data/extensions/embedded/" + extension + "/pie-" + extension + ".yml"
 	got := sm.StatesPath
 	if expected != got {
 		t.Error("Expecting " + expected + " and got " + got)

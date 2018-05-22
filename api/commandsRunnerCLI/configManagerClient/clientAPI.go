@@ -21,7 +21,7 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunner/global"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 )
 
 //SetAPISetup set the API configuration

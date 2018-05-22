@@ -24,7 +24,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunner/extensionManager"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/extensionManager"
 )
 
 func cleanup() {
@@ -135,7 +135,7 @@ func TestRegisterExistingExtension(t *testing.T) {
 	// Setup unit test file structure
 	extensionManager.SetExtensionPath("../test/resource/tmp/")
 
-	extensionManager.SetExtensionIBMFile("api/test/resource/extensions/ibm-test-extensions.txt")
+	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/ibm-test-extensions.txt")
 	extensionManager.SetExtensionPath("../test/data/extensions/")
 	extensionName := "dummy-extension"
 	filename := "dummy-extension.zip"
@@ -180,7 +180,7 @@ func TestRegisterNonExistingExtension(t *testing.T) {
 
 	//Setup filesystem
 	extensionManager.SetExtensionPath("../test/resource/tmp/")
-	extensionManager.SetExtensionIBMFile("api/test/resource/extensions/ibm-test-extensions.txt")
+	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/ibm-test-extensions.txt")
 	filename := "dummy-extension.zip"
 	_ = os.Mkdir(extensionManager.GetExtensionPath(), 0777)
 	_ = os.Mkdir(extensionManager.GetExtensionPathCustom(), 0777)
@@ -203,7 +203,7 @@ func TestRegisterNonExistingExtension(t *testing.T) {
 func TestRegisterCustomExtension(t *testing.T) {
 	t.Log("Entering........... TestExtensionUnzip")
 	// Dummy extensionManager.GetExtensionPath()
-	extensionManager.SetExtensionIBMFile("api/test/resource/extensions/ibm-test-extensions.txt")
+	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/ibm-test-extensions.txt")
 	extensionManager.SetExtensionPath("../test/resource/tmp/")
 	filename := "dummy-extension.zip"
 	extensionName := "blahblahblah"
@@ -236,8 +236,9 @@ func TestRegisterCustomExtension(t *testing.T) {
 }
 
 func TestRegisterCustomExtensionWithIBMExtensionName(t *testing.T) {
+	log.SetLevel(log.DebugLevel)
 	t.Log("Entering........... TestRegisterCustomExtensionWithIBMExtensionName")
-	extensionManager.SetExtensionIBMFile("api/test/resource/extensions/ibm-test-extensions.txt")
+	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/ibm-test-extensions.txt")
 	extensionManager.SetExtensionPath("../test/resource/tmp/")
 
 	//Setup filesystem
@@ -253,16 +254,16 @@ func TestRegisterCustomExtensionWithIBMExtensionName(t *testing.T) {
 	handler := http.HandlerFunc(handleExtension)
 	handler.ServeHTTP(rr, req)
 
-	assert("Extension name is already used by IBM extension\n", rr.Body.String(), t)
+	assert("Extension name is already used by "+extensionManager.EmbeddedExtensions+" extension\n", rr.Body.String(), t)
 	cleanup()
 }
 
 func TestRegisterIBMExtension(t *testing.T) {
 	t.Log("Entering........... TestRegisterIBMExtension")
 	extensionManager.SetExtensionPath("../test/resource/tmp/")
-	extensionManager.SetRepoLocalPath("../test/repo_local/")
+	extensionManager.SetEmbeddedExtensionsRepositoryPath("../test/repo_local/")
 
-	extensionManager.SetExtensionIBMFile("api/test/resource/extensions/ibm-test-extensions.txt")
+	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/ibm-test-extensions.txt")
 	extensionManager.SetExtensionPath("../test/resource/tmp/")
 	extensionName := "cfp-ext-template"
 	_ = os.Mkdir(extensionManager.GetExtensionPath(), 0777)
@@ -282,12 +283,12 @@ func TestRegisterIBMExtensionFilesExists(t *testing.T) {
 	t.Log("Entering........... TestRegisterIBMExtensionFilesExists")
 	extensionManager.SetExtensionPath("../test/resource/tmp/")
 
-	extensionManager.SetExtensionIBMFile("api/test/resource/extensions/ibm-test-extensions.txt")
+	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/ibm-test-extensions.txt")
 	extensionManager.SetExtensionPath("../test/resource/tmp/")
-	extensionManager.SetRepoLocalPath("../test/repo_local/")
+	extensionManager.SetEmbeddedExtensionsRepositoryPath("../test/repo_local/")
 	extensionName := "cfp-ext-template"
 	_ = os.Mkdir(extensionManager.GetExtensionPath(), 0777)
-	_ = os.Mkdir(extensionManager.GetExtensionPathIBM(), 0777)
+	_ = os.Mkdir(extensionManager.GetExtensionPathEmbedded(), 0777)
 
 	// Create and Handle request
 	req := createFileUploadRequest("", extensionName, t)
@@ -297,7 +298,7 @@ func TestRegisterIBMExtensionFilesExists(t *testing.T) {
 
 	assert("Extension registration complete", rr.Body.String(), t)
 
-	path := extensionManager.GetExtensionPathIBM() + extensionName
+	path := extensionManager.GetExtensionPathEmbedded() + extensionName
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		t.Errorf("The path: %s, does not exist", path)
 	}
@@ -307,7 +308,7 @@ func TestRegisterIBMExtensionFilesExists(t *testing.T) {
 /*
 func TestRegisterExtensionWrongFileType(t *testing.T) {
 	t.Log("Entering........... TestRegisterExtensionWrongFile")
-	extensionManager.SetExtensionIBMFile("api/test/resource/extensions/ibm-test-extensions.txt")
+	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/ibm-test-extensions.txt")
 	extensionManager.SetExtensionPath("../test/resource/tmp/")
 	filename := "states.yaml"
 	_ = os.Mkdir(extensionManager.GetExtensionPath(), 0777)
@@ -440,7 +441,7 @@ func TestListEndpointExists(t *testing.T) {
 }
 
 func setupFileStructureLists() {
-	extensionManager.SetExtensionIBMFile("api/test/resource/extensions/ibm-test-extensions.txt")
+	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/ibm-test-extensions.txt")
 	extensions := [4]string{"dummy-extension1", "dummy-extension2", "dummy-extension3", "dummy-extension4"}
 	extensionsIBM := [4]string{"IBM-extension1", "IBM-extension2"}
 	extensionManager.SetExtensionPath("../test/resource/tmp/")
@@ -448,12 +449,12 @@ func setupFileStructureLists() {
 	deleteFile := "dummy-extension.zip"
 	_ = os.Mkdir(extensionManager.GetExtensionPath(), 0777)
 	_ = os.Mkdir(extensionManager.GetExtensionPathCustom(), 0777)
-	_ = os.Mkdir(extensionManager.GetExtensionPathIBM(), 0777)
+	_ = os.Mkdir(extensionManager.GetExtensionPathEmbedded(), 0777)
 	for _, extension := range extensions {
 		_ = os.Mkdir(extensionManager.GetExtensionPathCustom()+extension, 0777)
 	}
 	for _, extension := range extensionsIBM {
-		_ = os.Mkdir(extensionManager.GetExtensionPathIBM()+extension, 0777)
+		_ = os.Mkdir(extensionManager.GetExtensionPathEmbedded()+extension, 0777)
 	}
 	os.Create(extensionManager.GetExtensionPathCustom() + dontDeleteFile)
 	os.Create(extensionManager.GetExtensionPathCustom() + deleteFile)
@@ -481,32 +482,32 @@ func TestListAllExensions(t *testing.T) {
 	extensions.Extensions = make(map[string]extensionManager.Extension)
 	extension1 := &extensionManager.Extension{
 		Name: "dummy-extension1",
-		Type: "custom",
+		Type: extensionManager.CustomExtensions,
 	}
 	extensions.Extensions[extension1.Name] = *extension1
 	extension2 := &extensionManager.Extension{
 		Name: "dummy-extension2",
-		Type: "custom",
+		Type: extensionManager.CustomExtensions,
 	}
 	extensions.Extensions[extension2.Name] = *extension2
 	extension3 := &extensionManager.Extension{
 		Name: "dummy-extension3",
-		Type: "custom",
+		Type: extensionManager.CustomExtensions,
 	}
 	extensions.Extensions[extension3.Name] = *extension3
 	extension4 := &extensionManager.Extension{
 		Name: "dummy-extension4",
-		Type: "custom",
+		Type: extensionManager.CustomExtensions,
 	}
 	extensions.Extensions[extension4.Name] = *extension4
 	extension5 := &extensionManager.Extension{
 		Name: "IBM-extension1",
-		Type: "IBM",
+		Type: extensionManager.EmbeddedExtensions,
 	}
 	extensions.Extensions[extension5.Name] = *extension5
 	extension6 := &extensionManager.Extension{
 		Name: "IBM-extension2",
-		Type: "IBM",
+		Type: extensionManager.EmbeddedExtensions,
 	}
 	extensions.Extensions[extension6.Name] = *extension6
 	expected, _ := json.MarshalIndent(&extensions, "", "  ")
@@ -520,7 +521,7 @@ func TestListCustomerExensionsWithEmbeddedFolders(t *testing.T) {
 	t.Log("TESTING..................... TestListCustomerExensionsWithEmbeddedFolders")
 	setupFileStructureLists()
 
-	req, err := http.NewRequest("GET", "/cm/v1/extensions/?filter=custom", nil)
+	req, err := http.NewRequest("GET", "/cm/v1/extensions/?filter="+extensionManager.CustomExtensions, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -537,22 +538,22 @@ func TestListCustomerExensionsWithEmbeddedFolders(t *testing.T) {
 	extensions.Extensions = make(map[string]extensionManager.Extension)
 	extension1 := &extensionManager.Extension{
 		Name: "dummy-extension1",
-		Type: "custom",
+		Type: extensionManager.CustomExtensions,
 	}
 	extensions.Extensions[extension1.Name] = *extension1
 	extension2 := &extensionManager.Extension{
 		Name: "dummy-extension2",
-		Type: "custom",
+		Type: extensionManager.CustomExtensions,
 	}
 	extensions.Extensions[extension2.Name] = *extension2
 	extension3 := &extensionManager.Extension{
 		Name: "dummy-extension3",
-		Type: "custom",
+		Type: extensionManager.CustomExtensions,
 	}
 	extensions.Extensions[extension3.Name] = *extension3
 	extension4 := &extensionManager.Extension{
 		Name: "dummy-extension4",
-		Type: "custom",
+		Type: extensionManager.CustomExtensions,
 	}
 	extensions.Extensions[extension4.Name] = *extension4
 	expected, _ := json.MarshalIndent(&extensions, "", "  ")
@@ -568,7 +569,7 @@ func TestListIBMExensions(t *testing.T) {
 	setupFileStructureLists()
 	extensionManager.SetExtensionPath("../test/resource/tmp/")
 
-	req, err := http.NewRequest("GET", "/cm/v1/extensions?filter=IBM&catalog=true", nil)
+	req, err := http.NewRequest("GET", "/cm/v1/extensions?filter="+extensionManager.EmbeddedExtensions+"&catalog=true", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -585,7 +586,7 @@ func TestListIBMExensions(t *testing.T) {
 	extensions.Extensions = make(map[string]extensionManager.Extension)
 	extension1 := &extensionManager.Extension{
 		Name: "cfp-ext-template",
-		Type: "IBM",
+		Type: extensionManager.EmbeddedExtensions,
 	}
 
 	extensions.Extensions[extension1.Name] = *extension1

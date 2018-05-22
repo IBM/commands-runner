@@ -21,10 +21,10 @@ import (
 	log "github.com/sirupsen/logrus"
 	cli "gopkg.in/urfave/cli.v1"
 
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunner/global"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunner/logger"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunner/resourceManager"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunner/statusManager"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/logger"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/resourceManager"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/statusManager"
 )
 
 const COPYRIGHT string = `###############################################################################
@@ -122,9 +122,9 @@ func Init(port string, portSSL string, configDir string, certificatePath string,
 	AddHandler("/cm/v1/states", handleStates, true)
 	AddHandler("/cm/v1/engine", handleEngine, true)
 	AddHandler("/cm/v1/pcm/", handlePCM, true)
+	AddHandler("/cm/v1/status", handleStatus, true)
 	AddHandler("/cm/v1/extension", handleExtension, true)
 	AddHandler("/cm/v1/extensions/", handleExtensions, true)
-	AddHandler("/cm/v1/status", handleStatus, true)
 }
 
 func main() {

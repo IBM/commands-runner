@@ -37,12 +37,12 @@ pre-req::
 .PHONY: resource-manager
 resource-manager:
 	go-bindata -pkg resourceManager -o \
-	api/cm/resourceManager/resourceManager.go \
+	api/commandsRunner/resourceManager/resourceManager.go \
 	VERSION
 
 .PHONY: go-test
 go-test:: 
-	go test -v github.ibm.com/IBMPrivateCloud//cfp-commands-runner-test/api/commandsRunner
+	go test -v github.ibm.com/IBMPrivateCloud//cfp-commands-runner/api/commandsRunner
 
 .PHONE: glide-up
 glide-up::
@@ -53,14 +53,14 @@ copyright-check:
 	./build-tools/copyright-check.sh
 
 .PHONY: all
-all:: set-app-version copyright-check resource-manager go-test glide-up
+all:: pre-req set-app-version copyright-check resource-manager go-test glide-up
 
 #This requires Graphitz and    ''
 .PHONY: dependency-graph-text
 dependency-graph-text:
 	go get github.com/kisielk/godepgraph
 	godepgraph  -p github.com,gonum.org,gopkg.in -s github.ibm.com/IBMPrivateCloud/commands-runner/api/cmcli | sed 's/github.ibm.com\/IBMPrivateCloud\/commands-runner\/api\///' > cmcli-dependency-graph.txt
-	godepgraph  -p github.com,gonum.org,gopkg.in -s github.ibm.com/IBMPrivateCloud//cfp-commands-runner-test/api/commandsRunner | sed 's/github.ibm.com\/IBMPrivateCloud\//cfp-commands-runner-test\/api\///' > cm-dependency-graph.txt
+	godepgraph  -p github.com,gonum.org,gopkg.in -s github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner | sed 's/github.ibm.com\/IBMPrivateCloud\//cfp-commands-runner\/api\///' > cm-dependency-graph.txt
 
 .PHONY: dependency-graph
 dependency-graph: dependency-graph-text

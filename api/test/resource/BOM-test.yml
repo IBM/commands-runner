@@ -29,7 +29,7 @@ bluemix_bom:
   - image: "cfp-cflinuxfs2:1.129.0.9"
   - image: "cfp-garden-runc:1.8.0.9"
   - image: "cfp-capi:1.6.0"
-  - image: "/cfp-commands-runner-test:2.2.1d"
+  - image: "/cfp-commands-runner:2.2.1d"
 #  - image: "cfp-buildpack_dotnet-core:v1.0.26-20170913-1346"
   - image: "cfp-buildpack_sdk-for-nodejs:v3.14-20170918-1643"
   - image: "cfp-buildpack_swift:v2.0.8-20170925-2341"

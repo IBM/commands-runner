@@ -16,10 +16,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunner/statusManager"
+	log "github.com/sirupsen/logrus"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/statusManager"
 )
 
 func TestGetStatusesEndpoint(t *testing.T) {
+	log.SetLevel(log.InfoLevel)
 	t.Log("Entering................. TestGetStatusesEndpoint")
 	req, err := http.NewRequest("GET", "/cm/v1/status", nil)
 	if err != nil {
@@ -52,6 +54,7 @@ func TestGetStatusesEndpoint(t *testing.T) {
 }
 
 func TestSetStatusesEndpoint(t *testing.T) {
+	log.SetLevel(log.InfoLevel)
 	t.Log("Entering................. TestSetStatusesEndpoint")
 	req, err := http.NewRequest("PUT", "/cm/v1/status?name="+statusManager.CMStatus+"&status=newStatus", nil)
 	if err != nil {

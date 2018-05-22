@@ -19,7 +19,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunner/stateManager"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/stateManager"
 )
 
 func (cmc *ConfigManagerClient) getRestStates(extensionName string, status string) (string, error) {

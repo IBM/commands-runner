@@ -13,7 +13,6 @@ package extensionManager
 
 import (
 	"archive/zip"
-	"bytes"
 	"errors"
 	"io"
 	"io/ioutil"
@@ -25,25 +24,24 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/olebedev/config"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunner/global"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunner/resourceManager"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 )
 
-const IBMExtensions = "IBM"
+const EmbeddedExtensions = "embedded"
 const CustomExtensions = "custom"
 
-var extensionIBMFile = "api/resource/extensions/ibm-extensions.txt"
-var repoLocalPath = "/repo_local/"
+var extensionEmbeddedFile string
+var embeddedExtensionsRepositoryPath string
 
-var extensionPath = "/data/extensions/"
-var extensionDirIBM = "IBM/"
-var extensionPathIBM = extensionPath + extensionDirIBM
-var extensionDirCustom = "custom/"
+var extensionPath string
+var extensionDirEmbedded = EmbeddedExtensions + "/"
+var extensionPathEmbedded = extensionPath + extensionDirEmbedded
+var extensionDirCustom = CustomExtensions + "/"
 var extensionPathCustom = extensionPath + extensionDirCustom
 
 var extensionLogsPath = "/data/logs/extensions/"
-var extensionLogsDirIBM = "IBM/"
-var extensionLogsPathIBM = extensionLogsPath + extensionLogsDirIBM
+var extensionLogsDirEmbedded = extensionDirEmbedded
+var extensionLogsPathEmbedded = extensionLogsPath + extensionLogsDirEmbedded
 var extensionLogsDirCustom = "custom/"
 var extensionLogsPathCustom = extensionLogsPath + extensionLogsDirCustom
 
@@ -56,14 +54,14 @@ type Extensions struct {
 	Extensions map[string]Extension `json:"extensions"`
 }
 
-func SetRepoLocalPath(_repoLocalPath string) {
-	repoLocalPath = _repoLocalPath
+func SetEmbeddedExtensionsRepositoryPath(_embeddedExtensionsRepositoryPath string) {
+	embeddedExtensionsRepositoryPath = _embeddedExtensionsRepositoryPath
 }
 
 //Set the extensionPath
 func SetExtensionPath(_extensionPath string) {
 	extensionPath = _extensionPath
-	extensionPathIBM = _extensionPath + extensionDirIBM
+	extensionPathEmbedded = _extensionPath + extensionDirEmbedded
 	extensionPathCustom = _extensionPath + extensionDirCustom
 }
 
@@ -71,16 +69,16 @@ func GetExtensionPath() string {
 	return extensionPath
 }
 
-func GetExtensionPathIBM() string {
-	return extensionPathIBM
+func GetExtensionPathEmbedded() string {
+	return extensionPathEmbedded
 }
 
 func GetExtensionPathCustom() string {
 	return extensionPathCustom
 }
 
-func GetExtensionLogsPathIBM() string {
-	return extensionLogsPathIBM
+func GetExtensionLogsPathEmbedded() string {
+	return extensionLogsPathEmbedded
 }
 
 func GetExtensionLogsPathCustom() string {
@@ -88,7 +86,7 @@ func GetExtensionLogsPathCustom() string {
 }
 
 func GetRepoLocalPath() string {
-	return repoLocalPath
+	return embeddedExtensionsRepositoryPath
 }
 
 func GetRegisteredExtensionPath(extensionName string) (string, error) {
@@ -96,12 +94,12 @@ func GetRegisteredExtensionPath(extensionName string) (string, error) {
 		return "", errors.New(extensionName + " is not registered")
 	}
 	var extensionPath string
-	isIBMExtension, err := IsIBMExtension(extensionName)
+	isEmbeddedExtension, err := IsEmbeddedExtension(extensionName)
 	if err != nil {
 		return "", err
 	}
-	if isIBMExtension {
-		extensionPath = GetExtensionPathIBM() + extensionName + string(filepath.Separator)
+	if isEmbeddedExtension {
+		extensionPath = GetExtensionPathEmbedded() + extensionName + string(filepath.Separator)
 	} else {
 		extensionPath = GetExtensionPathCustom() + extensionName + string(filepath.Separator)
 	}
@@ -111,16 +109,10 @@ func GetRegisteredExtensionPath(extensionName string) (string, error) {
 func GetRelativeExtensionPath(extensionName string) string {
 	log.Debug("Entering in... GetRelativeExtensionPath")
 	var extensionPath string
-	//	_, err := resourceManager.Asset(global.UIExtensionResourcePath + "ui-" + extensionName + ".json")
-	//Not found means that it is a customer extension
-	//	if err != nil {
-	isIBMExtension, _ := IsIBMExtension(extensionName)
-	log.Debug("isIBMExtension:" + extensionName + " =>" + strconv.FormatBool(isIBMExtension))
-	//	if err != nil {
-	//		return err
-	//	}
-	if isIBMExtension {
-		extensionPath = extensionDirIBM + extensionName + string(filepath.Separator)
+	isEmbeddedExtension, _ := IsEmbeddedExtension(extensionName)
+	log.Debug("isEmbeddedExtension:" + extensionName + " =>" + strconv.FormatBool(isEmbeddedExtension))
+	if isEmbeddedExtension {
+		extensionPath = extensionDirEmbedded + extensionName + string(filepath.Separator)
 	} else {
 		extensionPath = extensionDirCustom + extensionName + string(filepath.Separator)
 	}
@@ -139,20 +131,19 @@ func GetRootExtensionPath(rootDir string, extensionName string) string {
 	extensionPath := rootDir
 	if extensionName != global.CloudFoundryPieName && extensionName != "" {
 		extensionPath += GetRelativeExtensionPath(extensionName)
-		//		extensionPath += relativePath + string(filepath.Separator)
 	}
 	return extensionPath
 }
 
-func SetExtensionIBMFile(_extensionIBMFile string) {
-	log.Debug("Entering in... SetExtensionIBMFile")
-	extensionIBMFile = _extensionIBMFile
+func SetExtensionEmbeddedFile(_extensionEmbeddedFile string) {
+	log.Debug("Entering in... SetExtensionEmbeddedFile")
+	extensionEmbeddedFile = _extensionEmbeddedFile
 }
 
 //IsExtensionRegistered Check if an extension is register by browzing the extensions directory
 func IsExtensionRegistered(extensionName string) bool {
 	log.Debug("Entering in... IsExtensionRegistered")
-	return extensionName == global.CloudFoundryPieName || IsIBMExtensionRegistered(extensionName) || IsCustomExtensionRegistered(extensionName)
+	return extensionName == global.CloudFoundryPieName || IsEmbeddedExtensionRegistered(extensionName) || IsCustomExtensionRegistered(extensionName)
 }
 
 //IsCustomExtensionRegistered Check if an extension is register by browzing the extensions directory
@@ -164,10 +155,10 @@ func IsCustomExtensionRegistered(filename string) bool {
 	return true
 }
 
-//IsIBMxtensionRegistered Check if an extension is register by browzing the extensions directory
-func IsIBMExtensionRegistered(filename string) bool {
-	log.Debug("Entering in... IsIBMExtensionRegistered")
-	if _, err := os.Stat(GetExtensionPathIBM() + filename); os.IsNotExist(err) {
+//IsEmbeddedxtensionRegistered Check if an extension is register by browzing the extensions directory
+func IsEmbeddedExtensionRegistered(filename string) bool {
+	log.Debug("Entering in... IsEmbeddedExtensionRegistered")
+	if _, err := os.Stat(GetExtensionPathEmbedded() + filename); os.IsNotExist(err) {
 		return false
 	}
 	return true
@@ -241,25 +232,25 @@ func extractAndWriteFile(targetdir, extensionName string, zf *zip.File) error {
 	return nil
 }
 
-func getIBMExtensionRepoPath(extensionName string) (string, error) {
-	log.Debug("Entering in... getIBMExtensionRepoPath")
+func getEmbeddedExtensionRepoPath(extensionName string) (string, error) {
+	log.Debug("Entering in... getEmbeddedExtensionRepoPath")
 	log.Debug("extensionName:" + extensionName)
-	log.Debug("repoLocalPath:" + repoLocalPath)
-	files, err := ioutil.ReadDir(repoLocalPath + extensionName)
+	log.Debug("embeddedExtensionsRepositoryPath:" + embeddedExtensionsRepositoryPath)
+	files, err := ioutil.ReadDir(embeddedExtensionsRepositoryPath + extensionName)
 	if err != nil {
 		log.Debug(err.Error())
 		return "", err
 	}
 	if len(files) == 0 {
-		return "", errors.New("No version available for IBM extension " + extensionName)
+		return "", errors.New("No version available for embedded extension " + extensionName)
 	}
-	return repoLocalPath + extensionName + string(filepath.Separator) + files[0].Name() + string(filepath.Separator), nil
+	return embeddedExtensionsRepositoryPath + extensionName + string(filepath.Separator) + files[0].Name() + string(filepath.Separator), nil
 }
 
-func CopyExtensionToIBMExtensionPath(extensionName string) error {
-	log.Debug("Entering in... CopyExtensionToIBMExtensionPath")
-	destDir := GetExtensionPathIBM() + extensionName
-	extensionRepoPath, err := getIBMExtensionRepoPath(extensionName)
+func CopyExtensionToEmbeddedExtensionPath(extensionName string) error {
+	log.Debug("Entering in... CopyExtensionToEmbeddedExtensionPath")
+	destDir := GetExtensionPathEmbedded() + extensionName
+	extensionRepoPath, err := getEmbeddedExtensionRepoPath(extensionName)
 	if err != nil {
 		return err
 	}
@@ -277,12 +268,8 @@ func CopyExtensionToIBMExtensionPath(extensionName string) error {
 		if err != nil {
 			return err
 		}
-		//	newExtensionPath := filepath.Dir(path)
-		//	log.Debug("newExtensionPath:" + newExtensionPath)
 		log.Debug("path:" + path)
-		//newPath := GetExtensionPathIBM() + path[len(repoLocalPath):len(destDir)]
-		newPath := strings.Replace(path, extensionRepoPath, GetExtensionPathIBM()+extensionName, 1)
-		//newPath := GetExtensionPathIBM() + path[len(extensionRepoPath):] + extensionName
+		newPath := strings.Replace(path, extensionRepoPath, GetExtensionPathEmbedded()+extensionName, 1)
 		log.Debug("newPath:" + newPath)
 		switch {
 		case f.IsDir():
@@ -314,7 +301,7 @@ func CopyExtensionToIBMExtensionPath(extensionName string) error {
 //IsExtension check if the extensionName is an extension
 func IsExtension(extensionName string) (bool, error) {
 	log.Debug("Entering in... IsExtension")
-	isIBMExtension, err := IsIBMExtension(extensionName)
+	isEmbeddedExtension, err := IsEmbeddedExtension(extensionName)
 	if err != nil {
 		return false, err
 	}
@@ -322,7 +309,7 @@ func IsExtension(extensionName string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if isIBMExtension || isCustomExtension {
+	if isEmbeddedExtension || isCustomExtension {
 		return true, nil
 	}
 	return false, nil
@@ -339,10 +326,10 @@ func IsCustomExtension(extensionName string) (bool, error) {
 	return ok, nil
 }
 
-//IsIBMExtension Check if extensionName is a IBM extension
-func IsIBMExtension(extensionName string) (bool, error) {
-	log.Debug("Entering in... IsIBMExtension")
-	extensions, err := ListIBMExtensions()
+//IsEmbeddedExtension Check if extensionName is a Embedded extension
+func IsEmbeddedExtension(extensionName string) (bool, error) {
+	log.Debug("Entering in... IsEmbeddedExtension")
+	extensions, err := ListEmbeddedExtensions()
 	if err != nil {
 		return false, err
 	}
@@ -366,7 +353,7 @@ func listRegisteredExtensionsDir(extensionPath string) (*Extensions, error) {
 			if extensionPath == GetExtensionPathCustom() {
 				extension.Type = CustomExtensions
 			} else {
-				extension.Type = IBMExtensions
+				extension.Type = EmbeddedExtensions
 			}
 			extensionList.Extensions[extension.Name] = extension
 		}
@@ -374,9 +361,9 @@ func listRegisteredExtensionsDir(extensionPath string) (*Extensions, error) {
 	return &extensionList, nil
 }
 
-func ListIBMRegisteredExtensions() (*Extensions, error) {
-	log.Debug("Entering in... ListIBMRegisteredExtensions")
-	extensions, err := listRegisteredExtensionsDir(GetExtensionPathIBM())
+func ListEmbeddedRegisteredExtensions() (*Extensions, error) {
+	log.Debug("Entering in... ListEmbeddedRegisteredExtensions")
+	extensions, err := listRegisteredExtensionsDir(GetExtensionPathEmbedded())
 	if err != nil {
 		return nil, err
 	}
@@ -394,26 +381,54 @@ func ListRegisteredCustomExtensions() (*Extensions, error) {
 	return extensions, nil
 }
 
-//ListIBMExtensions returns extensions by reading the resourceManager extension file.
-func ListIBMExtensions() (*Extensions, error) {
-	log.Debug("Entering in... ListIBMExtensions")
+//ListEmbeddedExtensions returns extensions by reading the resourceManager extension file.
+func ListEmbeddedExtensions() (*Extensions, error) {
+	log.Debug("Entering in... ListEmbeddedExtensions")
 	var extensionList Extensions
 	extensionList.Extensions = make(map[string]Extension)
-	resource, err := resourceManager.Asset(extensionIBMFile)
+	log.Debug("extensionEmbeddedFile:" + extensionEmbeddedFile)
+	if extensionEmbeddedFile == "" {
+		return nil, errors.New("extensionEmbeddedFile not defined")
+	}
+	//resource, err := ioutil.ReadFile(extensionEmbeddedFile)
+	//resource, err := resourceManager.Asset(extensionEmbeddedFile)
+	cfg, err := config.ParseYamlFile(extensionEmbeddedFile)
 	if err != nil {
 		log.Debug(err.Error())
 		return nil, err
 	}
-	resourceArray := bytes.Split(resource, []byte("\n"))
-
-	for _, byteArr := range resourceArray {
-		if string(byteArr) != "" {
-			var extension Extension
-			extension.Name = string(byteArr)
-			extension.Type = IBMExtensions
-			extensionList.Extensions[extension.Name] = extension
-		}
+	extensionListFound, err := cfg.List("extensions")
+	if err != nil {
+		log.Debug(err.Error())
+		return nil, err
 	}
+	for index, _ := range extensionListFound {
+		extensionSpecification, err := cfg.String("extensions." + strconv.Itoa(index) + ".extension")
+		if err != nil {
+			log.Debug(err.Error())
+			return nil, err
+		}
+		extensionFields := strings.Split(extensionSpecification, ":")
+		var extension Extension
+		extension.Name = extensionFields[2]
+		extension.Type = EmbeddedExtensions
+		extensionList.Extensions[extension.Name] = extension
+
+	}
+	/*
+		log.Debug("Extension file content:\n" + string(resource))
+		resourceArray := bytes.Split(resource, []byte("\n"))
+
+		for _, byteArr := range resourceArray {
+			log.Debug("byteArr:" + string(byteArr))
+			if string(byteArr) != "" {
+				var extension Extension
+				extension.Name = string(byteArr)
+				extension.Type = EmbeddedExtensions
+				extensionList.Extensions[extension.Name] = extension
+			}
+		}
+	*/
 	return &extensionList, nil
 }
 
@@ -423,7 +438,7 @@ func ListExtensions(filter string, catalog bool) (*Extensions, error) {
 	var extensionList Extensions
 	extensionList.Extensions = make(map[string]Extension)
 	if catalog {
-		extensions, err := ListIBMExtensions()
+		extensions, err := ListEmbeddedExtensions()
 		if err != nil {
 			return nil, err
 		}
@@ -437,10 +452,10 @@ func ListExtensions(filter string, catalog bool) (*Extensions, error) {
 			extensionList = *extensions
 		}
 
-		if filter == "" || filter == IBMExtensions {
+		if filter == "" || filter == EmbeddedExtensions {
 			var extensions *Extensions
 			var err error
-			extensions, err = ListIBMRegisteredExtensions()
+			extensions, err = ListEmbeddedRegisteredExtensions()
 			if err != nil {
 				return nil, err
 			}
@@ -499,8 +514,8 @@ func RegisterExtension(extensionName, zipPath string, force bool) error {
 	if !force && IsExtensionRegistered(extensionName) {
 		return errors.New("Extension " + extensionName + " already registered")
 	}
-	isIBMExtension, err := IsIBMExtension(extensionName)
-	log.Debug("isIBMExtension:" + extensionName + " =>" + strconv.FormatBool(isIBMExtension))
+	isEmbeddedExtension, err := IsEmbeddedExtension(extensionName)
+	log.Debug("isEmbeddedExtension:" + extensionName + " =>" + strconv.FormatBool(isEmbeddedExtension))
 	if err != nil {
 		return err
 	}
@@ -510,15 +525,15 @@ func RegisterExtension(extensionName, zipPath string, force bool) error {
 		return err
 	}
 	var errInstall error
-	if isIBMExtension {
+	if isEmbeddedExtension {
 		if zipPath != "" {
 			fileInfo, _ := os.Stat(zipPath)
 			if fileInfo.Size() != 0 {
-				return errors.New("Extension name is already used by IBM extension")
+				return errors.New("Extension name is already used by embedded extension")
 			}
 		}
-		errInstall = CopyExtensionToIBMExtensionPath(extensionName)
-		extensionPath = GetExtensionPathIBM() + extensionName
+		errInstall = CopyExtensionToEmbeddedExtensionPath(extensionName)
+		extensionPath = GetExtensionPathEmbedded() + extensionName
 	} else {
 		if zipPath != "" {
 			errInstall = Unzip(zipPath, GetExtensionPathCustom(), extensionName)
@@ -582,18 +597,18 @@ func generatePieFile(extensionName, extensionPath string) error {
 
 }
 
-//UnregisterExtension delete and extension, deletion of IBM extension is not permitted.
+//UnregisterExtension delete and extension, deletion of Embedded extension is not permitted.
 func UnregisterExtension(extensionName string) error {
 	log.Debug("Entering in... UnregisterExtension")
 	log.Debug("extensionName:", extensionName)
-	isIBMExtension, err := IsIBMExtension(extensionName)
-	log.Debug("isIBMExtension:" + strconv.FormatBool(isIBMExtension))
+	isEmbeddedExtension, err := IsEmbeddedExtension(extensionName)
+	log.Debug("isEmbeddedExtension:" + strconv.FormatBool(isEmbeddedExtension))
 	if err != nil {
 		log.Debug(err.Error())
 		return err
 	}
-	if isIBMExtension {
-		return errors.New("Deletion of IBM extension is not permitted")
+	if isEmbeddedExtension {
+		return errors.New("Deletion of embedded extension is not permitted")
 	}
 	log.Debug("IsCustomExtensionRegistered:" + strconv.FormatBool(IsCustomExtensionRegistered(extensionName)))
 	if !IsCustomExtensionRegistered(extensionName) {

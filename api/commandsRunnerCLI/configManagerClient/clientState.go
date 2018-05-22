@@ -16,7 +16,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunner/stateManager"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/stateManager"
 )
 
 func (cmc *ConfigManagerClient) getState(extensionName string, stateName string) (string, error) {

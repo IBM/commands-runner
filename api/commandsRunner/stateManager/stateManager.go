@@ -28,8 +28,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunner/extensionManager"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunner/pcmManager"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/extensionManager"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/pcmManager"
 	"gonum.org/v1/gonum/graph/simple"
 	"gonum.org/v1/gonum/graph/topo"
 
@@ -158,7 +158,7 @@ func (sm *States) setDefaultValues() {
 		if sm.StateArray[index].LogPath == "" {
 			//			log.Debug("Set state.LogPath")
 			//			log.Debug("Pie path:" + sm.StatesPath)
-			dir := extensionManager.GetExtensionLogsPathIBM()
+			dir := extensionManager.GetExtensionLogsPathEmbedded()
 			if sm.isCustomStatePath() {
 				dir = extensionManager.GetExtensionLogsPathCustom()
 			}
@@ -879,7 +879,7 @@ func (sm *States) GetLog(state string, position int64, length int64, bychar bool
 	case "pcm":
 		var err error
 		if position == 0 {
-			pcmLogTempFile, err = ioutil.TempFile("/tmp/", "/cfp-commands-runner-test-log")
+			pcmLogTempFile, err = ioutil.TempFile("/tmp/", "/cfp-commands-runner-log")
 			if err != nil {
 				return nil, err
 			}

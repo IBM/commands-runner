@@ -22,7 +22,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunner/extensionManager"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/extensionManager"
 
 	"github.com/go-yaml/yaml"
 )

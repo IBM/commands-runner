@@ -19,9 +19,9 @@ import (
 
 	cli "gopkg.in/urfave/cli.v1"
 
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunner/global"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunner/resourceManager"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunnerCLI/configManagerClient"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/resourceManager"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunnerCLI/configManagerClient"
 )
 
 const COPYRIGHT string = `###############################################################################

@@ -17,7 +17,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunner/statusManager"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/statusManager"
 )
 
 //GetCMStatus returns the configManager status

@@ -17,7 +17,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunner/extensionManager"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/extensionManager"
 )
 
 func (cmc *ConfigManagerClient) getExtensions(extensionsToList string, catalog bool) (string, error) {

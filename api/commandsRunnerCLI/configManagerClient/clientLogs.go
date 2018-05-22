@@ -18,7 +18,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunner/stateManager"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/stateManager"
 )
 
 func (cmc *ConfigManagerClient) getLogsByChars(extensionName string, stateName string, firstChar int64, nbChar int64) (string, error) {

@@ -24,7 +24,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunner/global"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 )
 
 const copyright string = `###############################################################################

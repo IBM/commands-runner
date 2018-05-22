@@ -18,8 +18,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunner/logger"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunner/pcmManager"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/logger"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/pcmManager"
 )
 
 func handlePCM(w http.ResponseWriter, req *http.Request) {

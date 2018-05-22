@@ -23,8 +23,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunner/extensionManager"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunner/logger"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/extensionManager"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/logger"
 )
 
 func handleExtension(w http.ResponseWriter, req *http.Request) {
@@ -42,7 +42,7 @@ func handleExtension(w http.ResponseWriter, req *http.Request) {
 }
 
 func handleExtensions(w http.ResponseWriter, req *http.Request) {
-	log.Debug("Entering in handleExtension")
+	log.Debug("Entering in handleExtensions")
 	log.Debugf("req.URL.Path:%s", req.URL.Path)
 	log.Debugf("req.Method: %s", req.Method)
 

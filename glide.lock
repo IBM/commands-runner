@@ -1,5 +1,5 @@
-hash: a2d40d9c18282abc8d66c39bbabf992808807fed745d0971741c58141e67bc78
-updated: 2018-05-21T13:53:27.482011-04:00
+hash: e0bf552e4dd018f36afb41554eb253ebfd01c8d4f04270a461517d8d835a0eee
+updated: 2018-05-22T10:01:48.408427-04:00
 imports:
 - name: github.com/go-yaml/yaml
   version: 7f97868eec74b32b0982dd158a51a446d1da7eb5
@@ -20,12 +20,12 @@ imports:
   subpackages:
   - ssh/terminal
 - name: golang.org/x/sys
-  version: 7c87d13f8e835d2fb3a70a2912c811ed0c1d241b
+  version: 89da893103a6ed6c87fb4bb5c19fcf97812df621
   subpackages:
   - unix
   - windows
 - name: gonum.org/v1/gonum
-  version: e77e79f8ccf53ee1a2d99d8aa8732a1bc5ac3bc3
+  version: 91face673862e278fb2854a435855f4454e9a874
   repo: https://github.com/gonum/gonum
   subpackages:
   - blas

@@ -3,7 +3,7 @@ _build
 /api/resource/*.json
 /api/resource/extensions/*
 /api/resource/ui-cf-extensions.yml
-/api/cm/resourceManager
+/api/commandsRunner/resourceManager
 /api/test/resource/extensions/cfp-ext-template
 /api/test/resource/extensions/*.txt
 /api/test/resource/extensions/*.json
@@ -25,7 +25,7 @@ _build
 /api/test/resource/cloud-config-custom.yml
 /api/test/resource/diego-custom.yml
 platform-config-manager.yml
-api/cm/cm
+api/commandsRunner/cm
 *dependency-graph.*
 VERSION
 .idea

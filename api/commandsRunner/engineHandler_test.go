@@ -16,14 +16,16 @@ import (
 	"testing"
 	"time"
 
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunner/extensionManager"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner-test/api/commandsRunner/global"
+	log "github.com/sirupsen/logrus"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/extensionManager"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 )
 
 func TestEngineStartPUT(t *testing.T) {
 	t.Log("Entering................. TestEngineStartPUT")
 	addStateManagerToMap("TestEngineStartPUT", "../test/resource/engine-run-success.yaml")
 	extensionManager.SetExtensionPath("../test/data/extensions/")
+	extensionManager.SetExtensionEmbeddedFile("../resource/bom-extensions.yml")
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
 	req, err := http.NewRequest("PUT", "/cm/v1/engine?action=start&extension-name=TestEngineStartPUT", nil)
@@ -82,9 +84,11 @@ func TestEngineStartPUT(t *testing.T) {
 }
 
 func TestEngineStartExtensonPUT(t *testing.T) {
+	log.SetLevel(log.DebugLevel)
 	t.Log("Entering................. TestEngineStartExtensonPUT")
 	extensionManager.SetExtensionPath("../test/data/extensions/")
 	global.SetExtensionResourcePath("api/test/resource/extensions/")
+	extensionManager.SetExtensionEmbeddedFile("../resource/bom-extensions.yml")
 	extension := "cfp-ext-template"
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
