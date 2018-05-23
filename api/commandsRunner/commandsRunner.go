@@ -119,6 +119,7 @@ func Init(port string, portSSL string, configDir string, certificatePath string,
 	AddHandler("/cr/v1/extension", handleExtension, true)
 	AddHandler("/cr/v1/extensions/", handleExtensions, true)
 	AddHandler("/cr/v1/uiconfig/", handleUIConfig, true)
+	AddHandler("/cr/v1/config", handleConfig, true)
 	AddHandler("/cr/v1/config/", handleConfig, true)
 }
 

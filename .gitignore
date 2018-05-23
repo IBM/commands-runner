@@ -5,8 +5,7 @@ _build
 /api/resource/ui-cf-extensions.yml
 /api/commandsRunner/resourceManager
 /api/test/resource/extensions/cfp-ext-template
-/api/test/resource/extensions/*.json
-/api/test/resource/extensions/*.yml
+/api/test/resource/extensions/cfp-ext-template-2
 /api/test/resource/out-test*
 /api/test/resource/test*
 /api/test/resource/openstack
