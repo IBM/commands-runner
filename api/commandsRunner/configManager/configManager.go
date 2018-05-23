@@ -20,7 +20,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/propertiesManager"
-	"github.ibm.com/IBMPrivateCloud/cfp-config-manager/api/commandsRunnerCustom/uiConfigManager"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/uiConfigManager"
 
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/extensionManager"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
