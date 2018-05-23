@@ -44,20 +44,6 @@ var serverKeyPath string
 
 func validateToken(bmxConfigDir string, protectedHandler http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		//Set debug level
-		/*
-			logLevel := os.Getenv("CM_TRACE")
-			log.Printf("CM_TRACE: %s", logLevel)
-			if logLevel == "" {
-				logLevel = logger.DefaultLogLevel
-			}
-			level, err := log.ParseLevel(logLevel)
-			if err != nil {
-				log.Error(err.Error())
-			} else {
-				log.SetLevel(level)
-			}
-		*/
 		//Retreive Authentication header from request
 		Auth := req.Header.Get("Authorization")
 		if Auth == "" {
@@ -129,8 +115,8 @@ func Init(port string, portSSL string, configDir string, certificatePath string,
 	AddHandler("/cr/v1/extensions/", handleExtensions, true)
 }
 
-func NewApp(initFunc InitFunc) {
-	var bmxConfigDir string
+func NewApp(preInitFunc InitFunc, postInitFunc InitFunc, preStartFunc InitFunc) {
+	var configDir string
 	var port string
 	var portSSL string
 	var pieStatesPath string
@@ -155,7 +141,7 @@ func NewApp(initFunc InitFunc) {
 				cli.StringFlag{
 					Name:        "configDir, c",
 					Usage:       "Config Directory",
-					Destination: &bmxConfigDir,
+					Destination: &configDir,
 				},
 				cli.StringFlag{
 					Name:        "statePath, s",
@@ -187,18 +173,26 @@ func NewApp(initFunc InitFunc) {
 				}
 				log.SetLevel(level)
 				log.Info("Starting cm server")
-				if bmxConfigDir == "" {
+				if configDir == "" {
 					logger.AddCallerField().Error("Missing option -c to specif the directory where the config must be stored")
 					return errors.New("Missing option -c to specif the directory where the config must be stored")
 				}
 
 				//check if path absolute
-				if !filepath.IsAbs(bmxConfigDir) {
-					log.Fatal("The path of bmxConfig must be absolute: " + bmxConfigDir)
+				if !filepath.IsAbs(configDir) {
+					log.Fatal("The path of bmxConfig must be absolute: " + configDir)
 				}
 
-				initFunc(port, portSSL, bmxConfigDir, bmxConfigDir+"/"+global.SSLCertFileName, bmxConfigDir+"/"+global.SSLKeyFileName, pieStatesPath)
-
+				if preInitFunc != nil {
+					preInitFunc(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName, pieStatesPath)
+				}
+				Init(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName, pieStatesPath)
+				if postInitFunc != nil {
+					postInitFunc(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName, pieStatesPath)
+				}
+				if preStartFunc != nil {
+					preStartFunc(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName, pieStatesPath)
+				}
 				Start()
 				return nil
 			},
