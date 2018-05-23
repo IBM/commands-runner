@@ -24,7 +24,6 @@ import (
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/configManager"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/logger"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/resourceManager"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/statusManager"
 )
 
@@ -132,13 +131,8 @@ func NewApp(preInitFunc InitFunc, postInitFunc InitFunc, preStartFunc InitFunc) 
 	//	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
 	app := cli.NewApp()
-	app.Usage = "Config Manager for Cloud Foundry installation"
-	raw, e := resourceManager.Asset("VERSION")
-	if e != nil {
-		log.Fatal("Version not found")
-	}
-	app.Version = string(raw)
-	app.Description = "CLI to manage initial Cloud Foundry installation"
+	app.Usage = "Commands Runner for installation"
+	app.Description = "CLI to manage initial Commands Runner installation"
 
 	app.Commands = []cli.Command{
 		{

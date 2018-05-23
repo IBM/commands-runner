@@ -27,7 +27,6 @@ set-app-version::
 
 .PHONY: pre-req
 pre-req::
-	go get -v github.com/jteeuwen/go-bindata/...
 	glide --version; \
 	if [ $$? -ne 0 ]; then \
 		curl https://glide.sh/get | sh; \
