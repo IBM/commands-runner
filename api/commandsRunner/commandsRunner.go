@@ -21,6 +21,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	cli "gopkg.in/urfave/cli.v1"
 
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/configManager"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/logger"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/resourceManager"
@@ -42,7 +43,7 @@ var serverPortSSL string
 var serverCertificatePath string
 var serverKeyPath string
 
-func validateToken(bmxConfigDir string, protectedHandler http.HandlerFunc) http.HandlerFunc {
+func validateToken(configDir string, protectedHandler http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		//Retreive Authentication header from request
 		Auth := req.Header.Get("Authorization")
@@ -56,9 +57,9 @@ func validateToken(bmxConfigDir string, protectedHandler http.HandlerFunc) http.
 		receivedToken := receivedTokens[1]
 
 		//Read official token
-		token, err := ioutil.ReadFile(bmxConfigDir + "/" + global.TokenFileName)
+		token, err := ioutil.ReadFile(configDir + "/" + global.TokenFileName)
 		if err != nil {
-			http.Error(w, "Token file not found:"+bmxConfigDir+"/"+global.TokenFileName, http.StatusNotFound)
+			http.Error(w, "Token file not found:"+configDir+"/"+global.TokenFileName, http.StatusNotFound)
 			return
 		}
 
@@ -79,6 +80,9 @@ func validateToken(bmxConfigDir string, protectedHandler http.HandlerFunc) http.
 }
 
 func AddHandler(pattern string, handler http.HandlerFunc, requireAuth bool) {
+	log.Debug("Entering... AddHandler")
+	log.Debug("pattern:" + pattern)
+	log.Debug("serverConfigDir:" + serverConfigDir)
 	if requireAuth {
 		http.HandleFunc(pattern, validateToken(serverConfigDir, handler))
 	} else {
@@ -104,6 +108,7 @@ func Init(port string, portSSL string, configDir string, certificatePath string,
 	serverConfigDir = configDir
 	serverCertificatePath = certificatePath
 	serverKeyPath = keyPath
+	configManager.SetConfigPath(configDir)
 	SetStatePath(stateFilePath)
 	AddHandler("/cr/v1/state", handleState, true)
 	AddHandler("/cr/v1/state/", handleState, true)
@@ -113,6 +118,8 @@ func Init(port string, portSSL string, configDir string, certificatePath string,
 	AddHandler("/cr/v1/status", handleStatus, true)
 	AddHandler("/cr/v1/extension", handleExtension, true)
 	AddHandler("/cr/v1/extensions/", handleExtensions, true)
+	AddHandler("/cr/v1/uiconfig/", handleUIConfig, true)
+	AddHandler("/cr/v1/config/", handleConfig, true)
 }
 
 func NewApp(preInitFunc InitFunc, postInitFunc InitFunc, preStartFunc InitFunc) {
@@ -180,7 +187,7 @@ func NewApp(preInitFunc InitFunc, postInitFunc InitFunc, preStartFunc InitFunc) 
 
 				//check if path absolute
 				if !filepath.IsAbs(configDir) {
-					log.Fatal("The path of bmxConfig must be absolute: " + configDir)
+					log.Fatal("The path of config must be absolute: " + configDir)
 				}
 
 				if preInitFunc != nil {

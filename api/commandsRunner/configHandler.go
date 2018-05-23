@@ -27,11 +27,15 @@ import (
 
 //handle COnfig rest api requests
 func handleConfig(w http.ResponseWriter, req *http.Request) {
+	log.Debug("Entering... handleConfig")
+	log.Debug(req.URL.Path)
+	log.Debug(req.Method)
 	switch req.Method {
 	case "GET":
 		//search if looking for the all config or a single property
 		validatePath := regexp.MustCompile("/cr/v1/(config)$")
 		params := validatePath.FindStringSubmatch(req.URL.Path)
+		log.Debug(params)
 		if len(params) == 2 {
 			//Retrieve the full config
 			getPropertiesEndpoint(w, req)
@@ -48,12 +52,12 @@ func handleConfig(w http.ResponseWriter, req *http.Request) {
 
 /*
 Retrieve 1 single property
-URL: /cr/v1/bmxconfig/<property_name>
+URL: /cr/v1/config/<property_name>
 Method: GET
 */
 func getPropertyEndpoint(w http.ResponseWriter, req *http.Request) {
 	//Check format
-	validatePath := regexp.MustCompile("/cr/v1/(bmxconfig)/([\\w]*)$")
+	validatePath := regexp.MustCompile("/cr/v1/(config)/([\\w]*)$")
 	params := validatePath.FindStringSubmatch(req.URL.Path)
 	extensionName, _, err := GetExtensionNameFromRequest(req)
 	//Retrieve the property name
@@ -68,12 +72,12 @@ func getPropertyEndpoint(w http.ResponseWriter, req *http.Request) {
 
 /*
 Retrieve all properties
-URL: /cr/v1/bmxconfig/
+URL: /cr/v1/config/
 Method: GET
 */
 func getPropertiesEndpoint(w http.ResponseWriter, req *http.Request) {
 	//Check format
-	regexp.MustCompile("/cr/v1/(bmxconfig)$")
+	regexp.MustCompile("/cr/v1/(config)$")
 	extensionName, _, err := GetExtensionNameFromRequest(req)
 	if err != nil {
 		logger.AddCallerField().Error(err.Error())
@@ -108,7 +112,7 @@ func getPropertiesEndpoint(w http.ResponseWriter, req *http.Request) {
 
 /*
 Set the properties
-URL: /cr/v1/bmxconfig/
+URL: /cr/v1/config/
 Method: POST
 */
 func setPropertiesEndpoint(w http.ResponseWriter, req *http.Request) {
