@@ -34,12 +34,6 @@ pre-req::
 	fi
 	glide --debug install --strip-vendor
 
-.PHONY: resource-manager
-resource-manager:
-	go-bindata -pkg resourceManager -o \
-	api/commandsRunner/resourceManager/resourceManager.go \
-	VERSION
-
 .PHONY: go-test
 go-test:: 
 	go test -v github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner
@@ -50,7 +44,7 @@ copyright-check:
 	./build-tools/copyright-check.sh
 
 .PHONY: all
-all:: pre-req set-app-version copyright-check resource-manager go-test
+all:: pre-req set-app-version copyright-check go-test
 
 #This requires Graphitz and    ''
 .PHONY: dependency-graph-text

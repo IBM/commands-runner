@@ -14,12 +14,9 @@ import (
 	"errors"
 	"fmt"
 
-	log "github.com/sirupsen/logrus"
-
 	cli "gopkg.in/urfave/cli.v1"
 
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/resourceManager"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunnerCLI/configManagerClient"
 )
 
@@ -483,11 +480,6 @@ func Client() *cli.App {
 
 	app := cli.NewApp()
 	app.Usage = "Config Manager for Cloud Foundry installation"
-	raw, e := resourceManager.Asset("VERSION")
-	if e != nil {
-		log.Fatal("Version not found")
-	}
-	app.Version = string(raw)
 	app.Description = "CLI to manage initial Cloud Foundry installation"
 
 	app.Flags = []cli.Flag{
