@@ -17,10 +17,4 @@ func SetExtensionResourcePath(extensionResourcePathIn string) {
 	UIExtensionResourcePath = extensionResourcePathIn
 }
 
-var BOMPath = "/data/BOM.yml"
-
-func SetBOMPath(bomPath string) {
-	BOMPath = bomPath
-}
-
 var ConfigDirectory string

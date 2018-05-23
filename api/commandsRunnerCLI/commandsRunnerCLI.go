@@ -13,7 +13,6 @@ package commandsRunnerCLI
 import (
 	"errors"
 	"fmt"
-	"os"
 
 	log "github.com/sirupsen/logrus"
 
@@ -33,7 +32,7 @@ const COPYRIGHT string = `######################################################
 #  IBM Corporation - initial API and implementation
 ###############################################################################`
 
-func main() {
+func Client() *cli.App {
 	var url string
 	var outputFormat string
 	var timeout string
@@ -43,6 +42,7 @@ func main() {
 	var state string
 	var newStatus string
 	var stateTimeout string
+	var configPath string
 	var searchStatus string
 	var fromState, toState string
 	var extensionName string
@@ -130,21 +130,6 @@ func main() {
 		return nil
 	}
 
-	getBOM := func(c *cli.Context) error {
-		client, errClient := configManagerClient.NewClient(url, outputFormat, timeout, insecureSSL)
-		if errClient != nil {
-			fmt.Println(errClient.Error())
-			return errClient
-		}
-		data, err := client.GetBOM()
-		if err != nil {
-			fmt.Println(err.Error())
-			return err
-		}
-		fmt.Print(data)
-		return nil
-	}
-
 	getLogs := func(c *cli.Context) error {
 		client, errClient := configManagerClient.NewClient(url, outputFormat, timeout, insecureSSL)
 		if errClient != nil {
@@ -156,6 +141,36 @@ func main() {
 			fmt.Println(err.Error())
 			return err
 		}
+		return nil
+	}
+
+	getConfig := func(c *cli.Context) error {
+		client, errClient := configManagerClient.NewClient(url, outputFormat, timeout, insecureSSL)
+		if errClient != nil {
+			fmt.Println(errClient.Error())
+			return errClient
+		}
+		data, err := client.GetConfig(extensionName)
+		if err != nil {
+			fmt.Println(err.Error())
+			return err
+		}
+		fmt.Print(data)
+		return nil
+	}
+
+	setConfig := func(c *cli.Context) error {
+		client, errClient := configManagerClient.NewClient(url, outputFormat, timeout, insecureSSL)
+		if errClient != nil {
+			fmt.Println(errClient.Error())
+			return errClient
+		}
+		data, err := client.SetConfig(extensionName, configPath)
+		if err != nil {
+			fmt.Println(err.Error())
+			return err
+		}
+		fmt.Print(data)
 		return nil
 	}
 
@@ -333,11 +348,6 @@ func main() {
 		if extensionName == "" {
 			extensionName = global.CommandsRunnerStatesName
 		}
-		// if statePath == "" {
-		// 	err := errors.New("statePath must be provided")
-		// 	fmt.Println(err.Error())
-		// 	return err
-		// }
 		client, errClient := configManagerClient.NewClient(url, outputFormat, timeout, insecureSSL)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
@@ -582,6 +592,7 @@ func main() {
 					Destination: &extensionName,
 				},
 			},
+			Action: getConfig,
 			Subcommands: []cli.Command{
 				{
 					Name:   "uiconfig",
@@ -603,6 +614,19 @@ func main() {
 						},
 					},
 					Action: register,
+				},
+				{
+					Name:    "save",
+					Aliases: []string{"s"},
+					Usage:   "Save extension configuration",
+					Flags: []cli.Flag{
+						cli.StringFlag{
+							Name:        "config, c",
+							Usage:       "Configuration file",
+							Destination: &configPath,
+						},
+					},
+					Action: setConfig,
 				},
 				{
 					Name:    "deploy",
@@ -675,19 +699,6 @@ func main() {
 			},
 			Action: getUIConfig,
 		},
-		/*            CFP                  */
-		{
-			Name:  "cfp",
-			Usage: "cfp information",
-			Subcommands: []cli.Command{
-				{
-					Name:    "bom",
-					Aliases: []string{"b"},
-					Usage:   "Get the bom",
-					Action:  getBOM,
-				},
-			},
-		},
 		/*            PCM                  */
 		{
 			Name:  "pcm",
@@ -727,6 +738,27 @@ func main() {
 					Name:        "data, d",
 					Usage:       "The file to send as data",
 					Destination: &curlDataPath,
+				},
+			},
+		},
+		/*            config                  */
+		{
+			Name:   "config",
+			Usage:  "Manage configuration (get, save)",
+			Action: getConfig,
+			Subcommands: []cli.Command{
+				{
+					Name:    "save",
+					Aliases: []string{"s"},
+					Usage:   "Save the configuration",
+					Flags: []cli.Flag{
+						cli.StringFlag{
+							Name:        "config, c",
+							Usage:       "Configuration file",
+							Destination: &configPath,
+						},
+					},
+					Action: setConfig,
 				},
 			},
 		},
@@ -1003,9 +1035,5 @@ func main() {
 		},
 	}
 
-	errRun := app.Run(os.Args)
-	if errRun != nil {
-		os.Exit(1)
-	}
-
+	return app
 }
