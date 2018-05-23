@@ -30,7 +30,7 @@ const COPYRIGHT_TEST string = `#################################################
 /*
 func TestGetUIConfig(t *testing.T) {
 	log.SetLevel(log.DebugLevel)
-	//	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/ibm-test-extensions.txt")
+	//	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
 	//extensionManager.SetExtensionPath("../../test/resource/")
 	data, err := GetUIConfig("ui-cf-deploy-vmware")
 	if err != nil {
@@ -47,7 +47,7 @@ func TestGetUIConfig(t *testing.T) {
 func TestGetUIConfigExtentionTest(t *testing.T) {
 	log.SetLevel(log.DebugLevel)
 	global.SetExtensionResourcePath("../../test/resource/extensions")
-	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/ibm-test-extensions.txt")
+	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
 	extensionManager.SetExtensionPath("../../test/resource/extensions/")
 	_, err := GetUIConfig("cfp-ext-template")
 	if err != nil {

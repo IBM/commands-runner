@@ -25,7 +25,7 @@ func TestEngineStartPUT(t *testing.T) {
 	t.Log("Entering................. TestEngineStartPUT")
 	addStateManagerToMap("TestEngineStartPUT", "../test/resource/engine-run-success.yaml")
 	extensionManager.SetExtensionPath("../test/data/extensions/")
-	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/ibm-test-extensions.txt")
+	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/test-extensions.txt")
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
 	req, err := http.NewRequest("PUT", "/cr/v1/engine?action=start&extension-name=TestEngineStartPUT", nil)
@@ -88,7 +88,7 @@ func TestEngineStartExtensonPUT(t *testing.T) {
 	t.Log("Entering................. TestEngineStartExtensonPUT")
 	extensionManager.SetExtensionPath("../test/data/extensions/")
 	global.SetExtensionResourcePath("api/test/resource/extensions/")
-	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/ibm-test-extensions.txt")
+	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/test-extensions.txt")
 	extension := "cfp-ext-template"
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.

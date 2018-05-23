@@ -135,7 +135,7 @@ func TestRegisterExistingExtension(t *testing.T) {
 	// Setup unit test file structure
 	extensionManager.SetExtensionPath("../test/resource/tmp/")
 
-	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/ibm-test-extensions.txt")
+	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/test-extensions.txt")
 	extensionManager.SetExtensionPath("../test/data/extensions/")
 	extensionName := "dummy-extension"
 	filename := "dummy-extension.zip"
@@ -180,7 +180,7 @@ func TestRegisterNonExistingExtension(t *testing.T) {
 
 	//Setup filesystem
 	extensionManager.SetExtensionPath("../test/resource/tmp/")
-	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/ibm-test-extensions.txt")
+	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/test-extensions.txt")
 	filename := "dummy-extension.zip"
 	_ = os.Mkdir(extensionManager.GetExtensionPath(), 0777)
 	_ = os.Mkdir(extensionManager.GetExtensionPathCustom(), 0777)
@@ -203,7 +203,7 @@ func TestRegisterNonExistingExtension(t *testing.T) {
 func TestRegisterCustomExtension(t *testing.T) {
 	t.Log("Entering........... TestExtensionUnzip")
 	// Dummy extensionManager.GetExtensionPath()
-	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/ibm-test-extensions.txt")
+	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/test-extensions.txt")
 	extensionManager.SetExtensionPath("../test/resource/tmp/")
 	filename := "dummy-extension.zip"
 	extensionName := "blahblahblah"
@@ -238,7 +238,7 @@ func TestRegisterCustomExtension(t *testing.T) {
 func TestRegisterCustomExtensionWithIBMExtensionName(t *testing.T) {
 	log.SetLevel(log.DebugLevel)
 	t.Log("Entering........... TestRegisterCustomExtensionWithIBMExtensionName")
-	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/ibm-test-extensions.txt")
+	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/test-extensions.txt")
 	extensionManager.SetExtensionPath("../test/resource/tmp/")
 
 	//Setup filesystem
@@ -263,7 +263,7 @@ func TestRegisterIBMExtension(t *testing.T) {
 	extensionManager.SetExtensionPath("../test/resource/tmp/")
 	extensionManager.SetEmbeddedExtensionsRepositoryPath("../test/repo_local/")
 
-	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/ibm-test-extensions.txt")
+	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/test-extensions.txt")
 	extensionManager.SetExtensionPath("../test/resource/tmp/")
 	extensionName := "cfp-ext-template"
 	_ = os.Mkdir(extensionManager.GetExtensionPath(), 0777)
@@ -283,7 +283,7 @@ func TestRegisterIBMExtensionFilesExists(t *testing.T) {
 	t.Log("Entering........... TestRegisterIBMExtensionFilesExists")
 	extensionManager.SetExtensionPath("../test/resource/tmp/")
 
-	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/ibm-test-extensions.txt")
+	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/test-extensions.txt")
 	extensionManager.SetExtensionPath("../test/resource/tmp/")
 	extensionManager.SetEmbeddedExtensionsRepositoryPath("../test/repo_local/")
 	extensionName := "cfp-ext-template"
@@ -308,7 +308,7 @@ func TestRegisterIBMExtensionFilesExists(t *testing.T) {
 /*
 func TestRegisterExtensionWrongFileType(t *testing.T) {
 	t.Log("Entering........... TestRegisterExtensionWrongFile")
-	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/ibm-test-extensions.txt")
+	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/test-extensions.txt")
 	extensionManager.SetExtensionPath("../test/resource/tmp/")
 	filename := "states.yaml"
 	_ = os.Mkdir(extensionManager.GetExtensionPath(), 0777)
@@ -441,7 +441,7 @@ func TestListEndpointExists(t *testing.T) {
 }
 
 func setupFileStructureLists() {
-	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/ibm-test-extensions.txt")
+	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/test-extensions.txt")
 	extensions := [4]string{"dummy-extension1", "dummy-extension2", "dummy-extension3", "dummy-extension4"}
 	extensionsIBM := [4]string{"IBM-extension1", "IBM-extension2"}
 	extensionManager.SetExtensionPath("../test/resource/tmp/")

@@ -80,7 +80,7 @@ func TestStateOk(t *testing.T) {
 	//	req, err := http.NewRequest("GET", "/cr/v1/state/director?extension-name=TestStateOk", nil)
 	SetStatePath("../test/resource/states.yaml")
 	extensionManager.SetExtensionPath("../test/data/extensions/")
-	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/ibm-test-extensions.txt")
+	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/test-extensions.txt")
 	req, err := http.NewRequest("GET", "/cr/v1/state/director", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -123,7 +123,7 @@ func TestInsertDeleteStateStates(t *testing.T) {
 	//	req, err := http.NewRequest("GET", "/cr/v1/state/director?extension-name=TestStateOk", nil)
 	stateFile := "../test/resource/states-insert-delete.yaml"
 	extensionManager.SetExtensionPath("../test/data/extensions/")
-	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/ibm-test-extensions.txt")
+	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/test-extensions.txt")
 	SetStatePath(stateFile)
 	addStateManagerToMap("cfp-ext-template", stateFile)
 	inFileData, err := ioutil.ReadFile(stateFile)
@@ -185,7 +185,7 @@ func TestInsertDeleteStateStatesByName(t *testing.T) {
 	//	req, err := http.NewRequest("GET", "/cr/v1/state/director?extension-name=TestStateOk", nil)
 	stateFile := "../test/resource/states-insert-delete.yaml"
 	extensionManager.SetExtensionPath("../test/data/extensions/")
-	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/ibm-test-extensions.txt")
+	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/test-extensions.txt")
 	SetStatePath(stateFile)
 	addStateManagerToMap("cfp-ext-template", stateFile)
 	inFileData, err := ioutil.ReadFile(stateFile)
@@ -508,7 +508,7 @@ func TestAddStateManagerIBM(t *testing.T) {
 	log.SetLevel(log.DebugLevel)
 	t.Log("Entering................. TestAddStateManagerIBM")
 	extensionManager.SetExtensionPath("../test/data/extensions/")
-	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/ibm-test-extensions.txt")
+	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/test-extensions.txt")
 	global.SetExtensionResourcePath("../test/resource/extensions/")
 	extension := "cfp-ext-template"
 	err := addStateManager(extension)
