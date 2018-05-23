@@ -4,7 +4,7 @@ _build
 /api/resource/extensions/*
 /api/resource/ui-cf-extensions.yml
 /api/commandsRunner/resourceManager
-/api/test/resource/extensions/cfp-ext-template
+/api/test/resource/extensions/custom-extension
 /api/test/resource/extensions/cfp-ext-template-2
 /api/test/resource/out-test*
 /api/test/resource/test*
