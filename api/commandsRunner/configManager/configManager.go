@@ -115,6 +115,10 @@ func SetConfigPath(configDirectoryP string) {
 	propertiesManager.ReadProperties(global.CommandsRunnerStatesName)
 }
 
+func SetConfigFileName(configFileName string) {
+	global.UIConfigYamlFileName = configFileName
+}
+
 /*
 Save the property map in the property file
 Reread the file afterward

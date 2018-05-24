@@ -89,7 +89,7 @@ func AddHandler(pattern string, handler http.HandlerFunc, requireAuth bool) {
 	}
 }
 
-func Start() {
+func start() {
 	go func() {
 		if err := http.ListenAndServe(":"+serverPort, nil); err != nil {
 			log.Fatalf("ListenAndServe error: %v", err)
@@ -122,7 +122,7 @@ func Init(port string, portSSL string, configDir string, certificatePath string,
 	AddHandler("/cr/v1/config/", handleConfig, true)
 }
 
-func NewApp(preInitFunc InitFunc, postInitFunc InitFunc, preStartFunc InitFunc) {
+func ServerStart(preInitFunc InitFunc, postInitFunc InitFunc, preStartFunc InitFunc) {
 	var configDir string
 	var port string
 	var portSSL string
@@ -195,7 +195,7 @@ func NewApp(preInitFunc InitFunc, postInitFunc InitFunc, preStartFunc InitFunc) 
 				if preStartFunc != nil {
 					preStartFunc(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName, pieStatesPath)
 				}
-				Start()
+				start()
 				return nil
 			},
 		},

@@ -32,4 +32,4 @@ const SSLKeyFileName = "cm-cfp-key.pem"
 const TokenFileName = "cm-cfp-token"
 const CommandsRunnerStatesName = "crs-name"
 
-const UIConfigYamlFileName = "uiconfig.yml"
+//const UIConfigYamlFileName = "uiconfig.yml"
