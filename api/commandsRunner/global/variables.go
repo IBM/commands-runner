@@ -18,4 +18,5 @@ func SetExtensionResourcePath(extensionResourcePathIn string) {
 }
 
 var ConfigDirectory string
-var UIConfigYamlFileName = "config.yml"
+var ConfigYamlFileName = "config.yml"
+var ConfigYamlRootKey = "config"

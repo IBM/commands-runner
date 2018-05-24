@@ -64,10 +64,10 @@ func ReadProperties(extensionName string) (Properties, error) {
 	dataDirectory := GetConfigPath(extensionName)
 	//properties = make(global.Properties)
 	log.Debugf("dataDirectory:%s\n", dataDirectory)
-	raw, e := ioutil.ReadFile(dataDirectory + global.UIConfigYamlFileName)
+	raw, e := ioutil.ReadFile(dataDirectory + global.ConfigYamlFileName)
 	//log.Debugf("\n%s", string(raw))
 	if e != nil {
-		return nil, errors.New("Unable to read " + dataDirectory + global.UIConfigYamlFileName + " " + e.Error())
+		return nil, errors.New("Unable to read " + dataDirectory + global.ConfigYamlFileName + " " + e.Error())
 	}
 	//	var bmxConfig BMXConfig
 	uiConfigCfg, err := config.ParseYamlBytes(raw)
@@ -76,7 +76,7 @@ func ReadProperties(extensionName string) (Properties, error) {
 		return nil, err
 	}
 	var properties Properties
-	properties, err = uiConfigCfg.Map("uiconfig")
+	properties, err = uiConfigCfg.Map(global.ConfigYamlRootKey)
 	//	err := yaml.Unmarshal(raw, &bmxConfig)
 	if err != nil {
 		log.Debug(err.Error())
@@ -89,11 +89,11 @@ func ReadProperties(extensionName string) (Properties, error) {
 
 func RenderProperties(ps Properties) (string, error) {
 	log.Debug("Entering... renderProperties")
-	uiConfigYaml, err := config.ParseYaml("uiconfig:")
+	uiConfigYaml, err := config.ParseYaml(global.ConfigYamlRootKey + ":")
 	if err != nil {
 		log.Debug("parse:" + err.Error())
 	}
-	err = uiConfigYaml.Set("uiconfig", ps)
+	err = uiConfigYaml.Set(global.ConfigYamlRootKey, ps)
 	if err != nil {
 		log.Debug("Set:" + err.Error())
 	}
@@ -111,7 +111,7 @@ func WriteProperties(extensionName string, ps Properties) error {
 	log.Debug("dataDirectory:" + dataDirectory)
 	propertiesYaml, err := RenderProperties(ps)
 	//	log.Debug("propertiesYaml:\n" + propertiesYaml)
-	err = ioutil.WriteFile(dataDirectory+global.UIConfigYamlFileName, []byte(propertiesYaml), 0644)
+	err = ioutil.WriteFile(dataDirectory+global.ConfigYamlFileName, []byte(propertiesYaml), 0644)
 	if err != nil {
 		return err
 	}

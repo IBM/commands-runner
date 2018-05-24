@@ -38,13 +38,10 @@ const COPYRIGHT string = `######################################################
 ###############################################################################`
 
 type Config struct {
-	Properties propertiesManager.Properties `json:"uiconfig" yaml:"uiconfig"`
+	Properties propertiesManager.Properties `json:"config" yaml:"config"`
 }
 
 var properties propertiesManager.Properties
-
-//var uiCFDeploy UIConfig
-//var uiCFDeploy *config.Config
 
 //Initialize the properties map
 func init() {
@@ -109,14 +106,24 @@ The Listener stops if the file can not be created
 func SetConfigPath(configDirectoryP string) {
 	//Build the uiconfig path
 	global.ConfigDirectory = configDirectoryP
-	uiConfigPathYaml := configDirectoryP + string(filepath.Separator) + global.UIConfigYamlFileName
-	log.Debugf("uiConfigPathYaml:%s", uiConfigPathYaml)
+	configPathYaml := configDirectoryP + string(filepath.Separator) + global.ConfigYamlFileName
+	log.Debugf("configPathYaml:%s", configPathYaml)
 	//Read the current properties
 	propertiesManager.ReadProperties(global.CommandsRunnerStatesName)
 }
 
+/*
+Set the config file name
+*/
 func SetConfigFileName(configFileName string) {
-	global.UIConfigYamlFileName = configFileName
+	global.ConfigYamlFileName = configFileName
+}
+
+/*
+Set the config root key
+*/
+func SetConfigYamlRootKey(rootKey string) {
+	global.ConfigYamlRootKey = rootKey
 }
 
 /*
@@ -163,31 +170,6 @@ func PropertiesEncodeDecode(extensionName string, ps propertiesManager.Propertie
 		pss[key] = val
 	}
 	return pss, nil
-}
-
-func PropertiesEncodeDecodeValidate(extensionName string, ps propertiesManager.Properties, encode bool) (*propertiesManager.Properties, error) {
-	log.Debug("Entering in... PropertiesEncodeDecode")
-	pss := make(propertiesManager.Properties)
-	for key, val := range ps {
-		uiProperty, err := searchUIConfigProperty(extensionName, key)
-		if err == nil {
-			s, _ := config.RenderYaml(uiProperty)
-			log.Debug("uiProperty:" + s)
-			uiPropertyEncode, errEncode := uiProperty.String("encode")
-			log.Debug("Encode:" + uiPropertyEncode)
-			if errEncode == nil {
-				log.Debug("uiPropertyEncode:" + uiPropertyEncode)
-				valToConvert := val.(propertiesManager.Properties)["value"].(string)
-				converted, err := propertyEncodeDecode(uiPropertyEncode, valToConvert, encode)
-				if err != nil {
-					return nil, err
-				}
-				val.(propertiesManager.Properties)["value"] = converted
-			}
-		}
-		pss[key] = val
-	}
-	return &pss, nil
 }
 
 func propertyEncodeDecode(encodingType string, val string, encode bool) (string, error) {
