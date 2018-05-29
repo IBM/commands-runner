@@ -1,9 +1,0 @@
-flavors:
-  icpcf_cc_core:
-    ram: 1
-    vcpu: 1
-    disk: 8
-  icpcf_cell:
-    ram: 4
-    vcpu: 2
-    disk: 16

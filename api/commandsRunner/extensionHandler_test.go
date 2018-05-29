@@ -290,31 +290,6 @@ func TestRegisterIBMExtensionFilesExists(t *testing.T) {
 	cleanup()
 }
 
-/*
-func TestRegisterExtensionWrongFileType(t *testing.T) {
-	t.Log("Entering........... TestRegisterExtensionWrongFile")
-	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/test-extensions.txt")
-	extensionManager.SetExtensionPath("../test/resource/tmp/")
-	filename := "states.yaml"
-	_ = os.Mkdir(extensionManager.GetExtensionPath(), 0777)
-
-	req := createFileUploadRequest("../test/resource/"+filename, "dummy-extension", t)
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handleExtension)
-	handler.ServeHTTP(rr, req)
-
-	expected := "zip: not a valid zip file\n"
-	got := rr.Body.String()
-
-	if got != expected {
-		t.Errorf("handler returned unexpected responst: got %v want %v",
-			got, expected)
-	}
-
-	cleanup()
-}
-*/
-
 func TestDeletionEndpointExists(t *testing.T) {
 	t.Log("Entering........... TestExtensionDeletion")
 	extensionManager.SetExtensionPath("../test/resource/tmp/")

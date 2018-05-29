@@ -35,8 +35,7 @@ pre-req::
 
 .PHONY: go-test
 go-test:: 
-	go test -v github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner
-	go test -v github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/uiConfigManager 
+	go test -v github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/...
 
 .PHONY: copyright-check
 copyright-check:

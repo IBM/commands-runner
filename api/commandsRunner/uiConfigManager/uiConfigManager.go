@@ -30,10 +30,6 @@ const COPYRIGHT string = `######################################################
 #  IBM Corporation - initial API and implementation
 ###############################################################################`
 
-/**Retrieve the config JSON
-The JSON are automatically generated at build time from the yaml files.
-The yaml files are located in the api/resource/ directory.
-**/
 func GetUIConfig(config string) ([]byte, error) {
 	log.Debugf("config=%s", config)
 	if config == "" {

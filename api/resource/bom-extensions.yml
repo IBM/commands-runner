@@ -1,3 +1,0 @@
-extensions:
-- extension: "cfp-ext-template:1.0.1:cfp-ext-template:master:CFP_EXTENSION_TEMPLATE_KEY_64"
-- extension: "cfp-ext-ldap:1.0.2:cfp-ext-ldap:master:CFP_EXTENSION_LDAP_KEY_64"
