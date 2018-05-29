@@ -63,15 +63,15 @@ func getUIConfig(extensionName string) ([]byte, error) {
 	}
 	cfg, err = cfg.Get("uiconfig")
 	if err == nil {
-		pieCfg, err := config.ParseYaml("uiconfig:")
+		statesFilefg, err := config.ParseYaml("uiconfig:")
 		if err != nil {
 			return nil, err
 		}
-		err = pieCfg.Set("uiconfig", cfg.Root)
+		err = statesFilefg.Set("uiconfig", cfg.Root)
 		if err != nil {
 			return nil, err
 		}
-		out, err := config.RenderJson(pieCfg.Root)
+		out, err := config.RenderJson(statesFilefg.Root)
 		if err != nil {
 			return nil, err
 		}

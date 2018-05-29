@@ -529,7 +529,7 @@ func RegisterExtension(extensionName, zipPath string, force bool) error {
 	}
 	var errGen error
 	if errInstall == nil {
-		errGen = generatePieFile(extensionName, extensionPath)
+		errGen = generateStatesFile(extensionName, extensionPath)
 	}
 	if errInstall != nil || errGen != nil {
 		if backupTaken {
@@ -540,7 +540,7 @@ func RegisterExtension(extensionName, zipPath string, force bool) error {
 		}
 	}
 	if errGen != nil {
-		return errors.New("Error Generate Pie:" + errGen.Error() + "\nRegistration rolled back")
+		return errors.New("Error Generate States file:" + errGen.Error() + "\nRegistration rolled back")
 	}
 	if errInstall != nil {
 		return errors.New("Error Install:" + errInstall.Error() + "\nRegistration rolled back")
@@ -548,8 +548,8 @@ func RegisterExtension(extensionName, zipPath string, force bool) error {
 	return nil
 }
 
-func generatePieFile(extensionName, extensionPath string) error {
-	log.Debug("Entering in... generatePieFile")
+func generateStatesFile(extensionName, extensionPath string) error {
+	log.Debug("Entering in... generateStatesFile")
 	manifest, err := ioutil.ReadFile(extensionPath + string(filepath.Separator) + "extension-manifest.yml")
 	if err != nil {
 		return err
@@ -562,20 +562,20 @@ func generatePieFile(extensionName, extensionPath string) error {
 	if err != nil {
 		return err
 	}
-	pieCfg, err := config.ParseYaml("states:")
+	statesFileCfg, err := config.ParseYaml("states:")
 	if err != nil {
 		return err
 	}
-	err = pieCfg.Set("states", cfg.Root)
+	err = statesFileCfg.Set("states", cfg.Root)
 	if err != nil {
 		return err
 	}
-	out, err := config.RenderYaml(pieCfg.Root)
+	out, err := config.RenderYaml(statesFileCfg.Root)
 	if err != nil {
 		return err
 	}
-	log.Debug("pie content:\n" + out)
-	return ioutil.WriteFile(extensionPath+string(filepath.Separator)+"pie-"+extensionName+".yml", []byte(out), 0644)
+	log.Debug("states file content:\n" + out)
+	return ioutil.WriteFile(extensionPath+string(filepath.Separator)+"statesFile-"+extensionName+".yml", []byte(out), 0644)
 
 }
 

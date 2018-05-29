@@ -11,5 +11,5 @@
 
 echo "Start: $1"
 sleep 10
-echo "PIE_ERROR_MESSAGE: End with failure: $1"
+echo "STATES_FILE_ERROR_MESSAGE: End with failure: $1"
 exit 1

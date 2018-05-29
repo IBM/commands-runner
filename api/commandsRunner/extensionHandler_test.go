@@ -103,21 +103,6 @@ func createFileUploadRequest(pathToFile, extensionName string, t *testing.T) *ht
 	var req *http.Request
 	if pathToFile != "" {
 		zipit("../test/resource/extensions/custom-extension", pathToFile)
-		/*		writer := multipart.NewWriter(body)
-
-				// Open the file
-				file, err := os.Open(pathToFile)
-				if err != nil {
-					panic(err)
-				}
-				defer file.Close()
-
-				_, err = io.Copy(body, file)
-				if err != nil {
-					t.Fatal(err)
-				}
-				err = writer.Close()
-		*/
 		body, _ := os.Open(pathToFile)
 		writer := multipart.NewWriter(body)
 		req, _ = http.NewRequest("POST", "/cr/v1/extension/action=register", body)

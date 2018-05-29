@@ -53,7 +53,7 @@ const StateSUCCEEDED = "SUCCEEDED"
 const StateRUNNING = "RUNNING"
 const StateSKIP = "SKIP"
 
-const PieErrorMessagePattern = "PIE_ERROR_MESSAGE:"
+const StatesFileErrorMessagePattern = "STATES_FILE_ERROR_MESSAGE:"
 
 const PhaseAtEachRun = "AtEachRun"
 
@@ -156,8 +156,6 @@ func (sm *States) setDefaultValues() {
 		//		log.Debug("Check LogPath/Script")
 
 		if sm.StateArray[index].LogPath == "" {
-			//			log.Debug("Set state.LogPath")
-			//			log.Debug("Pie path:" + sm.StatesPath)
 			dir := extensionManager.GetExtensionLogsPathEmbedded()
 			if sm.isCustomStatePath() {
 				dir = extensionManager.GetExtensionLogsPathCustom()
@@ -259,7 +257,7 @@ func (sm *States) SetStates(states States, overwrite bool) error {
 	if overwrite {
 		sm.StateArray = sm.removeDeletedStates(states).StateArray
 	} else {
-		log.Info("Merge new and old PIE")
+		log.Info("Merge new and old States File")
 		errMerge := sm.mergeStates(states)
 		if errMerge != nil {
 			return errMerge
@@ -560,7 +558,7 @@ func (sm *States) setStateStatus(state State, status string, recursively bool) e
 			if err != nil {
 				return err
 			}
-			extensionStateManager, err := NewStateManager(extensionPath + string(filepath.Separator) + "pie-" + state.Name + ".yml")
+			extensionStateManager, err := NewStateManager(extensionPath + string(filepath.Separator) + "statesFile-" + state.Name + ".yml")
 			if err != nil {
 				return err
 			}

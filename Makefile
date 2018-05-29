@@ -16,23 +16,21 @@
 # If you are using a Bluemix image registry, you must also define BLUEMIX_API_KEY,
 # BLUEMIX_ORG, and BLUEMIX_SPACE
 ###############################################################################
-include Configfile
 
 .DEFAULT_GOAL := all
 
-.PHONY: set-app-version
-set-app-version::
-	@echo "RELEASE_VERSION:"$(RELEASE_VERSION)
-	@echo "$(RELEASE_TAG)" > VERSION
-
-.PHONY: pre-req
-pre-req::
+.PHONY: glide-install
+glide-install::
 	
 	mkdir -p $(GOPATH)/bin
 	glide --version; \
 	if [ $$? -ne 0 ]; then \
 		curl https://glide.sh/get | sh; \
 	fi
+
+.PHONY: pre-req
+pre-req::
+	
 	glide --debug install --strip-vendor
 
 .PHONY: go-test
@@ -45,7 +43,7 @@ copyright-check:
 	./build-tools/copyright-check.sh
 
 .PHONY: all
-all:: pre-req set-app-version copyright-check go-test
+all:: pre-req copyright-check go-test
 
 #This requires Graphitz and    ''
 .PHONY: dependency-graph-text

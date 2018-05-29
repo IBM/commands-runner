@@ -26,7 +26,7 @@ import (
 
 type Properties map[string]interface{}
 
-//get the cf-pie path
+//get the statesFile path
 func GetConfigPath(extensionName string) string {
 	var configPath string
 	if extensionName == global.CommandsRunnerStatesName || extensionName == "" {

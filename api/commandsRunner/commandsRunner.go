@@ -126,7 +126,7 @@ func ServerStart(preInitFunc InitFunc, postInitFunc InitFunc, preStartFunc InitF
 	var configDir string
 	var port string
 	var portSSL string
-	var pieStatesPath string
+	var statesPath string
 
 	//	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
@@ -148,7 +148,7 @@ func ServerStart(preInitFunc InitFunc, postInitFunc InitFunc, preStartFunc InitF
 				cli.StringFlag{
 					Name:        "statePath, s",
 					Usage:       "Path of the state file",
-					Destination: &pieStatesPath,
+					Destination: &statesPath,
 				},
 				cli.StringFlag{
 					Name:        "port, p",
@@ -186,14 +186,14 @@ func ServerStart(preInitFunc InitFunc, postInitFunc InitFunc, preStartFunc InitF
 				}
 
 				if preInitFunc != nil {
-					preInitFunc(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName, pieStatesPath)
+					preInitFunc(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName, statesPath)
 				}
-				Init(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName, pieStatesPath)
+				Init(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName, statesPath)
 				if postInitFunc != nil {
-					postInitFunc(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName, pieStatesPath)
+					postInitFunc(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName, statesPath)
 				}
 				if preStartFunc != nil {
-					preStartFunc(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName, pieStatesPath)
+					preStartFunc(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName, statesPath)
 				}
 				start()
 				return nil
