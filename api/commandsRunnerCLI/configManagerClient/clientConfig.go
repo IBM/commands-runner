@@ -18,6 +18,7 @@ import (
 	"os"
 
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/configManager"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 )
 
 //GetConfig returns the config
@@ -27,7 +28,7 @@ func (cmc *ConfigManagerClient) GetConfig(extensionName string) (string, error) 
 		url += "?extension-name=" + extensionName
 	}
 	//Call the rest API
-	data, errCode, err := cmc.restCall(http.MethodGet, url, nil, nil)
+	data, errCode, err := cmc.RestCall(http.MethodGet, global.BaseURL, url, nil, nil)
 	if err != nil {
 		return "", err
 	}
@@ -68,7 +69,7 @@ func (cmc *ConfigManagerClient) SetConfig(extensionName string, configPath strin
 	if errFile != nil {
 		return "", errFile
 	}
-	data, errCode, err := cmc.restCall(http.MethodPost, url, file, nil)
+	data, errCode, err := cmc.RestCall(http.MethodPost, global.BaseURL, url, file, nil)
 	if err != nil {
 		return "", err
 	}

@@ -12,11 +12,16 @@ package global
 
 var UIExtensionResourcePath = "api/resource/extensions/"
 
-//Set the extensionPath
+//SetExtensionResourcePath the extensionPath
 func SetExtensionResourcePath(extensionResourcePathIn string) {
 	UIExtensionResourcePath = extensionResourcePathIn
 }
 
+//ConfigDirectory directory where the config file can be found
 var ConfigDirectory string
+
+//ConfigYamlFileName default file name for the config file.
 var ConfigYamlFileName = "config.yml"
+
+//ConfigYamlRootKey default root key for the yaml config file.
 var ConfigYamlRootKey = "config"

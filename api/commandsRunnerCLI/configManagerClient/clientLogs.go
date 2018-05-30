@@ -18,6 +18,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/stateManager"
 )
 
@@ -29,7 +30,7 @@ func (cmc *ConfigManagerClient) getLogsByChars(extensionName string, stateName s
 		url += ";amp&extension-name=" + extensionName
 	}
 	//Call the rest API
-	data, _, err := cmc.restCall(http.MethodGet, url, nil, nil)
+	data, _, err := cmc.RestCall(http.MethodGet, global.BaseURL, url, nil, nil)
 	return data, err
 }
 
@@ -75,7 +76,7 @@ func (cmc *ConfigManagerClient) follow(extensionName string, position int64, sta
 		if newPos == currentPostion {
 			fmt.Print(".")
 		}
-		if stateName == "pcm" {
+		if stateName == "cr" {
 			currentPostion = newPos
 			continue
 		}
@@ -110,7 +111,7 @@ func (cmc *ConfigManagerClient) follow(extensionName string, position int64, sta
 // if follow = true the method will loop for new data in the log
 // if quiet = true then log are not displayed but the method will wait until the deploy is done.
 func (cmc *ConfigManagerClient) GetLogs(extensionName string, stateName string, follow bool, quiet bool) error {
-	if stateName == "pcm" {
+	if stateName == "cr" {
 		_, err := cmc.getLogs(extensionName, 0, stateName)
 		return err
 	}

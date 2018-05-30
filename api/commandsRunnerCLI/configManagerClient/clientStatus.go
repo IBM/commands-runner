@@ -17,13 +17,14 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/statusManager"
 )
 
 //GetCMStatus returns the configManager status
 func (cmc *ConfigManagerClient) GetCMStatus() (string, error) {
 	url := "status"
-	data, errCode, err := cmc.restCall(http.MethodGet, url, nil, nil)
+	data, errCode, err := cmc.RestCall(http.MethodGet, global.BaseURL, url, nil, nil)
 	if err != nil {
 		return "", err
 	}
@@ -51,7 +52,7 @@ func (cmc *ConfigManagerClient) GetCMStatus() (string, error) {
 //SetCMStatus set a status
 func (cmc *ConfigManagerClient) SetCMStatus(name string, status string) (string, error) {
 	url := "status?name=" + url.QueryEscape(name) + "&status=" + url.QueryEscape(status)
-	_, errCode, err := cmc.restCall(http.MethodPut, url, nil, nil)
+	_, errCode, err := cmc.RestCall(http.MethodPut, global.BaseURL, url, nil, nil)
 	if err != nil {
 		return "", err
 	}

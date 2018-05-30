@@ -13,6 +13,8 @@ package configManagerClient
 import (
 	"errors"
 	"net/http"
+
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 )
 
 //ResetEngine resets states, all not "SKIP" states will be set to "READY".
@@ -24,7 +26,7 @@ func (cmc *ConfigManagerClient) ResetEngine(extensionName string) (string, error
 		url += ";amp&extension-name=" + extensionName
 	}
 	//Call rest api
-	_, errCode, err := cmc.restCall(http.MethodPut, url, nil, nil)
+	_, errCode, err := cmc.RestCall(http.MethodPut, global.BaseURL, url, nil, nil)
 	if err != nil {
 		return "", err
 	}
@@ -43,7 +45,7 @@ func (cmc *ConfigManagerClient) IsRunningEngine(extensionName string) (string, e
 		url += "?extension-name=" + extensionName
 	}
 	//Call rest api
-	_, errCode, err := cmc.restCall(http.MethodGet, url, nil, nil)
+	_, errCode, err := cmc.RestCall(http.MethodGet, global.BaseURL, url, nil, nil)
 	if err != nil {
 		return "", err
 	}
@@ -70,7 +72,7 @@ func (cmc *ConfigManagerClient) StartEngine(extensionName string, fromState stri
 		url += ";amp&to-state=" + toState
 	}
 	//Call rest api
-	_, errCode, err := cmc.restCall(http.MethodPut, url, nil, nil)
+	_, errCode, err := cmc.RestCall(http.MethodPut, global.BaseURL, url, nil, nil)
 	if err != nil {
 		return "", err
 	}

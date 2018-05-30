@@ -18,11 +18,11 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/crManager"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/logger"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/pcmManager"
 )
 
-func handlePCM(w http.ResponseWriter, req *http.Request) {
+func handleCR(w http.ResponseWriter, req *http.Request) {
 	log.Debug("Entering in handlePCM")
 	validatePath := regexp.MustCompile("/cr/v1/(pcm)/log/([\\w]*)$")
 	log.Debug(req.URL.Path)
@@ -48,8 +48,8 @@ func handlePCM(w http.ResponseWriter, req *http.Request) {
 }
 
 func GetLogLevelEndpoint(w http.ResponseWriter, req *http.Request) {
-	data := pcmManager.GetLogLevel()
-	logLevel := &pcmManager.Log{
+	data := crManager.GetLogLevel()
+	logLevel := &crManager.Log{
 		Level: data,
 	}
 	enc := json.NewEncoder(w)
@@ -71,7 +71,7 @@ func SetLogLevelEndpoint(w http.ResponseWriter, req *http.Request) {
 		log.Debug("level:%s", levelFound)
 		level = levelFound[0]
 	}
-	err := pcmManager.SetLogLevel(level)
+	err := crManager.SetLogLevel(level)
 	if err != nil {
 		logger.AddCallerField().Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)

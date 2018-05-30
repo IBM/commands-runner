@@ -17,6 +17,8 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 )
 
 func (cmc *ConfigManagerClient) RegisterExtension(pathToZip, extensionName string, force bool) (string, error) {
@@ -57,7 +59,7 @@ func (cmc *ConfigManagerClient) registerExtension(pathToZip, extensionName strin
 			return http.StatusInternalServerError, errFile
 		}
 	}
-	body, httpCode, err := cmc.restCall(http.MethodPost, url, file, headers)
+	body, httpCode, err := cmc.RestCall(http.MethodPost, global.BaseURL, url, file, headers)
 	if httpCode != http.StatusConflict && httpCode != http.StatusCreated && httpCode != http.StatusOK {
 		if body != "" {
 			return httpCode, errors.New(body)
@@ -73,7 +75,7 @@ func (cmc *ConfigManagerClient) unregisterExtension(extensionName string) error 
 	}
 	url := "extension?name=" + extensionName
 
-	response, errCode, err := cmc.restCall(http.MethodDelete, url, nil, nil)
+	response, errCode, err := cmc.RestCall(http.MethodDelete, global.BaseURL, url, nil, nil)
 	if err != nil {
 		return errors.New(err.Error())
 	}

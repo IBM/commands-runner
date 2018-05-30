@@ -28,8 +28,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/crManager"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/extensionManager"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/pcmManager"
 	"gonum.org/v1/gonum/graph/simple"
 	"gonum.org/v1/gonum/graph/topo"
 
@@ -844,6 +844,23 @@ func (sm *States) getLogPath(state string) (string, error) {
 	return logPath, nil
 }
 
+func (sm *States) GetLogs(position int64, length int64, bychar bool) (string, error) {
+	var data []byte
+	states, err := sm.GetStates("")
+	if err != nil {
+		return string(data), err
+	}
+
+	for _, state := range states.StateArray {
+		bytes, err := sm.GetLog(state.Name, 0, math.MaxInt64, bychar)
+		if err != nil {
+			return string(data), err
+		}
+		data = append(data, bytes...)
+	}
+	return string(data), nil
+}
+
 /*Retrieve log of a given state.
 state: Look at the log of a given state.
 position: start at position (byte) in the log (default:0)
@@ -874,14 +891,14 @@ func (sm *States) GetLog(state string, position int64, length int64, bychar bool
 		logFile.WriteString(logString)
 		logFile.Close()
 		logPath = logFile.Name()
-	case "pcm":
+	case "cr":
 		var err error
 		if position == 0 {
 			pcmLogTempFile, err = ioutil.TempFile("/tmp/", "/cfp-commands-runner-log")
 			if err != nil {
 				return nil, err
 			}
-			logPath = pcmManager.LogPath
+			logPath = crManager.LogPath
 			logFile, err := os.Open(logPath)
 			if err != nil {
 				return nil, err
@@ -957,12 +974,17 @@ func (sm *States) GetLog(state string, position int64, length int64, bychar bool
 			nb, _ := logFile.ReadAt(data, position)
 			log.Debug("Nb Bytes read:" + strconv.Itoa(nb))
 			data = data[:nb]
-			log.Debug("data read:" + string(data))
 		} else {
 			data = []byte("")
 		}
 	}
 	return data, nil
+}
+
+//Execute states from beginning to end
+func (sm *States) Start() error {
+	log.Debug("Enterring... Start")
+	return sm.Execute(FirstState, LastState)
 }
 
 //Execute states from state 'fromState' to state 'toState'

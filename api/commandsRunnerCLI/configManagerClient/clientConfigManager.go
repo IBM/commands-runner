@@ -144,10 +144,10 @@ func NewClient(urlIn string, outputFormat string, timeout string, insecureSSL bo
 }
 
 //Do a restcall to a given uri
-func (cmc *ConfigManagerClient) restCall(method string, uri string, bodyReader io.Reader, headers map[string]string) (string, int, error) {
+func (cmc *ConfigManagerClient) RestCall(method string, baseUrl string, uri string, bodyReader io.Reader, headers map[string]string) (string, int, error) {
 
 	//add the base url to the uri
-	url := cmc.URL + "/cr/v1/" + uri
+	url := cmc.URL + baseUrl + uri
 
 	req, err := http.NewRequest(method, url, bodyReader)
 	if err != nil {

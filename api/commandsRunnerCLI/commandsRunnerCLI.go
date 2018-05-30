@@ -693,8 +693,8 @@ func Client() *cli.App {
 		},
 		/*            PCM                  */
 		{
-			Name:  "pcm",
-			Usage: "pcm management",
+			Name:  "cr",
+			Usage: "cr management",
 			Subcommands: []cli.Command{
 				{
 					Name:   "log-level",
@@ -770,7 +770,6 @@ func Client() *cli.App {
 				{
 					Name:    "start",
 					Aliases: []string{"s"},
-					Hidden:  true,
 					Usage:   "Start the engine",
 					Flags: []cli.Flag{
 						cli.StringFlag{

@@ -8,7 +8,7 @@
 #  IBM Corporation - initial API and implementation
 ###############################################################################
 */
-package pcmManager
+package crManager
 
 import (
 	log "github.com/sirupsen/logrus"
@@ -27,7 +27,11 @@ type Log struct {
 	Level string `yaml:"level" json:"level"`
 }
 
-const LogPath = "/data//cfp-commands-runner.log"
+var LogPath string
+
+func SetLogPath(logPath string) {
+	LogPath = logPath
+}
 
 func SetLogLevel(levelRequested string) error {
 	level, err := log.ParseLevel(levelRequested)

@@ -12,11 +12,14 @@ package commandsRunner
 
 import (
 	"errors"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/crManager"
 
 	log "github.com/sirupsen/logrus"
 	cli "gopkg.in/urfave/cli.v1"
@@ -113,7 +116,7 @@ func Init(port string, portSSL string, configDir string, certificatePath string,
 	AddHandler("/cr/v1/state/", handleState, true)
 	AddHandler("/cr/v1/states", handleStates, true)
 	AddHandler("/cr/v1/engine", handleEngine, true)
-	AddHandler("/cr/v1/pcm/", handlePCM, true)
+	AddHandler("/cr/v1/pcm/", handleCR, true)
 	AddHandler("/cr/v1/status", handleStatus, true)
 	AddHandler("/cr/v1/extension", handleExtension, true)
 	AddHandler("/cr/v1/extensions/", handleExtensions, true)
@@ -136,9 +139,8 @@ func ServerStart(preInitFunc InitFunc, postInitFunc InitFunc, preStartFunc InitF
 
 	app.Commands = []cli.Command{
 		{
-			Name:   "listen",
-			Hidden: true,
-			Usage:  "Launch the Config Manager server",
+			Name:  "listen",
+			Usage: "Launch the Config Manager server",
 			Flags: []cli.Flag{
 				cli.StringFlag{
 					Name:        "configDir, c",
@@ -164,6 +166,10 @@ func ServerStart(preInitFunc InitFunc, postInitFunc InitFunc, preStartFunc InitF
 				},
 			},
 			Action: func(c *cli.Context) error {
+				crManager.LogPath = configDir + string(filepath.Separator) + "commands-runner.log"
+				file, _ := os.Create(crManager.LogPath)
+				out := io.MultiWriter(file, os.Stderr)
+				log.SetOutput(out)
 				logLevel := os.Getenv("CM_TRACE")
 				log.Printf("CM_TRACE: %s", logLevel)
 				if logLevel == "" {
@@ -200,7 +206,6 @@ func ServerStart(preInitFunc InitFunc, postInitFunc InitFunc, preStartFunc InitF
 			},
 		},
 	}
-
 	errRun := app.Run(os.Args)
 	if errRun != nil {
 		os.Exit(1)
