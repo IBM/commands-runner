@@ -47,13 +47,13 @@ const DefaultTimeout = 60
 const DefaultInsecureSSL = false
 
 //SSLCertFileName certificate file name
-const SSLCertFileName = "cm-cfp-cert.crt"
+const SSLCertFileName = "cr-cert.crt"
 
 //SSLKeyFileName key file name
-const SSLKeyFileName = "cm-cfp-key.pem"
+const SSLKeyFileName = "cr-key.pem"
 
 //TokenFileName token file name
-const TokenFileName = "cm-cfp-token"
+const TokenFileName = "cr-token"
 
 //CommandsRunnerStatesName default internal state file name
 const CommandsRunnerStatesName = "crs-name"
