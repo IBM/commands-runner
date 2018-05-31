@@ -36,7 +36,7 @@ const copyright string = `######################################################
 #  IBM Corporation - initial API and implementation
 ###############################################################################`
 
-const configFile = ".configManager.conf"
+const configFile = ".commandsRunner.conf"
 
 var configFilePath string
 

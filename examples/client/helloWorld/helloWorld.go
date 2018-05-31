@@ -7,7 +7,7 @@ import (
 )
 
 type MyConfigManagerClient struct {
-	CMC configManagerClient.ConfigManagerClient
+	CMC *configManagerClient.ConfigManagerClient
 }
 
 func NewClient(urlIn string, outputFormat string, timeout string, insecureSSL bool) (*MyConfigManagerClient, error) {
@@ -15,7 +15,7 @@ func NewClient(urlIn string, outputFormat string, timeout string, insecureSSL bo
 	if errClient != nil {
 		return nil, errClient
 	}
-	myClient := &MyConfigManagerClient{*client}
+	myClient := &MyConfigManagerClient{client}
 	return myClient, nil
 }
 
