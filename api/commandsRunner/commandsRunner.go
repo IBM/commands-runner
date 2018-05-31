@@ -71,6 +71,8 @@ func validateToken(configDir string, protectedHandler http.HandlerFunc) http.Han
 
 		//Check if correct token
 		if receivedToken != tokenS {
+			log.Info(receivedToken)
+			log.Info(tokenS)
 			http.Error(w, "Invalid token", http.StatusForbidden)
 			return
 		}
@@ -95,11 +97,26 @@ func AddHandler(pattern string, handler http.HandlerFunc, requireAuth bool) {
 func start() {
 	go func() {
 		if err := http.ListenAndServe(":"+serverPort, nil); err != nil {
-			log.Fatalf("ListenAndServe error: %v", err)
+			log.Errorf("ListenAndServe error: %v", err)
+		}
+	}()
+	go func() {
+		if err := http.ListenAndServeTLS(":"+serverPortSSL, serverCertificatePath, serverKeyPath, nil); err != nil {
+			log.Errorf("ListenAndServeTLS error: %v", err)
 		}
 	}()
 	statusManager.SetStatus(statusManager.CMStatus, "Up")
-	log.Fatal(http.ListenAndServeTLS(":"+serverPortSSL, serverCertificatePath, serverKeyPath, nil))
+	// if _, err := os.Stat(serverCertificatePath); err == nil {
+	// 	if _, err := os.Stat(serverKeyPath); err == nil {
+
+	// 		log.Fatal(http.ListenAndServeTLS(":"+serverPortSSL, serverCertificatePath, serverKeyPath, nil))
+	// 	}
+	// }
+	blockForever()
+}
+
+func blockForever() {
+	select {}
 }
 
 type InitFunc func(port string, portSSL string, configDir string, certificatePath string, keyPath string, stateFilePath string)

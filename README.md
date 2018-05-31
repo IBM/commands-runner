@@ -20,17 +20,23 @@ This project uses `glide` to manage dependencies.<br>
 5. run `glide update`, this will download all dependencies.
 
 ### Create a commands-runner server
-There a server examples at [examples/server](./examples/server). In that example the server is enriched with a `helloWorld` API.<br>
-Once you created the server, you can build it with for example: `go build -o server  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/examples/server` and then run it with `./server listen -c <your_data_dir> -s <your_states_file`.<br>
+1. Create server: There a server example at [examples/server](./examples/server). In that example the server is enriched with a `helloWorld` API.
+2. Build server: Once you created the server, you can build it with for example: `go build -o server  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/examples/server`.
+3. Create certificates (optional): You can secure the communication between the client and the server using SSL.
+  1. `openssl req -x509 -newkey rsa:4096 -keyout <your_data_directory>/cr-key.pem -out  <your_data_directory>/cr-cert.crt  -days 365 -subj "/C=YourContry/ST=YourState/L=YourLocation/O=YourOrg/OU=YourOrgUnit/CN=localhost" -nodes`
+  2. Install the certificate on the machine which will run the server.
+  For example on Ubuntu or MaxOS:
+    1. `cp <your_data_directory>/cr-cert.crt /usr/local/share/ca-certificates/`
+    2. `update-ca-certificates`
+4. Launch the server: run the command `./server listen -c <your_data_dir> -s <your_states_file`.<br>
+
 A state file example is provided in the [examples/data](./examples/data).
 
 ### Create a commands-runner client
-There a server examples at [examples/client](./examples/client). In that example the client is enriched with a command `hello` which call the `helloWorld` API on the server side.<br>
-Once you created the client, you can build it with for example: `go build -o client  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/examples/client` and then setup it with `./client api....` and finally use it.
+1. Create the client: There a client example at [examples/client](./examples/client). In that example the client is enriched with a command `hello` which call the `helloWorld` API on the server side.
+2. Build the client:  Once you created the client, you can build it with for example: `go build -o client  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/examples/client`.
+3. Create token: The server uses a token for authentication, run the command: `./client token create > <your_data_directory>/cr-token`, this will create a file `cr-token` in `<your_data_directory>`.
+4. Setup the client: `./client --url <server_url> --token <token> --cacert <cert_path> api save` and finally use it.
 
 ### Use commands-runner in a program.
 There is code examples at [examples/code](./examples/code)
-
-### Installing
-
-## 

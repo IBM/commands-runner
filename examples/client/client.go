@@ -29,15 +29,10 @@ const COPYRIGHT string = `######################################################
 #  IBM Corporation - initial API and implementation
 ###############################################################################`
 
-var url string
-var outputFormat string
-var timeout string
-var insecureSSL bool
-
 func main() {
 	//Define a dummy function
 	helloWorld := func(c *cli.Context) error {
-		client, errClient := helloWorld.NewClient(url, outputFormat, timeout, insecureSSL)
+		client, errClient := helloWorld.NewClient(commandsRunnerCLI.URL, commandsRunnerCLI.OutputFormat, commandsRunnerCLI.Timeout, commandsRunnerCLI.CACertPath, commandsRunnerCLI.InsecureSSL, commandsRunnerCLI.Token)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -53,6 +48,7 @@ func main() {
 
 	//Create a commandsRunner client.
 	app := commandsRunnerCLI.Client()
+
 	//Overwrite some app parameters
 	app.Usage = "client ..."
 	app.Version = "1.0.0"

@@ -10,8 +10,8 @@ type MyConfigManagerClient struct {
 	CMC *configManagerClient.ConfigManagerClient
 }
 
-func NewClient(urlIn string, outputFormat string, timeout string, insecureSSL bool) (*MyConfigManagerClient, error) {
-	client, errClient := configManagerClient.NewClient(urlIn, outputFormat, timeout, insecureSSL)
+func NewClient(urlIn string, outputFormat string, timeout string, caCertPath string, insecureSSL bool, token string) (*MyConfigManagerClient, error) {
+	client, errClient := configManagerClient.NewClient(urlIn, outputFormat, timeout, caCertPath, insecureSSL, token)
 	if errClient != nil {
 		return nil, errClient
 	}
