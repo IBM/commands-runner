@@ -19,7 +19,6 @@ import (
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/extensionManager"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/propertiesManager"
-	"github.ibm.com/IBMPrivateCloud/cfp-config-manager/api/commandsRunnerCustom/globalCustom"
 )
 
 const COPYRIGHT_TEST string = `###############################################################################
@@ -33,7 +32,7 @@ const COPYRIGHT_TEST string = `#################################################
 
 //var bmxConfigString string = "{\"Prop1\":{\"name\":\"Prop1\",\"value\":\"Val1\"},\"Prop2\":{\"name\":\"Prop2\",\"value\":\"Val2\"},\"subnet\":{\"name\":\"subnet\",\"value\":\"192.168.100.0/24\"}}"
 
-var configString string = global.ConfigYamlRootKey":\n  env_name: \"itdove\"\n  host_directory: \"/itdove/data\"\n  subnet: \"192.168.100.0/24\""
+var configString string = global.ConfigYamlRootKey + ":\n  env_name: \"itdove\"\n  host_directory: \"/itdove/data\"\n  subnet: \"192.168.100.0/24\""
 
 //var global.ConfigDirectory string = "../../test/resource"
 //var properties propertiesManager.Properties
@@ -72,11 +71,11 @@ func TestSetProperties(t *testing.T) {
 
 func TestGetProperties(t *testing.T) {
 	t.Log("Entering... TestGetpropertiesManager.Properties")
-	t.Logf("%s\n", bmxConfigString)
+	t.Logf("%s\n", configString)
 	global.ConfigDirectory = "../../test/resource"
 	dataDirectory := extensionManager.GetRootExtensionPath(global.ConfigDirectory, global.CommandsRunnerStatesName)
 	t.Log("dataDirectory:" + dataDirectory)
-	err := ioutil.WriteFile(dataDirectory+global.UIConfigYamlFileName, []byte(bmxConfigString), 0644)
+	err := ioutil.WriteFile(dataDirectory+"/"+global.ConfigYamlFileName, []byte(configString), 0644)
 	if err != nil {
 		t.Error("Can not create temp file")
 	}
@@ -100,10 +99,10 @@ func TestGetProperties(t *testing.T) {
 
 func TestFindProperty(t *testing.T) {
 	t.Log("Entering... TestFindProperty")
-	t.Logf("%s\n", bmxConfigString)
+	t.Logf("%s\n", configString)
 	global.ConfigDirectory = "../../test/resource"
 	dataDirectory := extensionManager.GetRootExtensionPath(global.ConfigDirectory, global.CommandsRunnerStatesName)
-	err := ioutil.WriteFile(dataDirectory+global.UIConfigYamlFileName, []byte(bmxConfigString), 0644)
+	err := ioutil.WriteFile(dataDirectory+"/"+global.ConfigYamlFileName, []byte(configString), 0644)
 	if err != nil {
 		t.Error("Can not create temp file")
 	}
@@ -130,10 +129,10 @@ func TestFindProperty(t *testing.T) {
 
 func TestRemoveProperty(t *testing.T) {
 	t.Log("Entering... TestRemoveProperty")
-	t.Logf("%s\n", bmxConfigString)
+	t.Logf("%s\n", configString)
 	global.ConfigDirectory = "../../test/resource"
 	dataDirectory := extensionManager.GetRootExtensionPath(global.ConfigDirectory, global.CommandsRunnerStatesName)
-	err := ioutil.WriteFile(dataDirectory+globalCustom.UIConfigJsonFileName, []byte(bmxConfigString), 0644)
+	err := ioutil.WriteFile(dataDirectory+"/"+global.ConfigYamlFileName, []byte(configString), 0644)
 	if err != nil {
 		t.Error("Can not create temp file")
 	}

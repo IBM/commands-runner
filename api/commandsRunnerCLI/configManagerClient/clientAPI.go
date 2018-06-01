@@ -25,7 +25,7 @@ import (
 )
 
 //SetAPISetup set the API configuration
-func SetAPISetup(urlIn string, outputFormat string, timeout string, caCertPath string, token string) error {
+func SetAPISetup(urlIn string, outputFormat string, timeout string, caCertPath string, insecureSSL bool, token string) error {
 	if urlIn == "" {
 		urlIn = global.DefaultUrl
 	}
@@ -50,6 +50,7 @@ func SetAPISetup(urlIn string, outputFormat string, timeout string, caCertPath s
 		OutputFormat: outputFormat,
 		Timeout:      timeoutI,
 		CACertPath:   finalCACertPath,
+		InsecureSSL:  insecureSSL,
 		Token:        token,
 	}
 	//Convert it as json
@@ -68,7 +69,7 @@ func SetAPISetup(urlIn string, outputFormat string, timeout string, caCertPath s
 	if err != nil {
 		return err
 	}
-	client, err := NewClient("", "", "", u.Scheme != "https")
+	client, err := NewClient("", "", "", "", u.Scheme != "https", "")
 	_, errStatus := client.GetCMStatus()
 	if errStatus != nil {
 		return errors.New("wrong url, certificate or token or API server not ready yet")

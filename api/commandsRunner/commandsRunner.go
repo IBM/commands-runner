@@ -12,11 +12,14 @@ package commandsRunner
 
 import (
 	"errors"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/crManager"
 
 	log "github.com/sirupsen/logrus"
 	cli "gopkg.in/urfave/cli.v1"
@@ -68,6 +71,8 @@ func validateToken(configDir string, protectedHandler http.HandlerFunc) http.Han
 
 		//Check if correct token
 		if receivedToken != tokenS {
+			log.Info(receivedToken)
+			log.Info(tokenS)
 			http.Error(w, "Invalid token", http.StatusForbidden)
 			return
 		}
@@ -92,11 +97,26 @@ func AddHandler(pattern string, handler http.HandlerFunc, requireAuth bool) {
 func start() {
 	go func() {
 		if err := http.ListenAndServe(":"+serverPort, nil); err != nil {
-			log.Fatalf("ListenAndServe error: %v", err)
+			log.Errorf("ListenAndServe error: %v", err)
+		}
+	}()
+	go func() {
+		if err := http.ListenAndServeTLS(":"+serverPortSSL, serverCertificatePath, serverKeyPath, nil); err != nil {
+			log.Errorf("ListenAndServeTLS error: %v", err)
 		}
 	}()
 	statusManager.SetStatus(statusManager.CMStatus, "Up")
-	log.Fatal(http.ListenAndServeTLS(":"+serverPortSSL, serverCertificatePath, serverKeyPath, nil))
+	// if _, err := os.Stat(serverCertificatePath); err == nil {
+	// 	if _, err := os.Stat(serverKeyPath); err == nil {
+
+	// 		log.Fatal(http.ListenAndServeTLS(":"+serverPortSSL, serverCertificatePath, serverKeyPath, nil))
+	// 	}
+	// }
+	blockForever()
+}
+
+func blockForever() {
+	select {}
 }
 
 type InitFunc func(port string, portSSL string, configDir string, certificatePath string, keyPath string, stateFilePath string)
@@ -113,7 +133,7 @@ func Init(port string, portSSL string, configDir string, certificatePath string,
 	AddHandler("/cr/v1/state/", handleState, true)
 	AddHandler("/cr/v1/states", handleStates, true)
 	AddHandler("/cr/v1/engine", handleEngine, true)
-	AddHandler("/cr/v1/pcm/", handlePCM, true)
+	AddHandler("/cr/v1/pcm/", handleCR, true)
 	AddHandler("/cr/v1/status", handleStatus, true)
 	AddHandler("/cr/v1/extension", handleExtension, true)
 	AddHandler("/cr/v1/extensions/", handleExtensions, true)
@@ -126,7 +146,7 @@ func ServerStart(preInitFunc InitFunc, postInitFunc InitFunc, preStartFunc InitF
 	var configDir string
 	var port string
 	var portSSL string
-	var pieStatesPath string
+	var statesPath string
 
 	//	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
@@ -136,9 +156,8 @@ func ServerStart(preInitFunc InitFunc, postInitFunc InitFunc, preStartFunc InitF
 
 	app.Commands = []cli.Command{
 		{
-			Name:   "listen",
-			Hidden: true,
-			Usage:  "Launch the Config Manager server",
+			Name:  "listen",
+			Usage: "Launch the Config Manager server",
 			Flags: []cli.Flag{
 				cli.StringFlag{
 					Name:        "configDir, c",
@@ -148,7 +167,7 @@ func ServerStart(preInitFunc InitFunc, postInitFunc InitFunc, preStartFunc InitF
 				cli.StringFlag{
 					Name:        "statePath, s",
 					Usage:       "Path of the state file",
-					Destination: &pieStatesPath,
+					Destination: &statesPath,
 				},
 				cli.StringFlag{
 					Name:        "port, p",
@@ -164,6 +183,10 @@ func ServerStart(preInitFunc InitFunc, postInitFunc InitFunc, preStartFunc InitF
 				},
 			},
 			Action: func(c *cli.Context) error {
+				crManager.LogPath = configDir + string(filepath.Separator) + "commands-runner.log"
+				file, _ := os.Create(crManager.LogPath)
+				out := io.MultiWriter(file, os.Stderr)
+				log.SetOutput(out)
 				logLevel := os.Getenv("CM_TRACE")
 				log.Printf("CM_TRACE: %s", logLevel)
 				if logLevel == "" {
@@ -186,21 +209,20 @@ func ServerStart(preInitFunc InitFunc, postInitFunc InitFunc, preStartFunc InitF
 				}
 
 				if preInitFunc != nil {
-					preInitFunc(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName, pieStatesPath)
+					preInitFunc(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName, statesPath)
 				}
-				Init(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName, pieStatesPath)
+				Init(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName, statesPath)
 				if postInitFunc != nil {
-					postInitFunc(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName, pieStatesPath)
+					postInitFunc(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName, statesPath)
 				}
 				if preStartFunc != nil {
-					preStartFunc(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName, pieStatesPath)
+					preStartFunc(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName, statesPath)
 				}
 				start()
 				return nil
 			},
 		},
 	}
-
 	errRun := app.Run(os.Args)
 	if errRun != nil {
 		os.Exit(1)

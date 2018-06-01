@@ -19,6 +19,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/stateManager"
 )
 
@@ -36,7 +37,7 @@ func (cmc *ConfigManagerClient) getRestStates(extensionName string, status strin
 		}
 	}
 	//Call rest api
-	data, errCode, err := cmc.restCall(http.MethodGet, url, nil, nil)
+	data, errCode, err := cmc.RestCall(http.MethodGet, global.BaseURL, url, nil, nil)
 	if errCode != http.StatusOK {
 		return "", errors.New("Unable to get states, please check logs")
 	}
@@ -99,7 +100,7 @@ func (cmc *ConfigManagerClient) SetStates(extensionName string, statesPath strin
 	}
 	file = fileOS
 	//Call the rest API
-	_, errCode, err := cmc.restCall(http.MethodPut, url, file, nil)
+	_, errCode, err := cmc.RestCall(http.MethodPut, global.BaseURL, url, file, nil)
 	if err != nil {
 		return "", err
 	}
@@ -126,7 +127,7 @@ func (cmc *ConfigManagerClient) SetStatesStatuses(extensionName string, newStatu
 		url += "&to-state-name=" + toState + "&to-include=" + strconv.FormatBool(toInclude)
 	}
 	//Call the rest API
-	data, errCode, err := cmc.restCall(http.MethodPut, url, nil, nil)
+	data, errCode, err := cmc.RestCall(http.MethodPut, global.BaseURL, url, nil, nil)
 	if err != nil {
 		return "", err
 	}
@@ -166,7 +167,7 @@ func (cmc *ConfigManagerClient) InsertStateStates(extensionName string, pos int,
 	} else {
 		file = nil
 	}
-	data, errCode, err := cmc.restCall(http.MethodPut, url, file, nil)
+	data, errCode, err := cmc.RestCall(http.MethodPut, global.BaseURL, url, file, nil)
 	if err != nil {
 		return "", err
 	}
@@ -189,7 +190,7 @@ func (cmc *ConfigManagerClient) DeleteStateStates(extensionName string, pos int,
 		url += ";amp&state-name=" + stateName
 	}
 	//Call the rest API
-	data, errCode, err := cmc.restCall(http.MethodPut, url, nil, nil)
+	data, errCode, err := cmc.RestCall(http.MethodPut, global.BaseURL, url, nil, nil)
 	if err != nil {
 		return "", err
 	}

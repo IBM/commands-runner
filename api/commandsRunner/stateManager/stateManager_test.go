@@ -57,6 +57,7 @@ func TestGetStatesOK(t *testing.T) {
 	t.Log("Entering... TestGetStatesOK")
 	statesPath := "../../test/resource/states-TestGetStatesOK.yaml"
 	extensionManager.SetExtensionPath("../../test/data/extensions/")
+	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
 	sm, err := NewStateManager(statesPath)
 	if err != nil {
 		t.Error(err.Error())
@@ -96,15 +97,6 @@ func TestGetStatesOK(t *testing.T) {
 	}
 }
 
-/*
-func TestNewStatesManagerFileNotExists(t *testing.T) {
-	_, err := NewStateManager("jumk")
-	if err == nil {
-		t.Error("An error should be raised as the state file doesn't exist")
-	}
-}
-*/
-
 func TestGetStatesWithStatus(t *testing.T) {
 	t.Log("Entering... TestGetStatesWithStatus")
 	sm, err := NewStateManager("../../test/resource/states-run-running.yaml")
@@ -124,6 +116,7 @@ func TestGetStatesWithStatus(t *testing.T) {
 }
 
 func TestSetStatesOK(t *testing.T) {
+	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
 	extensionManager.SetExtensionPath("../../test/data/extensions/")
 	_, err := os.Create("../../test/resource/out-test-states-post-sample-from-json.yaml")
 	if err != nil {
@@ -149,6 +142,7 @@ func TestSetStatesOK(t *testing.T) {
 
 func TestSetStatesStatusesOK(t *testing.T) {
 	t.Log("Entering... TestSetStatesStatusesOK")
+	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
 	extensionManager.SetExtensionPath("../../test/data/extensions/")
 	sm, err := NewStateManager("../../test/resource/states-TestSetStatesStatusesOK.yaml")
 	if err != nil {
@@ -181,6 +175,7 @@ func TestSetStatesStatusesOK(t *testing.T) {
 
 func TestSetStatesStatusesFromTo(t *testing.T) {
 	t.Log("Entering... TestSetStatesStatusesOK")
+	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
 	extensionManager.SetExtensionPath("../../test/data/extensions/")
 	sm, err := NewStateManager("../../test/resource/states-TestSetStatesStatusesFromTo.yaml")
 	if err != nil {
@@ -217,7 +212,7 @@ func TestSetStatesStatusesFromTo(t *testing.T) {
 		t.Error(err.Error())
 	}
 	if state.Status == StateSKIP {
-		t.Error("Status set as SKIP as expected:" + state.Status)
+		t.Error("Status set as SKIP and got :" + state.Status)
 	}
 	states, err = sm.GetStates(StateSKIP)
 	if len(states.StateArray) != 2 {
@@ -373,6 +368,7 @@ func TestSetStatesWithDelete(t *testing.T) {
 
 func TestSetStatesMerge(t *testing.T) {
 	t.Log("Entering... TestSetStatesMerge")
+	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
 	extensionManager.SetExtensionPath("../../test/data/extensions/")
 	_, err := os.Create("../../test/resource/out-test-states-merge-json.yaml")
 	if err != nil {
@@ -412,6 +408,7 @@ func TestSetStatesMerge(t *testing.T) {
 
 func TestSetStatesMergeWithDelete(t *testing.T) {
 	t.Log("Entering... TestSetStatesMerge")
+	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
 	extensionManager.SetExtensionPath("../../test/data/extensions/")
 	_, err := os.Create("../../test/resource/out-test-states-merge-delete-json.yaml")
 	if err != nil {
@@ -453,6 +450,7 @@ func TestSetStatesMergeWithDelete(t *testing.T) {
 
 func TestSetStatesMergeWithCycle(t *testing.T) {
 	t.Log("Entering... TestSetStatesMerge")
+	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
 	extensionManager.SetExtensionPath("../../test/data/extensions/")
 	_, err := os.Create("../../test/resource/out-test-states-merge-cycle-json.yaml")
 	if err != nil {
@@ -485,6 +483,8 @@ func TestSetStatesMergeWithCycle(t *testing.T) {
 
 func TestInsertStatesBeforeFirst(t *testing.T) {
 	t.Log("Entering... TestInsertStatesBeforeFirst")
+	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
+	extensionManager.SetExtensionPath("../../test/data/extensions/")
 	_, err := os.Create("../../test/resource/out-test-insert-before-first-state.yaml")
 	if err != nil {
 		t.Error(err.Error())
@@ -523,6 +523,8 @@ func TestInsertStatesBeforeFirst(t *testing.T) {
 
 func TestInsertStatesAfterFirst(t *testing.T) {
 	t.Log("Entering... TestInsertStatesAfterFirst")
+	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
+	extensionManager.SetExtensionPath("../../test/data/extensions/")
 	_, err := os.Create("../../test/resource/out-test-insert-after-first-state.yaml")
 	if err != nil {
 		t.Error(err.Error())
@@ -562,6 +564,8 @@ func TestInsertStatesAfterFirst(t *testing.T) {
 }
 func TestInsertStatesBeforeLast(t *testing.T) {
 	t.Log("Entering... TestInsertStatesBeforeFirst")
+	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
+	extensionManager.SetExtensionPath("../../test/data/extensions/")
 	_, err := os.Create("../../test/resource/out-test-insert-before-last-state.yaml")
 	if err != nil {
 		t.Error(err.Error())
@@ -600,6 +604,8 @@ func TestInsertStatesBeforeLast(t *testing.T) {
 
 func TestInsertStatesAfterLast(t *testing.T) {
 	t.Log("Entering... TestInsertStatesAfterFirst")
+	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
+	extensionManager.SetExtensionPath("../../test/data/extensions/")
 	_, err := os.Create("../../test/resource/out-test-insert-after-last-state.yaml")
 	if err != nil {
 		t.Error(err.Error())
@@ -640,6 +646,8 @@ func TestInsertStatesAfterLast(t *testing.T) {
 
 func TestInsertStatesAfterLastByName(t *testing.T) {
 	t.Log("Entering... TestInsertStatesAfterFirst")
+	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
+	extensionManager.SetExtensionPath("../../test/data/extensions/")
 	_, err := os.Create("../../test/resource/out-test-insert-after-last-state.yaml")
 	if err != nil {
 		t.Error(err.Error())
@@ -679,6 +687,8 @@ func TestInsertStatesAfterLastByName(t *testing.T) {
 }
 func TestDeleteStatesFirst(t *testing.T) {
 	t.Log("Entering... TestInsertStatesAfterFirst")
+	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
+	extensionManager.SetExtensionPath("../../test/data/extensions/")
 	_, err := os.Create("../../test/resource/out-test-delete-first-state.yaml")
 	if err != nil {
 		t.Error(err.Error())
@@ -714,6 +724,8 @@ func TestDeleteStatesFirst(t *testing.T) {
 
 func TestDeleteStatesLast(t *testing.T) {
 	t.Log("Entering... TestInsertStatesAfterFirst")
+	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
+	extensionManager.SetExtensionPath("../../test/data/extensions/")
 	_, err := os.Create("../../test/resource/out-test-delete-last-state.yaml")
 	if err != nil {
 		t.Error(err.Error())
@@ -748,6 +760,8 @@ func TestDeleteStatesLast(t *testing.T) {
 }
 
 func TestDeleteStatesFirstByName(t *testing.T) {
+	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
+	extensionManager.SetExtensionPath("../../test/data/extensions/")
 	t.Log("Entering... TestInsertStatesAfterFirst")
 	_, err := os.Create("../../test/resource/out-test-delete-first-state.yaml")
 	if err != nil {
@@ -784,6 +798,8 @@ func TestDeleteStatesFirstByName(t *testing.T) {
 
 func TestDeleteStatesLastByName(t *testing.T) {
 	t.Log("Entering... TestInsertStatesAfterFirst")
+	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
+	extensionManager.SetExtensionPath("../../test/data/extensions/")
 	_, err := os.Create("../../test/resource/out-test-delete-last-state.yaml")
 	if err != nil {
 		t.Error(err.Error())
@@ -818,6 +834,8 @@ func TestDeleteStatesLastByName(t *testing.T) {
 }
 
 func TestDeleteStatesProtected(t *testing.T) {
+	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
+	extensionManager.SetExtensionPath("../../test/data/extensions/")
 	t.Log("Entering... TestInsertStatesAfterFirst")
 	_, err := os.Create("../../test/resource/out-test-delete-last-state.yaml")
 	if err != nil {
@@ -853,6 +871,8 @@ func TestDeleteStatesProtected(t *testing.T) {
 }
 func TestGetStateOK(t *testing.T) {
 	t.Log("Entering... TestGetStateOK")
+	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
+	extensionManager.SetExtensionPath("../../test/data/extensions/")
 	sm, err := NewStateManager("../../test/resource/states-TestGetStateOK.yaml")
 	if err != nil {
 		t.Error(err.Error())
@@ -894,6 +914,7 @@ func TestGetStateEmptyState(t *testing.T) {
 
 func TestSetStateStatus(t *testing.T) {
 	t.Log("Entering... TestSetStateStatus")
+	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
 	extensionManager.SetExtensionPath("../../test/data/extensions/")
 	stateV := StateRUNNING
 	reasonV := strconv.FormatInt(time.Now().UnixNano(), 5)
@@ -955,6 +976,7 @@ func TestSetStateStatus(t *testing.T) {
 
 func TestEngineSuccess(t *testing.T) {
 	t.Log("Entering... TestEngineSuccess")
+	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
 	extensionManager.SetExtensionPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-run-success.yaml"
 	sm, err := NewStateManager(statesPath)
@@ -984,6 +1006,7 @@ func TestEngineSuccess(t *testing.T) {
 
 func TestStatusFailedDependency(t *testing.T) {
 	t.Log("Entering... TestStatusFailedDependency")
+	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
 	extensionManager.SetExtensionPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-run-failed-dependency.yaml"
 	sm, err := NewStateManager(statesPath)
@@ -1016,6 +1039,7 @@ func TestStatusFailedDependency(t *testing.T) {
 
 func TestEngineFailure(t *testing.T) {
 	t.Log("Entering... TestEngineFailure")
+	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
 	extensionManager.SetExtensionPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-run-failure.yaml"
 	sm, err := NewStateManager(statesPath)
@@ -1048,6 +1072,7 @@ func TestEngineFailure(t *testing.T) {
 }
 
 func TestSetStateStatusEmptyState(t *testing.T) {
+	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
 	extensionManager.SetExtensionPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-TestSetStateStatusEmptyState.yaml"
 	sm, err := NewStateManager(statesPath)

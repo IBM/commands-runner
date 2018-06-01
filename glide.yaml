@@ -5,11 +5,6 @@ import:
 - package: github.com/go-yaml/yaml
   version: 2.1.1
 - package: github.com/olebedev/config
-- package: github.com/vmware/govmomi
-  version: 0.17.0
-  subpackages:
-  - find
-  - object
 - package: gopkg.in/urfave/cli.v1
   version: 1.20.0
 - package: gopkg.in/yaml.v2

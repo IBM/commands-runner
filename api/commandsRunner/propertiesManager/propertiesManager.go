@@ -24,9 +24,10 @@ import (
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 )
 
+//Properties map of interfaces
 type Properties map[string]interface{}
 
-//get the cf-pie path
+//GetConfigPath gets the statesFile path
 func GetConfigPath(extensionName string) string {
 	var configPath string
 	if extensionName == global.CommandsRunnerStatesName || extensionName == "" {
@@ -38,7 +39,7 @@ func GetConfigPath(extensionName string) string {
 }
 
 func logProperties(ps Properties) {
-	for key, _ := range ps {
+	for key := range ps {
 		if !strings.Contains(key, "password") &&
 			!strings.Contains(key, "key") &&
 			!strings.Contains(key, "cert") {
@@ -56,7 +57,7 @@ func logProperties(ps Properties) {
 }
 
 /*
-Read the property file and populate the properties map
+ReadProperties reads the property file and populate the properties map
 If the file is not present or can not be read an error is raised
 */
 func ReadProperties(extensionName string) (Properties, error) {
@@ -87,6 +88,7 @@ func ReadProperties(extensionName string) (Properties, error) {
 	return properties, err
 }
 
+//RenderProperties converts properties into string
 func RenderProperties(ps Properties) (string, error) {
 	log.Debug("Entering... renderProperties")
 	uiConfigYaml, err := config.ParseYaml(global.ConfigYamlRootKey + ":")
@@ -105,6 +107,7 @@ func RenderProperties(ps Properties) (string, error) {
 	return string(out), nil
 }
 
+//WriteProperties persists the properties
 func WriteProperties(extensionName string, ps Properties) error {
 	log.Debug("Entering... writeProperties")
 	dataDirectory := GetConfigPath(extensionName)
@@ -118,6 +121,7 @@ func WriteProperties(extensionName string, ps Properties) error {
 	return nil
 }
 
+//GetValueAsString gets a property as string
 func GetValueAsString(ps Properties, key string) (string, error) {
 	if val, ok := ps[key]; ok {
 		val, err := ConvertToString(val)
@@ -129,17 +133,18 @@ func GetValueAsString(ps Properties, key string) (string, error) {
 	return "", nil
 }
 
+//ConvertToString converts an interface to string
 func ConvertToString(data interface{}) (string, error) {
 	if data == nil {
 		return "", errors.New("data nil")
 	}
 	if val, ok := data.(string); ok {
 		return val, nil
-	} else {
-		return "", errors.New("Not a string:" + reflect.TypeOf(data).String())
 	}
+	return "", errors.New("Not a string:" + reflect.TypeOf(data).String())
 }
 
+//GetValueAsBool gets a property value as boolean
 func GetValueAsBool(ps Properties, key string) (bool, error) {
 	if val, ok := ps[key]; ok {
 		val, err := ConvertToBool(val)
@@ -151,14 +156,15 @@ func GetValueAsBool(ps Properties, key string) (bool, error) {
 	return false, nil
 }
 
+//ConvertToBool converts an interface to boolean
 func ConvertToBool(data interface{}) (bool, error) {
 	if val, ok := data.(bool); ok {
 		return val, nil
-	} else {
-		return false, errors.New("Not a boolean")
 	}
+	return false, errors.New("Not a boolean")
 }
 
+//AddError adds an error in the properties
 func AddError(ps Properties, key string, msgType string, msg string) Properties {
 	var property Properties
 	//Do nothing if it is already a map

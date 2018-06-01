@@ -103,21 +103,6 @@ func createFileUploadRequest(pathToFile, extensionName string, t *testing.T) *ht
 	var req *http.Request
 	if pathToFile != "" {
 		zipit("../test/resource/extensions/custom-extension", pathToFile)
-		/*		writer := multipart.NewWriter(body)
-
-				// Open the file
-				file, err := os.Open(pathToFile)
-				if err != nil {
-					panic(err)
-				}
-				defer file.Close()
-
-				_, err = io.Copy(body, file)
-				if err != nil {
-					t.Fatal(err)
-				}
-				err = writer.Close()
-		*/
 		body, _ := os.Open(pathToFile)
 		writer := multipart.NewWriter(body)
 		req, _ = http.NewRequest("POST", "/cr/v1/extension/action=register", body)
@@ -304,31 +289,6 @@ func TestRegisterIBMExtensionFilesExists(t *testing.T) {
 	}
 	cleanup()
 }
-
-/*
-func TestRegisterExtensionWrongFileType(t *testing.T) {
-	t.Log("Entering........... TestRegisterExtensionWrongFile")
-	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/test-extensions.txt")
-	extensionManager.SetExtensionPath("../test/resource/tmp/")
-	filename := "states.yaml"
-	_ = os.Mkdir(extensionManager.GetExtensionPath(), 0777)
-
-	req := createFileUploadRequest("../test/resource/"+filename, "dummy-extension", t)
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handleExtension)
-	handler.ServeHTTP(rr, req)
-
-	expected := "zip: not a valid zip file\n"
-	got := rr.Body.String()
-
-	if got != expected {
-		t.Errorf("handler returned unexpected responst: got %v want %v",
-			got, expected)
-	}
-
-	cleanup()
-}
-*/
 
 func TestDeletionEndpointExists(t *testing.T) {
 	t.Log("Entering........... TestExtensionDeletion")

@@ -51,7 +51,7 @@ func init() {
 /* Search a property in a ui config object, return an error if not found
  */
 func searchUIConfigProperty(extensionName, name string) (*config.Config, error) {
-	log.Debug("Entering... searchProperty:" + name)
+	log.Debug("Entering... searchUIConfigProperty:" + name)
 	b, err := uiConfigManager.GetUIConfig(extensionName)
 	if err != nil {
 		return nil, err
@@ -149,6 +149,9 @@ func SetProperties(extensionName string, ps propertiesManager.Properties) error 
 	return nil
 }
 
+/*
+Encode decode properties
+*/
 func PropertiesEncodeDecode(extensionName string, ps propertiesManager.Properties, encode bool) (propertiesManager.Properties, error) {
 	log.Debug("Entering in... PropertiesEncodeDecode")
 	pss := make(propertiesManager.Properties)
@@ -240,6 +243,9 @@ func FindProperty(extensionName string, key string) (interface{}, error) {
 	return nil, err
 }
 
+/*
+Add a property
+*/
 func AddProperty(extensionName string, key string, value interface{}) error {
 	var err error
 	properties, err = propertiesManager.ReadProperties(extensionName)

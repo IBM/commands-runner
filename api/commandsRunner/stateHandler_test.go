@@ -519,7 +519,7 @@ func TestAddStateManagerIBM(t *testing.T) {
 	if err != nil {
 		t.Error("Unable to retrieve state manager " + extension)
 	}
-	expected := "../test/data/extensions/embedded/" + extension + "/pie-" + extension + ".yml"
+	expected := "../test/data/extensions/embedded/" + extension + "/statesFile-" + extension + ".yml"
 	got := sm.StatesPath
 	if expected != got {
 		t.Error("Expecting " + expected + " and got " + got)

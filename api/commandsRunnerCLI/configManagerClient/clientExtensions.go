@@ -18,11 +18,12 @@ import (
 	"strconv"
 
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/extensionManager"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 )
 
 func (cmc *ConfigManagerClient) getExtensions(extensionsToList string, catalog bool) (string, error) {
 	url := "/extensions/?filter=" + extensionsToList + ";amp&catalog=" + strconv.FormatBool(catalog)
-	data, errCode, err := cmc.restCall(http.MethodGet, url, nil, nil)
+	data, errCode, err := cmc.RestCall(http.MethodGet, global.BaseURL, url, nil, nil)
 	if errCode != http.StatusOK {
 		return "", errors.New("Unable to get extensions, please check logs")
 	}

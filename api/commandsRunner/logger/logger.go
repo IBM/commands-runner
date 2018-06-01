@@ -19,8 +19,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+//DefaultLogLevel default log level
 const DefaultLogLevel = "info"
 
+//AddCallerField Add called name to the log.
 func AddCallerField() *logrus.Entry {
 	if _, f, line, ok := runtime.Caller(1); ok {
 		fa := strings.Split(f, "/")

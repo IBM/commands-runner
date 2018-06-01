@@ -16,6 +16,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/stateManager"
 )
 
@@ -26,7 +27,7 @@ func (cmc *ConfigManagerClient) getState(extensionName string, stateName string)
 		url += "?extension-name=" + extensionName
 	}
 	//Call the rest api
-	data, errCode, err := cmc.restCall(http.MethodGet, url, nil, nil)
+	data, errCode, err := cmc.RestCall(http.MethodGet, global.BaseURL, url, nil, nil)
 	if errCode != http.StatusOK {
 		return "", errors.New("Unable to get states, please check logs")
 	}
@@ -98,7 +99,7 @@ func (cmc *ConfigManagerClient) SetState(extensionName string, stateName string,
 		url += ";amp&extension-name=" + extensionName
 	}
 	//Call the rest api
-	data, errCode, err := cmc.restCall(http.MethodPut, url, nil, nil)
+	data, errCode, err := cmc.RestCall(http.MethodPut, global.BaseURL, url, nil, nil)
 	if err != nil {
 		return err
 	}

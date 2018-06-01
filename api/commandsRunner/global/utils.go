@@ -59,6 +59,7 @@ func CopyRecursive(src, destDir string) error {
 	return nil
 }
 
+//GetHomeDir returns the current user home dir
 func GetHomeDir() string {
 	homeDir := os.Getenv("HOME")
 	if homeDir == "" {

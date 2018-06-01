@@ -16,12 +16,13 @@ import (
 	"net/http"
 
 	"github.com/olebedev/config"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 )
 
 //GetLogLevel of PCM
 func (cmc *ConfigManagerClient) GetPCMLogLevel() (string, error) {
 	url := "pcm/log/level"
-	data, errCode, err := cmc.restCall(http.MethodGet, url, nil, nil)
+	data, errCode, err := cmc.RestCall(http.MethodGet, global.BaseURL, url, nil, nil)
 	if err != nil {
 		return data, err
 	}
@@ -46,7 +47,7 @@ func (cmc *ConfigManagerClient) GetPCMLogLevel() (string, error) {
 
 func (cmc *ConfigManagerClient) SetPCMLogLevel(level string) (string, error) {
 	url := "pcm/log/level?level=" + level
-	data, errCode, err := cmc.restCall(http.MethodPut, url, nil, nil)
+	data, errCode, err := cmc.RestCall(http.MethodPut, global.BaseURL, url, nil, nil)
 	if err != nil {
 		return data, err
 	}

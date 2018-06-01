@@ -15,6 +15,8 @@ import (
 	"io"
 	"net/http"
 	"os"
+
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 )
 
 //GetBOM returns the BOM
@@ -30,7 +32,7 @@ func (cmc *ConfigManagerClient) Curl(method string, url string, dataPath string)
 		}
 		file = fileOS
 	}
-	data, errCode, err := cmc.restCall(method, url, file, nil)
+	data, errCode, err := cmc.RestCall(method, global.BaseURL, url, file, nil)
 	if err != nil {
 		return data, err
 	}

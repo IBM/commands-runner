@@ -8,7 +8,7 @@
 #  IBM Corporation - initial API and implementation
 ###############################################################################
 */
-package pcmManager
+package crManager
 
 import (
 	"testing"

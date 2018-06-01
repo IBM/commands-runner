@@ -13,5 +13,6 @@ go:
   - "1.8"
 
 before_install:
+- make glide-install
 - make copyright-check
 - make

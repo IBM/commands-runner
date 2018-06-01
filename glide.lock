@@ -10,11 +10,6 @@ imports:
   repo: https://github.com/sirupsen/logrus.git
 - name: github.com/sirupsen/logrus
   version: d682213848ed68c0a260ca37d6dd5ace8423f5ba
-- name: github.com/vmware/govmomi
-  version: 58d927a6c3241af7f51cff7915920a616b7af3ee
-  subpackages:
-  - find
-  - object
 - name: golang.org/x/crypto
   version: 1a580b3eff7814fc9b40602fd35256c63b50f491
   subpackages:

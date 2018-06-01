@@ -37,7 +37,7 @@ import (
 
 //This need to be removed once extensionHandler done
 
-var pieStatesPath string
+var statesPath string
 
 var stateManagers map[string]stateManager.States
 
@@ -46,21 +46,21 @@ func init() {
 	stateManagers = make(map[string]stateManager.States)
 }
 
-//Set the path of the cf-pie
-func SetStatePath(statesPath string) {
-	pieStatesPath = statesPath
+//Set the path of the statesFile
+func SetStatePath(_statesPath string) {
+	statesPath = _statesPath
 }
 
-//get the cf-pie path
+//get the statesFile path
 func getStatePath(extensionName string) string {
-	var statesPath string
+	var statesPathAux string
 	if extensionName == global.CommandsRunnerStatesName || extensionName == "" {
-		statesPath = pieStatesPath
+		statesPathAux = statesPath
 	} else {
-		statesPath = extensionManager.GetRootExtensionPath(extensionManager.GetExtensionPath(), extensionName)
-		statesPath += "pie-" + extensionName + ".yml"
+		statesPathAux = extensionManager.GetRootExtensionPath(extensionManager.GetExtensionPath(), extensionName)
+		statesPathAux += "statesFile-" + extensionName + ".yml"
 	}
-	return statesPath
+	return statesPathAux
 }
 
 //Add a state manager to the map, directly used only for test method.

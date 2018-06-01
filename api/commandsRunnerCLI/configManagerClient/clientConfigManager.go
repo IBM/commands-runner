@@ -36,7 +36,7 @@ const copyright string = `######################################################
 #  IBM Corporation - initial API and implementation
 ###############################################################################`
 
-const configFile = ".configManager.conf"
+const configFile = ".commandsRunner.conf"
 
 var configFilePath string
 
@@ -62,7 +62,7 @@ func init() {
 }
 
 //NewClient creates a new client
-func NewClient(urlIn string, outputFormat string, timeout string, insecureSSL bool) (*ConfigManagerClient, error) {
+func NewClient(urlIn string, outputFormat string, timeout string, caCertPath string, insecureSSL bool, token string) (*ConfigManagerClient, error) {
 	var c *ConfigManagerClient
 	//Set the default values
 	cd := &ConfigManagerClient{
@@ -70,6 +70,8 @@ func NewClient(urlIn string, outputFormat string, timeout string, insecureSSL bo
 		OutputFormat: global.DefaultOutputFormat,
 		Timeout:      global.DefaultTimeout,
 		InsecureSSL:  global.DefaultInsecureSSL,
+		Token:        "",
+		CACertPath:   "",
 	}
 	//Search for config file
 	data, errFile := ioutil.ReadFile(configFilePath)
@@ -94,6 +96,9 @@ func NewClient(urlIn string, outputFormat string, timeout string, insecureSSL bo
 		}
 		c.Timeout = timeoutI
 	}
+	if token != "" {
+		c.Token = token
+	}
 	//Parse the url to find the protocol
 	u, err := url.Parse(c.URL)
 	if err != nil {
@@ -102,8 +107,13 @@ func NewClient(urlIn string, outputFormat string, timeout string, insecureSSL bo
 	c.protocol = u.Scheme
 	c.InsecureSSL = insecureSSL
 	//Read the certs if https and not insecure
-	if c.CACertPath != "" && !c.InsecureSSL && c.protocol == "https" {
-		pem, err := ioutil.ReadFile(c.CACertPath)
+	caCertPathAux := c.CACertPath
+	if caCertPath != "" {
+		caCertPathAux = caCertPath
+	}
+
+	if caCertPathAux != "" && !c.InsecureSSL && c.protocol == "https" {
+		pem, err := ioutil.ReadFile(caCertPathAux)
 		if err != nil {
 			log.Print(err.Error())
 			return nil, err
@@ -144,10 +154,10 @@ func NewClient(urlIn string, outputFormat string, timeout string, insecureSSL bo
 }
 
 //Do a restcall to a given uri
-func (cmc *ConfigManagerClient) restCall(method string, uri string, bodyReader io.Reader, headers map[string]string) (string, int, error) {
+func (cmc *ConfigManagerClient) RestCall(method string, baseUrl string, uri string, bodyReader io.Reader, headers map[string]string) (string, int, error) {
 
 	//add the base url to the uri
-	url := cmc.URL + "/cr/v1/" + uri
+	url := cmc.URL + baseUrl + uri
 
 	req, err := http.NewRequest(method, url, bodyReader)
 	if err != nil {

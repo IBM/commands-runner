@@ -30,10 +30,6 @@ const COPYRIGHT string = `######################################################
 #  IBM Corporation - initial API and implementation
 ###############################################################################`
 
-/**Retrieve the config JSON
-The JSON are automatically generated at build time from the yaml files.
-The yaml files are located in the api/resource/ directory.
-**/
 func GetUIConfig(config string) ([]byte, error) {
 	log.Debugf("config=%s", config)
 	if config == "" {
@@ -63,15 +59,15 @@ func getUIConfig(extensionName string) ([]byte, error) {
 	}
 	cfg, err = cfg.Get("uiconfig")
 	if err == nil {
-		pieCfg, err := config.ParseYaml("uiconfig:")
+		statesFilefg, err := config.ParseYaml("uiconfig:")
 		if err != nil {
 			return nil, err
 		}
-		err = pieCfg.Set("uiconfig", cfg.Root)
+		err = statesFilefg.Set("uiconfig", cfg.Root)
 		if err != nil {
 			return nil, err
 		}
-		out, err := config.RenderJson(pieCfg.Root)
+		out, err := config.RenderJson(statesFilefg.Root)
 		if err != nil {
 			return nil, err
 		}
