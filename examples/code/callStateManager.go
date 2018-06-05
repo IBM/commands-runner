@@ -11,7 +11,7 @@ import (
 )
 
 //This program runs a state file provided in the first parameter.
-func (t T) CallStateManager(statesPath string) {
+func CallStateManager(statesPath string) {
 
 	//Create a new stateManagerInstance
 	stateManagerInstance, err := stateManager.NewStateManager(statesPath)

@@ -10,7 +10,7 @@ import (
 )
 
 //This program runs a state file provided in the first parameter.
-func (t T) ResetStateManager(statesPath string) {
+func ResetStateManager(statesPath string) {
 
 	//Create a new stateManagerInstance
 	stateManagerInstance, err := stateManager.NewStateManager(statesPath)

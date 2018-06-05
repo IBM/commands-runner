@@ -1,40 +1,54 @@
 package main
 
 import (
-	"errors"
 	"os"
-	"reflect"
 
-	log "github.com/sirupsen/logrus"
+	cli "gopkg.in/urfave/cli.v1"
 )
 
-type T struct{}
+var statesFilePath string
 
 func main() {
-	args := os.Args
-	//	log.SetLevel(log.DebugLevel)
+	app := cli.NewApp()
+	app.Usage = "Commands Runner for installation"
+	app.Description = "CLI to manage initial Commands Runner installation"
 
-	function := args[1]
-	log.Debug("function:" + function)
-
-	_, err := call(function, args[2])
-	if err != nil {
-		log.Fatal(err.Error())
+	app.Commands = []cli.Command{
+		{
+			Name:  "CallStateManager",
+			Usage: "Call the state manager on a given state file",
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:        "statesFilePath, s",
+					Usage:       "States file path",
+					Destination: &statesFilePath,
+				},
+			},
+			Action: func(c *cli.Context) error {
+				CallStateManager(statesFilePath)
+				return nil
+			},
+		},
+		{
+			Name:  "ResetStateManager",
+			Usage: "Reset a state file",
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:        "statesFilePath, s",
+					Usage:       "States file path",
+					Destination: &statesFilePath,
+				},
+			},
+			Action: func(c *cli.Context) error {
+				ResetStateManager(statesFilePath)
+				return nil
+			},
+		},
 	}
 
-}
+	errRun := app.Run(os.Args)
+	if errRun != nil {
+		os.Exit(1)
+	}
 
-func call(name string, params ...interface{}) (result []reflect.Value, err error) {
-	t := new(T)
-	f := reflect.ValueOf(t).MethodByName(name)
-	if len(params) != f.Type().NumIn() {
-		err = errors.New("The number of params is not adapted.")
-		return nil, err
-	}
-	in := make([]reflect.Value, len(params))
-	for k, param := range params {
-		in[k] = reflect.ValueOf(param)
-	}
-	result = f.Call(in)
-	return result, nil
 }
