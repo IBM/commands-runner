@@ -10,7 +10,7 @@ notifications:
     on_failure: always
 
 go:
-  - "1.8"
+  - "1.10"
 
 before_install:
 - make glide-install
