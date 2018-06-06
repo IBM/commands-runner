@@ -19,19 +19,19 @@
 
 .DEFAULT_GOAL := all
 
-.PHONY: glide-install
+.PHONY: dep-install
 glide-install::
 	
 	mkdir -p $(GOPATH)/bin
-	glide --version; \
+	dep version; \
 	if [ $$? -ne 0 ]; then \
-		curl https://glide.sh/get | sh; \
+		curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh; \
 	fi
 
 .PHONY: pre-req
 pre-req::
 	
-	glide --debug install --strip-vendor
+	dep ensure -v
 
 .PHONY: go-test
 go-test:: 
