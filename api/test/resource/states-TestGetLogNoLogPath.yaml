@@ -41,7 +41,6 @@ states:
 - name: nologpath
   phase: ""
   label: No Log Path
-  log_path: ../../test/data/extensions/custom/nologpath/nologpath-TestGetLogNoLogPath.log
   status: READY
   start_time: ""
   end_time: ""

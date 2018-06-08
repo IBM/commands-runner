@@ -685,6 +685,50 @@ func TestInsertStatesAfterLastByName(t *testing.T) {
 		t.Error("Not inserted at the correct position")
 	}
 }
+
+func TestInsertStatesWithCycle(t *testing.T) {
+	t.Log("Entering... TestInsertStatesWithCyclet")
+	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
+	extensionManager.SetExtensionPath("../../test/data/extensions/")
+	_, err := os.Create("../../test/resource/out-test-insert-cycle-state.yaml")
+	if err != nil {
+		t.Error(err.Error())
+	}
+	sm, err := NewStateManager("../../test/resource/out-test-insert-cycle-state.yaml")
+	if err != nil {
+		t.Error(err.Error())
+	}
+	states := &States{
+		StateArray: []State{
+			{
+				Name: "First",
+			},
+			{
+				Name: "Last",
+			},
+		},
+	}
+	err = sm.SetStates(*states, true)
+	if err != nil {
+		t.Error(err.Error())
+	}
+	state := &State{
+		Name: "cfp-ext-template",
+		StatesToRerun: []string{
+			"First",
+			"Last",
+		},
+	}
+	err = sm.InsertState(*state, 2, "", true)
+	if err == nil {
+		t.Error("Expecting error as the state insert generate a cycle")
+	}
+	if sm.StateArray[0].Name != "First" ||
+		sm.StateArray[1].Name != "Last" {
+		t.Error("Not inserted at the correct position")
+	}
+}
+
 func TestDeleteStatesFirst(t *testing.T) {
 	t.Log("Entering... TestInsertStatesAfterFirst")
 	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
@@ -1004,6 +1048,23 @@ func TestEngineSuccess(t *testing.T) {
 	}
 }
 
+func TestEngineCycle(t *testing.T) {
+	t.Log("Entering... TestEngineSuccess")
+	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
+	extensionManager.SetExtensionPath("../../test/data/extensions/")
+	statesPath := "../../test/resource/states-run-cycle.yaml"
+	sm, err := NewStateManager(statesPath)
+	if err != nil {
+		t.Error(err.Error())
+	}
+	t.Log("Execute states file")
+	err = sm.Start()
+	if err == nil {
+		t.Error("Expected error as it has a cyle task1->task2")
+	}
+	t.Log(err.Error())
+}
+
 func TestStatusFailedDependency(t *testing.T) {
 	t.Log("Entering... TestStatusFailedDependency")
 	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
@@ -1308,7 +1369,7 @@ func TestGetLogStateMalformed(t *testing.T) {
 	}
 	_, err = sm.GetLog("director", 0, math.MaxInt64, false)
 	if err == nil {
-		t.Error(err.Error())
+		t.Error("expecting error as the states file is malformed")
 	}
 	t.Log(err.Error())
 }
@@ -1322,7 +1383,7 @@ func TestGetLogNoLogPath(t *testing.T) {
 	}
 	_, err = sm.GetLog("nologpath", 0, math.MaxInt64, false)
 	if err == nil {
-		t.Error(err.Error())
+		t.Error("Expecting error as states files doesn't provide log path.")
 	}
 	t.Log(err.Error())
 }
@@ -1336,7 +1397,7 @@ func TestGetLogEmptyLogPath(t *testing.T) {
 	}
 	_, err = sm.GetLog("emptylogpath", 0, math.MaxInt64, false)
 	if err == nil {
-		t.Error(err.Error())
+		t.Error("Expecting error as the log path is empty")
 	}
 	t.Log(err.Error())
 }
@@ -1350,7 +1411,7 @@ func TestGetLogNilLogPath(t *testing.T) {
 	}
 	_, err = sm.GetLog("nillogpath", 0, math.MaxInt64, false)
 	if err == nil {
-		t.Error(err.Error())
+		t.Error("Expecting error as the log path is nil")
 	}
 	t.Log(err.Error())
 }
@@ -1364,7 +1425,7 @@ func TestGetLogWrongLogPath(t *testing.T) {
 	}
 	_, err = sm.GetLog("wronglogpath", 0, math.MaxInt64, false)
 	if err == nil {
-		t.Error(err.Error())
+		t.Error("Expecting error as it has a wring log path")
 	}
 	t.Log(err.Error())
 }

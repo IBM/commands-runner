@@ -38,10 +38,10 @@ states:
   protected: false
   deleted: false
   states_to_rerun: []
-- name: nologpath
+- name: emptylogpath
   phase: ""
   label: No Log Path
-  log_path: ../../test/data/extensions/custom/nologpath/nologpath-TestGetLogEmptyLogPath.log
+  log_path: ""
   status: READY
   start_time: ""
   end_time: ""
