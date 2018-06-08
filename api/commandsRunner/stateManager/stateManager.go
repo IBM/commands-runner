@@ -387,14 +387,97 @@ func (sm *States) removeDeletedStates(newStates States) States {
 	return newStates
 }
 
+func addNodes(sm *States) (*simple.DirectedGraph, map[string]int64, map[int64]State) {
+	newGraph := simple.NewDirectedGraph()
+	statesNodesID := make(map[string]int64)
+	statesMap := make(map[int64]State)
+	for i := 0; i < len(sm.StateArray); i++ {
+		log.Debug("Add Node: " + sm.StateArray[i].Name)
+		n := newGraph.NewNode()
+		newGraph.AddNode(n)
+		statesNodesID[sm.StateArray[i].Name] = n.ID()
+		statesMap[n.ID()] = sm.StateArray[i]
+		log.Debug("Old Node added: " + sm.StateArray[i].Name + " with id: " + strconv.FormatInt(n.ID(), 10))
+	}
+	return newGraph, statesNodesID, statesMap
+}
+
+func addEdges(sm *States, newGraph *simple.DirectedGraph, statesNodesID map[string]int64, statesMap map[int64]State) (*simple.DirectedGraph, map[int64]State) {
+	for i := 0; i < len(sm.StateArray)-1; i++ {
+		ns := newGraph.Node(statesNodesID[sm.StateArray[i].Name])
+		ne := newGraph.Node(statesNodesID[sm.StateArray[i+1].Name])
+		e := newGraph.NewEdge(ns, ne)
+		newGraph.SetEdge(e)
+		log.Debug("Add Egde from existing: " + sm.StateArray[i].Name + " -> " + sm.StateArray[i+1].Name)
+	}
+	//Add edges based on states_to_rerun
+	for _, state := range statesMap {
+		ns := newGraph.Node(statesNodesID[state.Name])
+		for _, stateToRerun := range state.StatesToRerun {
+			if id, ok := statesNodesID[stateToRerun]; ok {
+				ne := newGraph.Node(id)
+				e := newGraph.NewEdge(ns, ne)
+				newGraph.SetEdge(e)
+				log.Debug("Add Egde from states_to_rerun: " + state.Name + " -> " + stateToRerun)
+			} else {
+				log.Debug("WARNING: State to rerun " + stateToRerun + " not found in states_to_rerun attribute of " + state.Name)
+			}
+		}
+	}
+
+	return newGraph, statesMap
+}
+
+//Generate directed graph
+func (sm *States) generateStatesGraph() (*simple.DirectedGraph, map[int64]State) {
+	newGraph, statesNodesID, statesMap := addNodes(sm)
+	newGraph, statesMap = addEdges(sm, newGraph, statesNodesID, statesMap)
+	return newGraph, statesMap
+}
+
+func (sm *States) searchCycles() []*States {
+	newGraph, statesMap := sm.generateStatesGraph()
+	cycles := topo.DirectedCyclesIn(newGraph)
+	statesCycles := make([]*States, 0, 0)
+	if len(cycles) > 0 {
+		for i := 0; i < len(cycles); i++ {
+			statesCycle := &States{
+				StateArray: make([]State, 0),
+				StatesPath: "",
+			}
+			for j := 0; j < len(cycles[i]); j++ {
+				statesCycle.StateArray = append(statesCycle.StateArray, statesMap[cycles[i][j].ID()])
+				log.Debugf("%v->", statesMap[cycles[i][j].ID()].Name)
+			}
+			log.Debugln("")
+			statesCycles = append(statesCycles, statesCycle)
+		}
+	}
+	return statesCycles
+}
+
+func (sm *States) hasCycles() error {
+	cycles := sm.searchCycles()
+	errMsg := "Cycles Found:/n"
+	if len(cycles) > 0 {
+		log.Debugf("sm.StateArray: %v", sm.StateArray)
+		for i := 0; i < len(cycles); i++ {
+			for j := 0; j < len(cycles[i].StateArray); j++ {
+				state := cycles[i].StateArray[j]
+				log.Debugf("%v->", state.Name)
+				errMsg += fmt.Sprintf("%v->", state.Name)
+				errMsg += "\n"
+			}
+			log.Debugln("")
+		}
+		return errors.New(errMsg)
+	}
+	return nil
+}
+
 //Merge 2 states
 func (sm *States) mergeStates(newStates States) error {
 	log.Debug("Entering.... mergeStates")
-	//Test
-	// errStates := sm.readStates()
-	// if errStates != nil {
-	// 	return errStates
-	// }
 	newStates = sm.removeDeletedStates(newStates)
 	//If no state are defined use the new provided stateArray, no merge needed.
 	if len(sm.StateArray) == 0 {
@@ -785,11 +868,22 @@ func (sm *States) InsertState(state State, pos int, stateName string, before boo
 	}
 	log.Debug(strconv.Itoa(arrayPos))
 	//Copy the state at the end but it will be overwritten by the copy
+	bckStateArray := make([]State, 0)
+	bckStateArray = append(bckStateArray, sm.StateArray...)
+	log.Debugf("%v", bckStateArray)
 	sm.StateArray = append(sm.StateArray, state)
 	copy(sm.StateArray[arrayPos+1:], sm.StateArray[arrayPos:])
 	sm.StateArray[arrayPos] = state
 	sm.setDefaultValues()
-	return sm.writeStates()
+	err = sm.hasCycles()
+	if err != nil {
+		log.Debugf("bckStateArray: %v", bckStateArray)
+		sm.StateArray = make([]State, 0)
+		sm.StateArray = append(sm.StateArray, bckStateArray...)
+		return errors.New(err.Error())
+	} else {
+		return sm.writeStates()
+	}
 }
 
 //Delete a state at a given position
@@ -1003,7 +1097,14 @@ func (sm *States) Execute(fromState string, toState string) error {
 		log.Debug(err.Error())
 		return err
 	}
-	err := sm.executeStates(fromState, toState)
+	//check for cycles
+	err := sm.hasCycles()
+	if err != nil {
+		log.Debug(err.Error())
+		return err
+	}
+
+	err = sm.executeStates(fromState, toState)
 	if err != nil {
 		log.Debug(err.Error())
 		return err
