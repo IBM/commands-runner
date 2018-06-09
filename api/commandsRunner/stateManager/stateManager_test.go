@@ -1084,6 +1084,26 @@ func TestEngineCycleOnNext(t *testing.T) {
 	}
 }
 
+func TestNextStatusSet(t *testing.T) {
+	state1 := State{
+		Name: "task1",
+	}
+	state2 := State{
+		Name: "task2",
+	}
+	stateArray := []State{state1, state2}
+	sm := &States{
+		StateArray: stateArray,
+	}
+	err := sm.topoSort()
+	if err != nil {
+		t.Error(err.Error())
+	}
+	if len(sm.StateArray[0].NextStates) == 0 {
+		t.Error("next_states not updated")
+	}
+	t.Logf("%+v", sm.StateArray[0].NextStates)
+}
 func TestStatusFailedDependency(t *testing.T) {
 	t.Log("Entering... TestStatusFailedDependency")
 	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
