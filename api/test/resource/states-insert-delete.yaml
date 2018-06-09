@@ -12,6 +12,8 @@ states:
   protected: false
   deleted: false
   states_to_rerun: []
+  next_states:
+  - task2
 - name: task2
   phase: ""
   label: Task 2
@@ -25,6 +27,8 @@ states:
   protected: false
   deleted: false
   states_to_rerun: []
+  next_states:
+  - task3
 - name: task3
   phase: ""
   label: Task 3
@@ -38,3 +42,4 @@ states:
   protected: false
   deleted: false
   states_to_rerun: []
+  next_states: []

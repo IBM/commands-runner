@@ -12,6 +12,7 @@ states:
   protected: false
   deleted: false
   states_to_rerun: []
+  next_states: []
 - name: repeat
   phase: ""
   label: Repeat
@@ -25,6 +26,7 @@ states:
   protected: false
   deleted: false
   states_to_rerun: []
+  next_states: []
 - name: cf
   phase: ""
   label: CloudFoundry
@@ -38,6 +40,7 @@ states:
   protected: false
   deleted: false
   states_to_rerun: []
+  next_states: []
 - name: nologpath
   phase: ""
   label: No Log Path
@@ -51,6 +54,7 @@ states:
   protected: false
   deleted: false
   states_to_rerun: []
+  next_states: []
 - name: wronglogpath
   phase: ""
   label: wronglogpath
@@ -64,3 +68,4 @@ states:
   protected: false
   deleted: false
   states_to_rerun: []
+  next_states: []

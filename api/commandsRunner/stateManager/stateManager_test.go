@@ -1048,11 +1048,11 @@ func TestEngineSuccess(t *testing.T) {
 	}
 }
 
-func TestEngineCycle(t *testing.T) {
+func TestEngineCycleOnRerun(t *testing.T) {
 	t.Log("Entering... TestEngineSuccess")
 	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
 	extensionManager.SetExtensionPath("../../test/data/extensions/")
-	statesPath := "../../test/resource/states-run-cycle.yaml"
+	statesPath := "../../test/resource/states-run-cycle-on-rerun.yaml"
 	sm, err := NewStateManager(statesPath)
 	if err != nil {
 		t.Error(err.Error())
@@ -1061,8 +1061,27 @@ func TestEngineCycle(t *testing.T) {
 	err = sm.Start()
 	if err == nil {
 		t.Error("Expected error as it has a cyle task1->task2")
+	} else {
+		t.Log(err.Error())
 	}
-	t.Log(err.Error())
+}
+
+func TestEngineCycleOnNext(t *testing.T) {
+	t.Log("Entering... TestEngineSuccess")
+	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
+	extensionManager.SetExtensionPath("../../test/data/extensions/")
+	statesPath := "../../test/resource/states-run-cycle-on-next.yaml"
+	sm, err := NewStateManager(statesPath)
+	if err != nil {
+		t.Error(err.Error())
+	}
+	t.Log("Execute states file")
+	err = sm.Start()
+	if err == nil {
+		t.Error("Expected error as it has a cyle task1->task2->task1")
+	} else {
+		t.Log(err.Error())
+	}
 }
 
 func TestStatusFailedDependency(t *testing.T) {

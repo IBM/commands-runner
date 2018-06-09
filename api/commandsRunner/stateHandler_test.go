@@ -102,7 +102,7 @@ func TestStateOk(t *testing.T) {
 
 	// Check the response body is what we expect.
 	var expected bytes.Buffer
-	err = json.Indent(&expected, []byte(`{"name":"director","phase":"","label":"Director","log_path":"/tmp/sample-director.log","status":"READY","start_time":"","end_time":"","reason":"","script":"test","script_timeout":10,"protected":false,"deleted":false,"states_to_rerun":[]}`), "", "  ")
+	err = json.Indent(&expected, []byte(`{"name":"director","phase":"","label":"Director","log_path":"/tmp/sample-director.log","status":"READY","start_time":"","end_time":"","reason":"","script":"test","script_timeout":10,"protected":false,"deleted":false,"states_to_rerun":[],"next_states":[]}`), "", "  ")
 	if err != nil {
 		t.Error(err.Error())
 	}
