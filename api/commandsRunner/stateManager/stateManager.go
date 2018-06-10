@@ -390,22 +390,22 @@ func (sm *States) removeDeletedStates(newStates States) States {
 	return newStates
 }
 
-func addNodes(sm *States) (*simple.DirectedGraph, map[string]int64, map[int64]State) {
+func (sm *States) addNodes() (*simple.DirectedGraph, map[string]int64, map[int64]*State) {
 	newGraph := simple.NewDirectedGraph()
 	statesNodesID := make(map[string]int64)
-	statesMap := make(map[int64]State)
+	statesMap := make(map[int64]*State)
 	for i := 0; i < len(sm.StateArray); i++ {
 		log.Debug("Add Node: " + sm.StateArray[i].Name)
 		n := newGraph.NewNode()
 		newGraph.AddNode(n)
 		statesNodesID[sm.StateArray[i].Name] = n.ID()
-		statesMap[n.ID()] = sm.StateArray[i]
+		statesMap[n.ID()] = &sm.StateArray[i]
 		log.Debug("Old Node added: " + sm.StateArray[i].Name + " with id: " + strconv.FormatInt(n.ID(), 10))
 	}
 	return newGraph, statesNodesID, statesMap
 }
 
-func addEdgesNext(sm *States, currentState State, newGraph *simple.DirectedGraph, statesNodesID map[string]int64) {
+func (sm *States) addEdgesNext(currentState State, newGraph *simple.DirectedGraph, statesNodesID map[string]int64) {
 	ns := newGraph.Node(statesNodesID[currentState.Name])
 	log.Debug("CurrentState:" + currentState.Name)
 	log.Debugf("NextStates: %+v", currentState.NextStates)
@@ -424,7 +424,7 @@ func addEdgesNext(sm *States, currentState State, newGraph *simple.DirectedGraph
 	//	return newGraph
 }
 
-func addEdges(sm *States, newGraph *simple.DirectedGraph, statesNodesID map[string]int64) *simple.DirectedGraph {
+func (sm *States) addEdges(newGraph *simple.DirectedGraph, statesNodesID map[string]int64) *simple.DirectedGraph {
 	//Add edges based on state sequence in states file.
 	for i := 0; i < len(sm.StateArray)-1; i++ {
 		state := sm.StateArray[i]
@@ -437,10 +437,10 @@ func addEdges(sm *States, newGraph *simple.DirectedGraph, statesNodesID map[stri
 			newGraph.SetEdge(e)
 			log.Debug("Add Egde from existing sequence: " + state.Name + " -> " + stateNext.Name)
 		} else {
-			addEdgesNext(sm, state, newGraph, statesNodesID)
+			sm.addEdgesNext(state, newGraph, statesNodesID)
 		}
 	}
-	addEdgesNext(sm, sm.StateArray[len(sm.StateArray)-1], newGraph, statesNodesID)
+	sm.addEdgesNext(sm.StateArray[len(sm.StateArray)-1], newGraph, statesNodesID)
 	//Add edges based on states_to_rerun
 	for i := 0; i < len(sm.StateArray)-1; i++ {
 		state := sm.StateArray[i]
@@ -461,19 +461,23 @@ func addEdges(sm *States, newGraph *simple.DirectedGraph, statesNodesID map[stri
 }
 
 //Generate directed graph
-func (sm *States) generateStatesGraph() (*simple.DirectedGraph, map[int64]State) {
-	newGraph, statesNodesID, statesMap := addNodes(sm)
-	newGraph = addEdges(sm, newGraph, statesNodesID)
+func (sm *States) generateStatesGraph() (*simple.DirectedGraph, map[int64]*State) {
+	newGraph, statesNodesID, statesMap := sm.addNodes()
+	newGraph = sm.addEdges(newGraph, statesNodesID)
 	return newGraph, statesMap
 }
 
 func (sm *States) topoSort() error {
 	newGraph, statesMap := sm.generateStatesGraph()
 	//Do the topo sort
-	sorted, err := topo.Sort(newGraph)
+	return sm.topoSortGraph(newGraph, statesMap)
+}
+
+func (sm *States) topoSortGraph(graph *simple.DirectedGraph, statesMap map[int64]*State) error {
+	sorted, err := topo.Sort(graph)
 	//Error means cycles
 	if err != nil {
-		cycles := searchCycleOnGraph(newGraph, statesMap)
+		cycles := searchCycleOnGraph(graph, statesMap)
 		return generateCyclesError(cycles)
 	}
 	//Generate the new states based on the sort
@@ -487,7 +491,7 @@ func (sm *States) searchCycles() []*States {
 	return statesCycles
 }
 
-func searchCycleOnGraph(graph *simple.DirectedGraph, statesMap map[int64]State) []*States {
+func searchCycleOnGraph(graph *simple.DirectedGraph, statesMap map[int64]*State) []*States {
 	cycles := topo.DirectedCyclesIn(graph)
 	statesCycles := make([]*States, 0, 0)
 	if len(cycles) > 0 {
@@ -497,7 +501,7 @@ func searchCycleOnGraph(graph *simple.DirectedGraph, statesMap map[int64]State) 
 				StatesPath: "",
 			}
 			for j := 0; j < len(cycles[i]); j++ {
-				statesCycle.StateArray = append(statesCycle.StateArray, statesMap[cycles[i][j].ID()])
+				statesCycle.StateArray = append(statesCycle.StateArray, *statesMap[cycles[i][j].ID()])
 				log.Debugf("%v->", statesMap[cycles[i][j].ID()].Name)
 			}
 			log.Debugln("")
@@ -540,19 +544,7 @@ func (sm *States) mergeStates(newStates States) error {
 		return nil
 	}
 	log.Debug("Topology sort")
-	// newGraph := simple.NewDirectedGraph()
-	// statesNodesID := make(map[string]int64)
-	// statesMap := make(map[int64]State)
-
-	// //Create and add nodes for the new States
-	// for i := 0; i < len(newStates.StateArray); i++ {
-	// 	n := newGraph.NewNode()
-	// 	newGraph.AddNode(n)
-	// 	statesNodesID[newStates.StateArray[i].Name] = n.ID()
-	// 	statesMap[n.ID()] = newStates.StateArray[i]
-	// 	log.Debug("Add new Node: " + newStates.StateArray[i].Name + " with id: " + strconv.FormatInt(n.ID(), 10))
-	// }
-	newGraph, statesNodesID, statesMap := addNodes(&newStates)
+	newGraph, statesNodesID, statesMap := newStates.addNodes()
 	//Create and add nodes for the old States if node not yet in the Graph
 	for i := 0; i < len(sm.StateArray); i++ {
 		//if already inserted then update the state with the current status and other values
@@ -564,52 +556,21 @@ func (sm *States) mergeStates(newStates States) error {
 			state.StartTime = sm.StateArray[i].StartTime
 			state.EndTime = sm.StateArray[i].EndTime
 			state.Reason = sm.StateArray[i].Reason
-			statesMap[statesNodesID[state.Name]] = state
 			log.Debug("NEw State Node Updated with old status: " + state.Name)
 		} else {
 			log.Debug("Add old Node: " + sm.StateArray[i].Name)
 			n := newGraph.NewNode()
 			newGraph.AddNode(n)
 			statesNodesID[sm.StateArray[i].Name] = n.ID()
-			statesMap[n.ID()] = sm.StateArray[i]
+			statesMap[n.ID()] = &sm.StateArray[i]
 			log.Debug("Old Node added: " + sm.StateArray[i].Name + " with id: " + strconv.FormatInt(n.ID(), 10))
 		}
 	}
 
 	//Add the new states edges
-	addEdges(&newStates, newGraph, statesNodesID)
-	// for i := 0; i < len(newStates.StateArray)-1; i++ {
-	// 	ns := newGraph.Node(statesNodesID[newStates.StateArray[i].Name])
-	// 	ne := newGraph.Node(statesNodesID[newStates.StateArray[i+1].Name])
-	// 	e := newGraph.NewEdge(ns, ne)
-	// 	newGraph.SetEdge(e)
-	// 	log.Debug("Add Egde from new: " + newStates.StateArray[i].Name + " -> " + newStates.StateArray[i+1].Name)
-	// }
-
+	newStates.addEdges(newGraph, statesNodesID)
 	//Add the old states edges
-	addEdges(sm, newGraph, statesNodesID)
-	// for i := 0; i < len(sm.StateArray)-1; i++ {
-	// 	ns := newGraph.Node(statesNodesID[sm.StateArray[i].Name])
-	// 	ne := newGraph.Node(statesNodesID[sm.StateArray[i+1].Name])
-	// 	e := newGraph.NewEdge(ns, ne)
-	// 	newGraph.SetEdge(e)
-	// 	log.Debug("Add Egde from existing: " + sm.StateArray[i].Name + " -> " + sm.StateArray[i+1].Name)
-	// }
-
-	//Add edges based on states_to_rerun
-	// for _, state := range statesMap {
-	// 	ns := newGraph.Node(statesNodesID[state.Name])
-	// 	for _, stateToRerun := range state.StatesToRerun {
-	// 		if id, ok := statesNodesID[stateToRerun]; ok {
-	// 			ne := newGraph.Node(id)
-	// 			e := newGraph.NewEdge(ns, ne)
-	// 			newGraph.SetEdge(e)
-	// 			log.Debug("Add Egde from states_to_rerun: " + state.Name + " -> " + stateToRerun)
-	// 		} else {
-	// 			log.Debug("WARNING: State to rerun " + stateToRerun + " not found in states_to_rerun attribute of " + state.Name)
-	// 		}
-	// 	}
-	// }
+	sm.addEdges(newGraph, statesNodesID)
 
 	//Print all edges
 	for _, edge := range newGraph.Edges() {
@@ -620,24 +581,21 @@ func (sm *States) mergeStates(newStates States) error {
 	}
 
 	//Do the topo sort
-	sorted, err := topo.Sort(newGraph)
+	err := sm.topoSortGraph(newGraph, statesMap)
 	//Error means cycles
 	if err != nil {
-		cycles := searchCycleOnGraph(newGraph, statesMap)
-		return generateCyclesError(cycles)
+		return err
 	}
-	//Generate the new states based on the sort
-	sm.generateStatesFromGraph(sorted, statesMap)
 	return nil
 }
 
-func (sm *States) generateStatesFromGraph(sorted []graph.Node, statesMap map[int64]State) {
+func (sm *States) generateStatesFromGraph(sorted []graph.Node, statesMap map[int64]*State) {
 	//Generate the new states based on the sort
 	sm.StateArray = make([]State, 0)
 	for i := 0; i < len(sorted); i++ {
 		log.Debugf("%s|", strconv.FormatInt(sorted[i].ID(), 10))
 		log.Debugf("%s|", statesMap[sorted[i].ID()].Name)
-		sm.StateArray = append(sm.StateArray, statesMap[sorted[i].ID()])
+		sm.StateArray = append(sm.StateArray, *statesMap[sorted[i].ID()])
 	}
 }
 
