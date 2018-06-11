@@ -382,12 +382,16 @@ func TestSetStatesMerge(t *testing.T) {
 	var states States
 	json.Unmarshal([]byte(statesJson), &states)
 	err = sm.SetStates(states, true)
+	statesData, _ := sm.convert2String()
+	t.Log(statesData)
 	if err != nil {
 		t.Error(err.Error())
 	}
 	statesJson = "{\"states\":[{\"name\":\"director\",\"label\":\"Director\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cf2\",\"label\":\"CloudFoundry2\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
 	json.Unmarshal([]byte(statesJson), &states)
 	err = sm.SetStates(states, false)
+	statesData, _ = sm.convert2String()
+	t.Log(statesData)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -407,7 +411,7 @@ func TestSetStatesMerge(t *testing.T) {
 }
 
 func TestSetStatesMergeWithDelete(t *testing.T) {
-	t.Log("Entering... TestSetStatesMerge")
+	t.Log("Entering... TestSetStatesMergeWithDelete")
 	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
 	extensionManager.SetExtensionPath("../../test/data/extensions/")
 	_, err := os.Create("../../test/resource/out-test-states-merge-delete-json.yaml")
@@ -449,7 +453,7 @@ func TestSetStatesMergeWithDelete(t *testing.T) {
 }
 
 func TestSetStatesMergeWithCycle(t *testing.T) {
-	t.Log("Entering... TestSetStatesMerge")
+	t.Log("Entering... TestSetStatesMergeWithCycle")
 	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
 	extensionManager.SetExtensionPath("../../test/data/extensions/")
 	_, err := os.Create("../../test/resource/out-test-states-merge-cycle-json.yaml")
@@ -467,9 +471,13 @@ func TestSetStatesMergeWithCycle(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	statesJson = "{\"states\":[{\"name\":\"cf\",\"label\":\"CloudFoundry\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"director\",\"label\":\"Director\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
+	statesJson = "{\"states\":[{\"name\":\"director\",\"label\":\"Director\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cf\",\"label\":\"CloudFoundry\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\",\"next_states\":[\"director\"]}]}"
 	json.Unmarshal([]byte(statesJson), &states)
+	statesData, _ := states.convert2String()
+	t.Log(statesData)
 	err = sm.SetStates(states, false)
+	statesData, _ = sm.convert2String()
+	t.Log(statesData)
 	if err == nil {
 		t.Error("Expecting error as there is cycles")
 	} else {
@@ -563,7 +571,7 @@ func TestInsertStatesAfterFirst(t *testing.T) {
 	}
 }
 func TestInsertStatesBeforeLast(t *testing.T) {
-	t.Log("Entering... TestInsertStatesBeforeFirst")
+	t.Log("Entering... TestInsertStatesBeforeLast")
 	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
 	extensionManager.SetExtensionPath("../../test/data/extensions/")
 	_, err := os.Create("../../test/resource/out-test-insert-before-last-state.yaml")
@@ -585,6 +593,8 @@ func TestInsertStatesBeforeLast(t *testing.T) {
 		},
 	}
 	err = sm.SetStates(*states, true)
+	stateData, _ := sm.convert2String()
+	t.Log(stateData)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -592,6 +602,8 @@ func TestInsertStatesBeforeLast(t *testing.T) {
 		Name: "cfp-ext-template",
 	}
 	err = sm.InsertState(*state, 2, "", true)
+	stateData, _ = sm.convert2String()
+	t.Log(stateData)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -600,6 +612,7 @@ func TestInsertStatesBeforeLast(t *testing.T) {
 		sm.StateArray[2].Name != "Last" {
 		t.Error("Not inserted at the correct position")
 	}
+	//	t.Error("")
 }
 
 func TestInsertStatesAfterLast(t *testing.T) {
@@ -668,6 +681,8 @@ func TestInsertStatesAfterLastByName(t *testing.T) {
 	}
 	t.Log("Set States")
 	err = sm.SetStates(*states, true)
+	statesData, _ := sm.convert2String()
+	t.Log(statesData)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -676,6 +691,8 @@ func TestInsertStatesAfterLastByName(t *testing.T) {
 		Name: "cfp-ext-template",
 	}
 	err = sm.InsertState(*state, 0, "Last", false)
+	statesData, _ = sm.convert2String()
+	t.Log(statesData)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -687,7 +704,7 @@ func TestInsertStatesAfterLastByName(t *testing.T) {
 }
 
 func TestInsertStatesWithCycle(t *testing.T) {
-	t.Log("Entering... TestInsertStatesWithCyclet")
+	t.Log("Entering... TestInsertStatesWithCycle")
 	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
 	extensionManager.SetExtensionPath("../../test/data/extensions/")
 	_, err := os.Create("../../test/resource/out-test-insert-cycle-state.yaml")
@@ -720,6 +737,8 @@ func TestInsertStatesWithCycle(t *testing.T) {
 		},
 	}
 	err = sm.InsertState(*state, 2, "", true)
+	stateData, _ := sm.convert2String()
+	t.Log(stateData)
 	if err == nil {
 		t.Error("Expecting error as the state insert generate a cycle")
 	}
@@ -1095,10 +1114,9 @@ func TestNextStatusSet(t *testing.T) {
 	sm := &States{
 		StateArray: stateArray,
 	}
-	err := sm.topoSort()
-	if err != nil {
-		t.Error(err.Error())
-	}
+	sm.setDefaultValues()
+	statesData, _ := sm.convert2String()
+	t.Log(statesData)
 	if len(sm.StateArray[0].NextStates) == 0 {
 		t.Error("next_states not updated")
 	}

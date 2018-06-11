@@ -73,7 +73,9 @@ type State struct {
 	Protected     bool     `yaml:"protected" json:"protected"`
 	Deleted       bool     `yaml:"deleted" json:"deleted"`
 	StatesToRerun []string `yaml:"states_to_rerun" json:"states_to_rerun"`
-	NextStates    []string `yaml:"next_states" json:"next_states"`
+	//PreviousStates is not taken into account for the topology sort.
+	PreviousStates []string `yaml:"previous_states" json:"previous_states"`
+	NextStates     []string `yaml:"next_states" json:"next_states"`
 }
 
 type States struct {
@@ -145,6 +147,7 @@ func (sm *States) readStates() error {
 //Set default value for states
 func (sm *States) setDefaultValues() {
 	log.Debug("Entering... setDefaultValues")
+	isNextStateMigrationDone := false
 	for index := range sm.StateArray {
 		//		log.Debug("Check state:" + sm.StateArray[index].Name)
 		//		log.Debug("Check Label")
@@ -177,8 +180,46 @@ func (sm *States) setDefaultValues() {
 			sm.StateArray[index].ScriptTimeout = 60
 			//			log.Debug("Set state.ScriptTimeout to " + strconv.Itoa(sm.StateArray[index].ScriptTimeout))
 		}
+		// Remove state in the nextStates which doesn't exist in the state file.
+		for indexNext, nextState := range sm.StateArray[index].NextStates {
+			indexState, _ := indexState(sm.StateArray, nextState)
+			if indexState == -1 {
+				sm.StateArray[index].NextStates = append(sm.StateArray[index].NextStates[:indexNext], sm.StateArray[index].NextStates[indexNext+1:]...)
+			}
+		}
+	}
+	//if not migrated and the nextStates
+	if !isNextStateMigrationDone {
+		for index := range sm.StateArray {
+			if index < len(sm.StateArray)-1 {
+				stateNext := sm.StateArray[index+1]
+				if len(sm.StateArray[index].NextStates) == 0 {
+					sm.StateArray[index].NextStates = append(sm.StateArray[index].NextStates, stateNext.Name)
+				}
+			}
+		}
 	}
 	log.Debug("Exiting... setDefaultValues")
+}
+
+func (sm *States) cleanPreviousNextStates() {
+	for index := range sm.StateArray {
+		// Remove state in the nextStates which doesn't exist in the state file.
+		for indexNext, nextState := range sm.StateArray[index].NextStates {
+			indexState, _ := indexState(sm.StateArray, nextState)
+			if indexState == -1 {
+				sm.StateArray[index].NextStates = append(sm.StateArray[index].NextStates[:indexNext], sm.StateArray[index].NextStates[indexNext+1:]...)
+			}
+		}
+		//Remove state in the previousStates which doesn't exist in the state file.
+		for indexPrevious, previousState := range sm.StateArray[index].PreviousStates {
+			indexState, _ := indexState(sm.StateArray, previousState)
+			if indexState == -1 {
+				sm.StateArray[index].PreviousStates = append(sm.StateArray[index].PreviousStates[:indexPrevious], sm.StateArray[index].PreviousStates[indexPrevious+1:]...)
+			}
+
+		}
+	}
 }
 
 //Write states
@@ -189,7 +230,7 @@ func (sm *States) writeStates() error {
 	//	log.Debug(sm )
 	sm.lock()
 	defer sm.unlock()
-	statesData, err := yaml.Marshal(sm)
+	statesData, err := sm.convert2ByteArray()
 	log.Debugf("statesData: %s", string(statesData))
 	if err != nil {
 		return err
@@ -205,6 +246,23 @@ func (sm *States) writeStates() error {
 		return err
 	}
 	return nil
+}
+
+func (sm *States) convert2ByteArray() ([]byte, error) {
+	statesData, err := yaml.Marshal(sm)
+	log.Debugf("statesData: %s", string(statesData))
+	if err != nil {
+		return nil, err
+	}
+	return statesData, err
+}
+
+func (sm *States) convert2String() (string, error) {
+	statesData, err := sm.convert2ByteArray()
+	if err != nil {
+		return "", err
+	}
+	return string(statesData), err
 }
 
 //Search a state in states
@@ -245,6 +303,8 @@ func (sm *States) GetStates(status string) (*States, error) {
 //Set a states
 func (sm *States) SetStates(states States, overwrite bool) error {
 	log.Debug("Entering... SetStates")
+	states.setDefaultValues()
+	states.cleanPreviousNextStates()
 	if _, err := os.Stat(sm.StatesPath); os.IsNotExist(err) {
 		log.Debug(errors.New("State file " + sm.StatesPath + " doesn't exist"))
 		overwrite = true
@@ -387,6 +447,7 @@ func (sm *States) removeDeletedStates(newStates States) States {
 			}
 		}
 	}
+	sm.cleanPreviousNextStates()
 	return newStates
 }
 
@@ -405,7 +466,7 @@ func (sm *States) addNodes() (*simple.DirectedGraph, map[string]int64, map[int64
 	return newGraph, statesNodesID, statesMap
 }
 
-func (sm *States) addEdgesNext(currentState State, newGraph *simple.DirectedGraph, statesNodesID map[string]int64) {
+func (sm *States) addEdgesNext(currentState State, newGraph *simple.DirectedGraph, statesNodesID map[string]int64) error {
 	ns := newGraph.Node(statesNodesID[currentState.Name])
 	log.Debug("CurrentState:" + currentState.Name)
 	log.Debugf("NextStates: %+v", currentState.NextStates)
@@ -416,34 +477,26 @@ func (sm *States) addEdgesNext(currentState State, newGraph *simple.DirectedGrap
 			if ne.ID() != ns.ID() {
 				newGraph.SetEdge(e)
 				log.Debug("Add Egde from existing: " + currentState.Name + " -> " + stateNext)
+			} else {
+				return errors.New("Add Edge: Current and next state are the same: " + stateNext)
 			}
 		} else {
 			log.Warning("WARNING: The state next " + stateNext + " listed in states_next attribute of " + currentState.Name + " does not exist")
 		}
 	}
-	//	return newGraph
+	return nil
 }
 
-func (sm *States) addEdges(newGraph *simple.DirectedGraph, statesNodesID map[string]int64) *simple.DirectedGraph {
+func (sm *States) addEdges(newGraph *simple.DirectedGraph, statesNodesID map[string]int64) (*simple.DirectedGraph, error) {
 	//Add edges based on state sequence in states file.
-	for i := 0; i < len(sm.StateArray)-1; i++ {
-		state := sm.StateArray[i]
-		stateNext := sm.StateArray[i+1]
-		if len(sm.StateArray[i].NextStates) == 0 {
-			ns := newGraph.Node(statesNodesID[state.Name])
-			ne := newGraph.Node(statesNodesID[stateNext.Name])
-			sm.StateArray[i].NextStates = append(state.NextStates, stateNext.Name)
-			e := newGraph.NewEdge(ns, ne)
-			newGraph.SetEdge(e)
-			log.Debug("Add Egde from existing sequence: " + state.Name + " -> " + stateNext.Name)
-		} else {
-			sm.addEdgesNext(state, newGraph, statesNodesID)
+	for _, state := range sm.StateArray {
+		err := sm.addEdgesNext(state, newGraph, statesNodesID)
+		if err != nil {
+			return nil, err
 		}
 	}
-	sm.addEdgesNext(sm.StateArray[len(sm.StateArray)-1], newGraph, statesNodesID)
 	//Add edges based on states_to_rerun
-	for i := 0; i < len(sm.StateArray)-1; i++ {
-		state := sm.StateArray[i]
+	for _, state := range sm.StateArray {
 		ns := newGraph.Node(statesNodesID[state.Name])
 		for _, stateToRerun := range state.StatesToRerun {
 			if id, ok := statesNodesID[stateToRerun]; ok {
@@ -456,21 +509,29 @@ func (sm *States) addEdges(newGraph *simple.DirectedGraph, statesNodesID map[str
 			}
 		}
 	}
-
-	return newGraph
+	return newGraph, nil
 }
 
 //Generate directed graph
-func (sm *States) generateStatesGraph() (*simple.DirectedGraph, map[int64]*State) {
+func (sm *States) generateStatesGraph() (*simple.DirectedGraph, map[int64]*State, error) {
 	newGraph, statesNodesID, statesMap := sm.addNodes()
-	newGraph = sm.addEdges(newGraph, statesNodesID)
-	return newGraph, statesMap
+	newGraph, err := sm.addEdges(newGraph, statesNodesID)
+	return newGraph, statesMap, err
 }
 
 func (sm *States) topoSort() error {
-	newGraph, statesMap := sm.generateStatesGraph()
+	log.Debug("Entering in... topoSort")
+	statesData, _ := sm.convert2String()
+	log.Debugf("%s", statesData)
+	newGraph, statesMap, err := sm.generateStatesGraph()
+	if err != nil {
+		return err
+	}
 	//Do the topo sort
-	return sm.topoSortGraph(newGraph, statesMap)
+	err = sm.topoSortGraph(newGraph, statesMap)
+	statesData, _ = sm.convert2String()
+	log.Debug(statesData)
+	return err
 }
 
 func (sm *States) topoSortGraph(graph *simple.DirectedGraph, statesMap map[int64]*State) error {
@@ -481,14 +542,17 @@ func (sm *States) topoSortGraph(graph *simple.DirectedGraph, statesMap map[int64
 		return generateCyclesError(cycles)
 	}
 	//Generate the new states based on the sort
-	sm.generateStatesFromGraph(sorted, statesMap)
+	sm.generateStatesFromGraph(sorted, graph, statesMap)
 	return nil
 }
 
-func (sm *States) searchCycles() []*States {
-	newGraph, statesMap := sm.generateStatesGraph()
+func (sm *States) searchCycles() ([]*States, error) {
+	newGraph, statesMap, err := sm.generateStatesGraph()
+	if err != nil {
+		return nil, err
+	}
 	statesCycles := searchCycleOnGraph(newGraph, statesMap)
-	return statesCycles
+	return statesCycles, nil
 }
 
 func searchCycleOnGraph(graph *simple.DirectedGraph, statesMap map[int64]*State) []*States {
@@ -512,7 +576,10 @@ func searchCycleOnGraph(graph *simple.DirectedGraph, statesMap map[int64]*State)
 }
 
 func (sm *States) hasCycles() error {
-	cycles := sm.searchCycles()
+	cycles, err := sm.searchCycles()
+	if err != nil {
+		return err
+	}
 	log.Debugf("sm.StateArray: %v", sm.StateArray)
 	return generateCyclesError(cycles)
 }
@@ -568,9 +635,15 @@ func (sm *States) mergeStates(newStates States) error {
 	}
 
 	//Add the new states edges
-	newStates.addEdges(newGraph, statesNodesID)
+	newGraph, err := newStates.addEdges(newGraph, statesNodesID)
+	if err != nil {
+		return err
+	}
 	//Add the old states edges
-	sm.addEdges(newGraph, statesNodesID)
+	newGraph, err = sm.addEdges(newGraph, statesNodesID)
+	if err != nil {
+		return err
+	}
 
 	//Print all edges
 	for _, edge := range newGraph.Edges() {
@@ -581,7 +654,7 @@ func (sm *States) mergeStates(newStates States) error {
 	}
 
 	//Do the topo sort
-	err := sm.topoSortGraph(newGraph, statesMap)
+	err = sm.topoSortGraph(newGraph, statesMap)
 	//Error means cycles
 	if err != nil {
 		return err
@@ -589,14 +662,40 @@ func (sm *States) mergeStates(newStates States) error {
 	return nil
 }
 
-func (sm *States) generateStatesFromGraph(sorted []graph.Node, statesMap map[int64]*State) {
+func (sm *States) generateStatesFromGraph(sorted []graph.Node, graph *simple.DirectedGraph, statesMap map[int64]*State) {
 	//Generate the new states based on the sort
 	sm.StateArray = make([]State, 0)
 	for i := 0; i < len(sorted); i++ {
 		log.Debugf("%s|", strconv.FormatInt(sorted[i].ID(), 10))
 		log.Debugf("%s|", statesMap[sorted[i].ID()].Name)
+		statesMap[sorted[i].ID()].NextStates = make([]string, 0)
+		for _, node := range graph.From(sorted[i].ID()) {
+			statesMap[sorted[i].ID()].NextStates = append(statesMap[sorted[i].ID()].NextStates, statesMap[node.ID()].Name)
+		}
+		statesMap[sorted[i].ID()].PreviousStates = make([]string, 0)
+		for _, node := range graph.To(sorted[i].ID()) {
+			statesMap[sorted[i].ID()].PreviousStates = append(statesMap[sorted[i].ID()].PreviousStates, statesMap[node.ID()].Name)
+		}
 		sm.StateArray = append(sm.StateArray, *statesMap[sorted[i].ID()])
 	}
+}
+
+func (sm *States) isInNextState(currentState State, stateName string) bool {
+	for _, nextStateName := range currentState.NextStates {
+		if nextStateName == stateName {
+			return true
+		}
+	}
+	return false
+}
+
+func (sm *States) isInPreviousState(currentState State, stateName string) bool {
+	for _, previousStateNAme := range currentState.PreviousStates {
+		if previousStateNAme == stateName {
+			return true
+		}
+	}
+	return false
 }
 
 //Check if states is running
@@ -866,25 +965,45 @@ func (sm *States) InsertState(state State, pos int, stateName string, before boo
 			return err
 		}
 		position++
-	}
-	log.Debug("Position:" + strconv.Itoa(position))
-	if position < 1 || position > len(sm.StateArray) {
+		log.Debug("Position:" + strconv.Itoa(position))
+	} else if position == 0 && (len(state.NextStates) == 0 || len(state.PreviousStates) == 0) {
+		return errors.New("The position, state name and previous and next states are undefined")
+	} else if position < 1 || position > len(sm.StateArray) {
 		return errors.New("The position must be between 1 and " + strconv.Itoa(len(sm.StateArray)) + " currently:" + strconv.Itoa(position))
 	}
-	arrayPos := position
-	if before {
-		arrayPos = position - 1
-	}
-	log.Debug(strconv.Itoa(arrayPos))
+
 	//Copy the state at the end but it will be overwritten by the copy
 	bckStateArray := make([]State, 0)
 	bckStateArray = append(bckStateArray, sm.StateArray...)
 	log.Debugf("%v", bckStateArray)
+	arrayPos := position
+	if position != 0 {
+		if before {
+			arrayPos = position - 1
+		}
+		if arrayPos > 0 {
+			if !sm.isInNextState(sm.StateArray[arrayPos-1], state.Name) {
+				sm.StateArray[arrayPos-1].NextStates = append(sm.StateArray[arrayPos-1].NextStates, state.Name)
+			}
+			if !sm.isInPreviousState(state, sm.StateArray[arrayPos-1].Name) {
+				state.PreviousStates = append(state.PreviousStates, sm.StateArray[arrayPos-1].Name)
+			}
+		}
+		if arrayPos < len(sm.StateArray) {
+			if !sm.isInPreviousState(sm.StateArray[arrayPos], state.Name) {
+				sm.StateArray[arrayPos].PreviousStates = append(sm.StateArray[arrayPos].PreviousStates, state.Name)
+			}
+			if !sm.isInNextState(state, sm.StateArray[arrayPos].Name) {
+				state.NextStates = append(state.NextStates, sm.StateArray[arrayPos].Name)
+			}
+		}
+	}
+	log.Debug(strconv.Itoa(arrayPos))
 	sm.StateArray = append(sm.StateArray, state)
-	copy(sm.StateArray[arrayPos+1:], sm.StateArray[arrayPos:])
-	sm.StateArray[arrayPos] = state
-	sm.setDefaultValues()
-	err = sm.hasCycles()
+	//	copy(sm.StateArray[arrayPos+1:], sm.StateArray[arrayPos:])
+	//	sm.StateArray[arrayPos] = state
+	err = sm.topoSort()
+	//	err = sm.hasCycles()
 	if err != nil {
 		log.Debugf("bckStateArray: %v", bckStateArray)
 		sm.StateArray = make([]State, 0)
@@ -927,6 +1046,7 @@ func (sm *States) DeleteState(pos int, stateName string) error {
 	copy(sm.StateArray[arrayPos:], sm.StateArray[arrayPos+1:])
 	sm.StateArray[len(sm.StateArray)-1] = State{} // or the zero value of T
 	sm.StateArray = sm.StateArray[:len(sm.StateArray)-1]
+	sm.cleanPreviousNextStates()
 	return sm.writeStates()
 }
 
