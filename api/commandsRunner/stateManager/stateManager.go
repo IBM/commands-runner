@@ -419,7 +419,7 @@ func indexState(states []State, stateName string) (int, error) {
 			return index, nil
 		}
 	}
-	return -1, errors.New(stateName + "not found")
+	return -1, errors.New(stateName + " not found")
 }
 
 //Search index in the current statearray
@@ -1005,7 +1005,7 @@ func (sm *States) InsertState(state State, pos int, stateName string, before boo
 		log.Debug("Position:" + strconv.Itoa(position))
 	} else if position == 0 && (len(state.NextStates) == 0 || len(state.PreviousStates) == 0) {
 		return errors.New("The position, state name and previous and next states are undefined")
-	} else if position < 1 || position > len(sm.StateArray) {
+	} else if position != 0 && (position < 1 || position > len(sm.StateArray)) {
 		return errors.New("The position must be between 1 and " + strconv.Itoa(len(sm.StateArray)) + " currently:" + strconv.Itoa(position))
 	}
 
@@ -1034,6 +1034,16 @@ func (sm *States) InsertState(state State, pos int, stateName string, before boo
 				state.NextStates = append(state.NextStates, sm.StateArray[arrayPos].Name)
 			}
 		}
+	} else {
+		for _, stateName := range state.PreviousStates {
+			statePos, err := sm.getStatePosition(stateName)
+			if err != nil {
+				return err
+			}
+			if !sm.isInNextState(sm.StateArray[statePos], stateName) {
+				sm.StateArray[statePos].NextStates = append(sm.StateArray[statePos].NextStates, state.Name)
+			}
+		}
 	}
 	log.Debug(strconv.Itoa(arrayPos))
 	sm.StateArray = append(sm.StateArray, state)
@@ -1054,7 +1064,7 @@ func (sm *States) InsertState(state State, pos int, stateName string, before boo
 //Delete a state at a given position
 //Array start in Go at 0 but here the pos 1 is the elem 0
 func (sm *States) DeleteState(pos int, stateName string) error {
-	log.Debug("Entering..... InsertState")
+	log.Debug("Entering..... DeleteState")
 	errStates := sm.readStates()
 	if errStates != nil {
 		return errStates

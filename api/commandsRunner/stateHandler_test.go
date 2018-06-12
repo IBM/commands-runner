@@ -168,7 +168,6 @@ func TestInsertDeleteStateStates(t *testing.T) {
 	}
 }
 
-/*
 func TestInsertDeleteStateStatesAutoLocation(t *testing.T) {
 	t.Log("Entering................. TestInsertDeleteStateStatesAutoLocation")
 	log.SetLevel(log.DebugLevel)
@@ -180,7 +179,7 @@ func TestInsertDeleteStateStatesAutoLocation(t *testing.T) {
 	inFileData, err := ioutil.ReadFile(stateFile)
 	t.Log(string(inFileData))
 	//stateAutoLocationJson := "{\"name\":\"cfp-ext-template-auto-location\",\"label\":\"Insert\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}"
-	req, err := http.NewRequest("PUT", "/cr/v1/states?extension-name=cfp-ext-template-auto-location&action=insert&pos=0", nil)
+	req, err := http.NewRequest("PUT", "/cr/v1/states?insert-extension-name=cfp-ext-template-auto-location&action=insert&pos=0", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -195,6 +194,7 @@ func TestInsertDeleteStateStatesAutoLocation(t *testing.T) {
 
 	// Check the status code is what we expect.
 	if status := rr.Code; status != http.StatusOK {
+		t.Log(rr.Body)
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusOK)
 	}
@@ -202,7 +202,7 @@ func TestInsertDeleteStateStatesAutoLocation(t *testing.T) {
 	middleFileData, err := ioutil.ReadFile(stateFile)
 	t.Log(string(middleFileData))
 
-	req, err = http.NewRequest("PUT", "/cr/v1/states?extension-name=cfp-ext-template-auto-location&action=delete&state-name=cfp-ext-template-auto-location", strings.NewReader(stateJson))
+	req, err = http.NewRequest("PUT", "/cr/v1/states?extension-name=cfp-ext-template-auto-location&action=delete&state-name=cfp-ext-template-auto-location&pos=0", strings.NewReader(stateJson))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -216,6 +216,7 @@ func TestInsertDeleteStateStatesAutoLocation(t *testing.T) {
 
 	// Check the status code is what we expect.
 	if status := rr.Code; status != http.StatusOK {
+		t.Log(rr.Body)
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusOK)
 	}
@@ -228,7 +229,6 @@ func TestInsertDeleteStateStatesAutoLocation(t *testing.T) {
 	}
 }
 
-*/
 func TestInsertDeleteStateStatesByName(t *testing.T) {
 	log.SetLevel(log.DebugLevel)
 	t.Log("Entering................. TestInsertDeleteStateStatesByName")
