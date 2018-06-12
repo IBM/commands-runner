@@ -304,7 +304,11 @@ func (sm *States) GetStates(status string) (*States, error) {
 func (sm *States) SetStates(states States, overwrite bool) error {
 	log.Debug("Entering... SetStates")
 	states.setDefaultValues()
-	states.cleanPreviousNextStates()
+	//	states.cleanPreviousNextStates()
+	err := states.topoSort()
+	if err != nil {
+		return err
+	}
 	if _, err := os.Stat(sm.StatesPath); os.IsNotExist(err) {
 		log.Debug(errors.New("State file " + sm.StatesPath + " doesn't exist"))
 		overwrite = true
@@ -318,7 +322,11 @@ func (sm *States) SetStates(states States, overwrite bool) error {
 		return errors.New("The current state file has a running, action forbidden:" + sm.StatesPath)
 	}
 	if overwrite {
-		sm.StateArray = sm.removeDeletedStates(states).StateArray
+		newStates, errDelete := sm.removeDeletedStates(states)
+		if errDelete != nil {
+			return errDelete
+		}
+		sm.StateArray = newStates.StateArray
 	} else {
 		log.Info("Merge new and old States File")
 		errMerge := sm.mergeStates(states)
@@ -406,7 +414,7 @@ func (sm *States) getStatePosition(stateName string) (int, error) {
 }
 
 //Remove deleted states from the current state and new states.
-func (sm *States) removeDeletedStates(newStates States) States {
+func (sm *States) removeDeletedStates(newStates States) (States, error) {
 	log.Debug("Remove states with delete true")
 	//   	copyStates := make([]State, len(sm.StateArray))
 	copyNewStates := make([]State, len(newStates.StateArray))
@@ -447,8 +455,16 @@ func (sm *States) removeDeletedStates(newStates States) States {
 			}
 		}
 	}
-	sm.cleanPreviousNextStates()
-	return newStates
+	//	sm.cleanPreviousNextStates()
+	err := sm.topoSort()
+	if err != nil {
+		return newStates, err
+	}
+	err = newStates.topoSort()
+	if err != nil {
+		return newStates, err
+	}
+	return newStates, nil
 }
 
 func (sm *States) addNodes() (*simple.DirectedGraph, map[string]int64, map[int64]*State) {
@@ -604,7 +620,10 @@ func generateCyclesError(cycles []*States) error {
 //Merge 2 states
 func (sm *States) mergeStates(newStates States) error {
 	log.Debug("Entering.... mergeStates")
-	newStates = sm.removeDeletedStates(newStates)
+	newStates, err := sm.removeDeletedStates(newStates)
+	if err != nil {
+		return err
+	}
 	//If no state are defined use the new provided stateArray, no merge needed.
 	if len(sm.StateArray) == 0 {
 		sm.StateArray = newStates.StateArray
@@ -635,7 +654,7 @@ func (sm *States) mergeStates(newStates States) error {
 	}
 
 	//Add the new states edges
-	newGraph, err := newStates.addEdges(newGraph, statesNodesID)
+	newGraph, err = newStates.addEdges(newGraph, statesNodesID)
 	if err != nil {
 		return err
 	}
@@ -1046,7 +1065,11 @@ func (sm *States) DeleteState(pos int, stateName string) error {
 	copy(sm.StateArray[arrayPos:], sm.StateArray[arrayPos+1:])
 	sm.StateArray[len(sm.StateArray)-1] = State{} // or the zero value of T
 	sm.StateArray = sm.StateArray[:len(sm.StateArray)-1]
-	sm.cleanPreviousNextStates()
+	//	sm.cleanPreviousNextStates()
+	err = sm.topoSort()
+	if err != nil {
+		return err
+	}
 	return sm.writeStates()
 }
 
