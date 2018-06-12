@@ -350,11 +350,12 @@ func PutInsertStateStatesEndpoint(w http.ResponseWriter, req *http.Request) {
 	var state stateManager.State
 	//log.Debugf("ReqBody:\n%s", req.Body)
 	buf := new(bytes.Buffer)
+	//body contains the states.yml
 	nbBytes, err := buf.ReadFrom(req.Body)
 	//err := json.NewDecoder(req.Body).Decode(&states)
 	//log.Debugf(err.Error())
 	if err == nil {
-		log.Debug("Number of bytes in body" + strconv.FormatInt(nbBytes, 10))
+		log.Debug("Number of bytes in body: " + strconv.FormatInt(nbBytes, 10))
 		if nbBytes == 0 {
 			var insertExtensionName string
 			if insertExtensionNameFound, okExtensionName := m["insert-extension-name"]; okExtensionName {

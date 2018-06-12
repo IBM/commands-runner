@@ -188,18 +188,36 @@ func (sm *States) setDefaultValues() {
 			}
 		}
 	}
-	//if not migrated and the nextStates
+	//if not migrated then set the nextStates
 	if !isNextStateMigrationDone {
-		for index := range sm.StateArray {
-			if index < len(sm.StateArray)-1 {
-				stateNext := sm.StateArray[index+1]
+		sm.setNextStates()
+	}
+	log.Debug("Exiting... setDefaultValues")
+}
+
+//setNextStates sets the next states in case of migration
+func (sm *States) setNextStates() {
+	for index := range sm.StateArray {
+		if !sm.StateArray[index].Deleted && index < len(sm.StateArray)-1 {
+			indexNext := sm.searchNextStates(index)
+			if indexNext != -1 {
+				stateNext := sm.StateArray[indexNext]
 				if len(sm.StateArray[index].NextStates) == 0 {
 					sm.StateArray[index].NextStates = append(sm.StateArray[index].NextStates, stateNext.Name)
 				}
 			}
 		}
 	}
-	log.Debug("Exiting... setDefaultValues")
+}
+
+//searchNextStates searches the next non-delete states after the current state index.
+func (sm *States) searchNextStates(start int) int {
+	for i := start + 1; i < len(sm.StateArray); i++ {
+		if !sm.StateArray[i].Deleted {
+			return i
+		}
+	}
+	return -1
 }
 
 func (sm *States) cleanPreviousNextStates() {

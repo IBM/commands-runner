@@ -408,7 +408,6 @@ func TestSetStatesMerge(t *testing.T) {
 		!(statesResult.StateArray[1].Name == "cf2" || statesResult.StateArray[1].Name == "cf") {
 		t.Error("Wrong order")
 	}
-	t.Error("")
 }
 
 func TestSetStatesMergeWithDelete(t *testing.T) {

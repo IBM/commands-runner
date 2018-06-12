@@ -168,6 +168,67 @@ func TestInsertDeleteStateStates(t *testing.T) {
 	}
 }
 
+/*
+func TestInsertDeleteStateStatesAutoLocation(t *testing.T) {
+	t.Log("Entering................. TestInsertDeleteStateStatesAutoLocation")
+	log.SetLevel(log.DebugLevel)
+	stateFile := "../test/resource/states-insert-delete-auto-location.yaml"
+	extensionManager.SetExtensionPath("../test/data/extensions/")
+	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/test-extensions.txt")
+	SetStatePath(stateFile)
+	addStateManagerToMap("cfp-ext-template-auto-location", stateFile)
+	inFileData, err := ioutil.ReadFile(stateFile)
+	t.Log(string(inFileData))
+	//stateAutoLocationJson := "{\"name\":\"cfp-ext-template-auto-location\",\"label\":\"Insert\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}"
+	req, err := http.NewRequest("PUT", "/cr/v1/states?extension-name=cfp-ext-template-auto-location&action=insert&pos=0", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(handleStates)
+
+	// Our handlers satisfy http.Handler, so we can call their ServeHTTP method
+	// directly and pass in our Request and ResponseRecorder.
+	handler.ServeHTTP(rr, req)
+
+	// Check the status code is what we expect.
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+	middleFileData, err := ioutil.ReadFile(stateFile)
+	t.Log(string(middleFileData))
+
+	req, err = http.NewRequest("PUT", "/cr/v1/states?extension-name=cfp-ext-template-auto-location&action=delete&state-name=cfp-ext-template-auto-location", strings.NewReader(stateJson))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
+	rr = httptest.NewRecorder()
+
+	// Our handlers satisfy http.Handler, so we can call their ServeHTTP method
+	// directly and pass in our Request and ResponseRecorder.
+	handler.ServeHTTP(rr, req)
+
+	// Check the status code is what we expect.
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+	outFileData, err := ioutil.ReadFile(stateFile)
+
+	if string(outFileData) != string(inFileData) {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			string(outFileData), string(inFileData))
+	}
+}
+
+*/
 func TestInsertDeleteStateStatesByName(t *testing.T) {
 	log.SetLevel(log.DebugLevel)
 	t.Log("Entering................. TestInsertDeleteStateStatesByName")
