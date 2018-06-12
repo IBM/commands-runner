@@ -179,7 +179,7 @@ func TestInsertDeleteStateStatesAutoLocation(t *testing.T) {
 	inFileData, err := ioutil.ReadFile(stateFile)
 	t.Log(string(inFileData))
 	//stateAutoLocationJson := "{\"name\":\"cfp-ext-template-auto-location\",\"label\":\"Insert\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}"
-	req, err := http.NewRequest("PUT", "/cr/v1/states?insert-extension-name=cfp-ext-template-auto-location&action=insert&pos=0", nil)
+	req, err := http.NewRequest("PUT", "/cr/v1/states?extension-name=cfp-ext-template-auto-location&insert-extension-name=cfp-ext-template-auto-location&action=insert&pos=0", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
