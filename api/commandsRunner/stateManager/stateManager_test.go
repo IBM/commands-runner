@@ -731,7 +731,7 @@ func TestInsertStatesWithCycle(t *testing.T) {
 	}
 	state := &State{
 		Name: "cfp-ext-template",
-		StatesToRerun: []string{
+		NextStates: []string{
 			"First",
 			"Last",
 		},
@@ -1060,6 +1060,61 @@ func TestEngineSuccess(t *testing.T) {
 	}
 	if len(states.StateArray) > 0 {
 		t.Error("At least one state failed:" + states.StateArray[0].Name)
+	}
+	err = sm.ResetEngine()
+	if err != nil {
+		t.Error(err.Error())
+	}
+}
+
+func TestEngineWithRerunAfter(t *testing.T) {
+	t.Log("Entering... TestEngineWithRerunAfter")
+	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
+	extensionManager.SetExtensionPath("../../test/data/extensions/")
+	statesPath := "../../test/resource/states-run-with-rerun-after.yaml"
+	sm, err := NewStateManager(statesPath)
+	if err != nil {
+		t.Error(err.Error())
+	}
+	t.Log("Reset States file")
+	err = sm.ResetEngine()
+	if err != nil {
+		t.Error(err.Error())
+	}
+	t.Log("Execute states file")
+	sm.Execute("task1", "task3")
+	t.Log("Get Failed states")
+	states, errStates := sm.GetStates(StateFAILED)
+	if errStates != nil {
+		t.Error(errStates.Error())
+	}
+	if len(states.StateArray) > 0 {
+		t.Error("At least one state failed:" + states.StateArray[0].Name)
+	}
+	err = sm.ResetEngine()
+	if err != nil {
+		t.Error(err.Error())
+	}
+}
+
+func TestEngineWithRerunBefore(t *testing.T) {
+	t.Log("Entering... TestEngineWithRerunAfter")
+	extensionManager.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
+	extensionManager.SetExtensionPath("../../test/data/extensions/")
+	statesPath := "../../test/resource/states-run-with-rerun-before.yaml"
+	sm, err := NewStateManager(statesPath)
+	if err != nil {
+		t.Error(err.Error())
+	}
+	t.Log("Reset States file")
+	err = sm.ResetEngine()
+	if err != nil {
+		t.Error(err.Error())
+	}
+	t.Log("Execute states file")
+	err = sm.Execute("task1", "task3")
+	if err == nil {
+		t.Error("Expect error because the stateToRerun of task2 reference task1 which is before in the sequence")
 	}
 	err = sm.ResetEngine()
 	if err != nil {

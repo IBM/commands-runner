@@ -1,0 +1,52 @@
+states:
+- name: task1
+  phase: ""
+  label: Task 1
+  log_path: /tmp/mydir/task-success.log
+  status: READY
+  start_time: ""
+  end_time: ""
+  reason: ""
+  script: ../../test/scripts/success.sh task1
+  script_timeout: 10
+  protected: false
+  deleted: false
+  states_to_rerun:
+  - task2
+  previous_states: []
+  next_states:
+  - task2
+- name: task2
+  phase: ""
+  label: Task 2
+  log_path: /tmp/task-success.log
+  status: READY
+  start_time: ""
+  end_time: ""
+  reason: ""
+  script: ../../test/scripts/success.sh task2
+  script_timeout: 10
+  protected: false
+  deleted: false
+  states_to_rerun:
+  - task3
+  previous_states:
+  - task1
+  next_states:
+  - task3
+- name: task3
+  phase: ""
+  label: Task 3
+  log_path: /tmp/task-success.log
+  status: READY
+  start_time: ""
+  end_time: ""
+  reason: ""
+  script: ../../test/scripts/success.sh task3
+  script_timeout: 10
+  protected: false
+  deleted: false
+  states_to_rerun: []
+  previous_states:
+  - task2
+  next_states: []
