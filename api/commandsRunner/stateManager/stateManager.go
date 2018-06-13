@@ -576,10 +576,10 @@ func (sm *States) topoSortGraph(graph *simple.DirectedGraph, statesMap map[int64
 //checkStatesToRerun Check if the StatesToRerun are after each state that define them.
 func (sm *States) checkStatesToRerun() error {
 	statesVisited := make(map[string]string, 0)
-	for i := len(sm.StateArray) - 1; i > -1; i-- {
+	for i := 0; i < len(sm.StateArray); i++ {
 		for _, stateName := range sm.StateArray[i].StatesToRerun {
-			if _, ok := statesVisited[stateName]; !ok {
-				return errors.New("State " + sm.StateArray[i].Name + " contains the StatesToRerun element " + stateName + " which is not after the state")
+			if _, ok := statesVisited[stateName]; ok {
+				return errors.New("State " + sm.StateArray[i].Name + " contains the StatesToRerun element " + stateName + " which is before the state")
 			}
 		}
 		statesVisited[sm.StateArray[i].Name] = sm.StateArray[i].Name
