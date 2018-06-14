@@ -27,11 +27,13 @@ states:
   script_timeout: 10
   protected: false
   deleted: false
-  states_to_rerun: []
+  states_to_rerun:
+  - task1
   previous_states:
   - task1
   next_states:
   - task3
+  - task1
 - name: task3
   phase: ""
   label: Task 3

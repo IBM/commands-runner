@@ -548,8 +548,13 @@ func TestListIBMExensions(t *testing.T) {
 		Name: "cfp-ext-template",
 		Type: extensionManager.EmbeddedExtensions,
 	}
+	extension2 := &extensionManager.Extension{
+		Name: "cfp-ext-template-auto-location",
+		Type: extensionManager.EmbeddedExtensions,
+	}
 
 	extensions.Extensions[extension1.Name] = *extension1
+	extensions.Extensions[extension2.Name] = *extension2
 	expected, _ := json.MarshalIndent(&extensions, "", "  ")
 	//	expected := `{"extensions":{"extensionsIBM": ["IBM-extension1", "IBM-extension2"]}}`
 	log.Debug(expected)

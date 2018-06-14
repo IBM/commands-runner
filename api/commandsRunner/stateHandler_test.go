@@ -74,10 +74,6 @@ func TestStatesOk(t *testing.T) {
 
 func TestStateOk(t *testing.T) {
 	t.Log("Entering................. TestStateOk")
-	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
-	// pass 'nil' as the third parameter.
-	//	addStateManagerToMap("TestStateOk", "../test/resource/states.yaml")
-	//	req, err := http.NewRequest("GET", "/cr/v1/state/director?extension-name=TestStateOk", nil)
 	SetStatePath("../test/resource/states.yaml")
 	extensionManager.SetExtensionPath("../test/data/extensions/")
 	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/test-extensions.txt")
@@ -102,7 +98,7 @@ func TestStateOk(t *testing.T) {
 
 	// Check the response body is what we expect.
 	var expected bytes.Buffer
-	err = json.Indent(&expected, []byte(`{"name":"director","phase":"","label":"Director","log_path":"/tmp/sample-director.log","status":"READY","start_time":"","end_time":"","reason":"","script":"test","script_timeout":10,"protected":false,"deleted":false,"states_to_rerun":[]}`), "", "  ")
+	err = json.Indent(&expected, []byte(`{"name":"director","phase":"","label":"Director","log_path":"/tmp/sample-director.log","status":"READY","start_time":"","end_time":"","reason":"","script":"test","script_timeout":10,"protected":false,"deleted":false,"states_to_rerun":[],"previous_states":[],"next_states":["repeat"]}`), "", "  ")
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -116,11 +112,7 @@ func TestStateOk(t *testing.T) {
 }
 
 func TestInsertDeleteStateStates(t *testing.T) {
-	t.Log("Entering................. TestInsertDeleteState")
-	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
-	// pass 'nil' as the third parameter.
-	//	addStateManagerToMap("TestStateOk", "../test/resource/states.yaml")
-	//	req, err := http.NewRequest("GET", "/cr/v1/state/director?extension-name=TestStateOk", nil)
+	t.Log("Entering................. TestInsertDeleteStateStates")
 	stateFile := "../test/resource/states-insert-delete.yaml"
 	extensionManager.SetExtensionPath("../test/data/extensions/")
 	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/test-extensions.txt")
@@ -172,17 +164,74 @@ func TestInsertDeleteStateStates(t *testing.T) {
 
 	if string(outFileData) != string(inFileData) {
 		t.Errorf("handler returned unexpected body: got %v want %v",
-			string(inFileData), string(outFileData))
+			string(outFileData), string(inFileData))
+	}
+}
+
+func TestInsertDeleteStateStatesAutoLocation(t *testing.T) {
+	t.Log("Entering................. TestInsertDeleteStateStatesAutoLocation")
+	log.SetLevel(log.DebugLevel)
+	stateFile := "../test/resource/states-insert-delete-auto-location.yaml"
+	extensionManager.SetExtensionPath("../test/data/extensions/")
+	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/test-extensions.txt")
+	SetStatePath(stateFile)
+	addStateManagerToMap("cfp-ext-template-auto-location", stateFile)
+	inFileData, err := ioutil.ReadFile(stateFile)
+	t.Log(string(inFileData))
+	//stateAutoLocationJson := "{\"name\":\"cfp-ext-template-auto-location\",\"label\":\"Insert\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}"
+	req, err := http.NewRequest("PUT", "/cr/v1/states?extension-name=cfp-ext-template-auto-location&insert-extension-name=cfp-ext-template-auto-location&action=insert&pos=0", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(handleStates)
+
+	// Our handlers satisfy http.Handler, so we can call their ServeHTTP method
+	// directly and pass in our Request and ResponseRecorder.
+	handler.ServeHTTP(rr, req)
+
+	// Check the status code is what we expect.
+	if status := rr.Code; status != http.StatusOK {
+		t.Log(rr.Body)
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+	middleFileData, err := ioutil.ReadFile(stateFile)
+	t.Log(string(middleFileData))
+
+	req, err = http.NewRequest("PUT", "/cr/v1/states?extension-name=cfp-ext-template-auto-location&action=delete&state-name=cfp-ext-template-auto-location&pos=0", strings.NewReader(stateJson))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
+	rr = httptest.NewRecorder()
+
+	// Our handlers satisfy http.Handler, so we can call their ServeHTTP method
+	// directly and pass in our Request and ResponseRecorder.
+	handler.ServeHTTP(rr, req)
+
+	// Check the status code is what we expect.
+	if status := rr.Code; status != http.StatusOK {
+		t.Log(rr.Body)
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+	outFileData, err := ioutil.ReadFile(stateFile)
+
+	if string(outFileData) != string(inFileData) {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			string(outFileData), string(inFileData))
 	}
 }
 
 func TestInsertDeleteStateStatesByName(t *testing.T) {
 	log.SetLevel(log.DebugLevel)
 	t.Log("Entering................. TestInsertDeleteStateStatesByName")
-	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
-	// pass 'nil' as the third parameter.
-	//	addStateManagerToMap("TestStateOk", "../test/resource/states.yaml")
-	//	req, err := http.NewRequest("GET", "/cr/v1/state/director?extension-name=TestStateOk", nil)
 	stateFile := "../test/resource/states-insert-delete.yaml"
 	extensionManager.SetExtensionPath("../test/data/extensions/")
 	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/test-extensions.txt")
@@ -234,7 +283,7 @@ func TestInsertDeleteStateStatesByName(t *testing.T) {
 
 	if string(outFileData) != string(inFileData) {
 		t.Errorf("handler returned unexpected body: got %v want %v",
-			string(inFileData), string(outFileData))
+			string(outFileData), string(inFileData))
 	}
 }
 

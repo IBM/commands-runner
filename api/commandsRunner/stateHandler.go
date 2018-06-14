@@ -350,11 +350,18 @@ func PutInsertStateStatesEndpoint(w http.ResponseWriter, req *http.Request) {
 	var state stateManager.State
 	//log.Debugf("ReqBody:\n%s", req.Body)
 	buf := new(bytes.Buffer)
-	nbBytes, err := buf.ReadFrom(req.Body)
+	var nbBytes int64
+	var errBody error
+	//body contains the states.yml
+	if req.Body != nil {
+		nbBytes, errBody = buf.ReadFrom(req.Body)
+	} else {
+		nbBytes = 0
+	}
 	//err := json.NewDecoder(req.Body).Decode(&states)
 	//log.Debugf(err.Error())
-	if err == nil {
-		log.Debug("Number of bytes in body" + strconv.FormatInt(nbBytes, 10))
+	if errBody == nil {
+		log.Debug("Number of bytes in body: " + strconv.FormatInt(nbBytes, 10))
 		if nbBytes == 0 {
 			var insertExtensionName string
 			if insertExtensionNameFound, okExtensionName := m["insert-extension-name"]; okExtensionName {
@@ -401,21 +408,21 @@ func PutInsertStateStatesEndpoint(w http.ResponseWriter, req *http.Request) {
 		} else {
 			bodyRaw := buf.String()
 			body := html.UnescapeString(bodyRaw)
-			err = yaml.Unmarshal([]byte(body), &state)
+			errBody = yaml.Unmarshal([]byte(body), &state)
 		}
-		if err == nil {
-			err = sm.InsertState(state, pos, stateName, before)
+		if errBody == nil {
+			err := sm.InsertState(state, pos, stateName, before)
 			if err != nil {
 				logger.AddCallerField().Error(err.Error())
 				http.Error(w, err.Error(), 500)
 			}
 		} else {
-			logger.AddCallerField().Error(err.Error())
-			http.Error(w, err.Error(), 500)
+			logger.AddCallerField().Error(errBody.Error())
+			http.Error(w, errBody.Error(), 500)
 		}
 	} else {
-		logger.AddCallerField().Error(err.Error())
-		http.Error(w, err.Error(), 500)
+		logger.AddCallerField().Error(errBody.Error())
+		http.Error(w, errBody.Error(), 500)
 	}
 }
 
