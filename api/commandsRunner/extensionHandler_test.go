@@ -266,8 +266,6 @@ func TestRegisterIBMExtension(t *testing.T) {
 
 func TestRegisterIBMExtensionFilesExists(t *testing.T) {
 	t.Log("Entering........... TestRegisterIBMExtensionFilesExists")
-	extensionManager.SetExtensionPath("../test/resource/tmp/")
-
 	extensionManager.SetExtensionEmbeddedFile("../test/resource/extensions/test-extensions.txt")
 	extensionManager.SetExtensionPath("../test/resource/tmp/")
 	extensionManager.SetEmbeddedExtensionsRepositoryPath("../test/repo_local/")

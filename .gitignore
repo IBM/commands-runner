@@ -6,6 +6,7 @@
 /api/test/resource/config.*
 /api/test/resource/dummy-extension.zip
 api/commandsRunner/cm
+examples/data/extensions
 .idea
 vendor
 _vendor*

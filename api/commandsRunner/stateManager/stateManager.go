@@ -60,28 +60,43 @@ const StatesFileErrorMessagePattern = "STATES_FILE_ERROR_MESSAGE:"
 const PhaseAtEachRun = "AtEachRun"
 
 type State struct {
-	Name          string   `yaml:"name" json:"name"`
-	Phase         string   `yaml:"phase" json:"phase"`
-	Label         string   `yaml:"label" json:"label"`
-	LogPath       string   `yaml:"log_path" json:"log_path"`
-	Status        string   `yaml:"status" json:"status"`
-	StartTime     string   `yaml:"start_time" json:"start_time"`
-	EndTime       string   `yaml:"end_time" json:"end_time"`
-	Reason        string   `yaml:"reason" json:"reason"`
-	Script        string   `yaml:"script" json:"script"`
-	ScriptTimeout int      `yaml:"script_timeout" json:"script_timeout"`
-	Protected     bool     `yaml:"protected" json:"protected"`
-	Deleted       bool     `yaml:"deleted" json:"deleted"`
+	//Name name of the state
+	Name string `yaml:"name" json:"name"`
+	//Phase If the value is set to "AtEachRun" then the state will be executed each time the commands-runner is launched and this independently of its status except if status is "SKIP"
+	Phase string `yaml:"phase" json:"phase"`
+	//Label A more human readable name for the state (default: name)
+	Label string `yaml:"label" json:"label"`
+	//LogPath Location of the file that will collect the stdin/stderr. (default: extensionPath+extenstionName.log)
+	LogPath string `yaml:"log_path" json:"log_path"`
+	//Status The current state status (default: READY)
+	Status string `yaml:"status" json:"status"`
+	//StartTime If not empty, it contains the last time when the state was executed
+	StartTime string `yaml:"start_time" json:"start_time"`
+	//EndTime if not empty, it contains the last end execution time of the state
+	EndTime string `yaml:"end_time" json:"end_time"`
+	//Reason if not empty, it contains the reason of execution failure
+	Reason string `yaml:"reason" json:"reason"`
+	//Script The command or script to execute. The path must be an absolute path
+	Script string `yaml:"script" json:"script"`
+	//ScriptTimeout The maximum duration of the state execution, after that duration a timeout error will be produced.
+	ScriptTimeout int `yaml:"script_timeout" json:"script_timeout"`
+	//Protected If true the commands-runner end-user will be not be able to delete the state.
+	Protected bool `yaml:"protected" json:"protected"`
+	//Deleted If true the corresponding state will be deleted when merging with an existing states file.
+	Deleted bool `yaml:"deleted" json:"deleted"`
+	//StatesToRerun List of states to rerun after this one get executed.
 	StatesToRerun []string `yaml:"states_to_rerun" json:"states_to_rerun"`
-	//PreviousStates is not taken into account for the topology sort.
+	//PreviousStates List of previous states, this is not taken into account for the topology sort.
 	PreviousStates []string `yaml:"previous_states" json:"previous_states"`
-	NextStates     []string `yaml:"next_states" json:"next_states"`
+	//NextStates List of next states, this determines the order in which the states will get executed. A topological sort is used to determine the order.
+	//If this attribute is not defined in any state of the states file then the NextStates for each state will be set by default to the next state in the states file.
+	NextStates []string `yaml:"next_states" json:"next_states"`
 }
 
 type States struct {
 	StateArray []State `yaml:"states" json:"states"`
 	StatesPath string  `yaml:"-" json:"-"`
-	mux        sync.Mutex
+	mux        *sync.Mutex
 }
 
 var pcmLogTempFile *os.File
@@ -97,6 +112,7 @@ func NewStateManager(statesPath string) (*States, error) {
 	states := &States{
 		StateArray: make([]State, 0),
 		StatesPath: statesPath,
+		mux:        &sync.Mutex{},
 	}
 	return states, nil
 }

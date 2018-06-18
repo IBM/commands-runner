@@ -13,6 +13,7 @@ package extensionManager
 
 import (
 	"archive/zip"
+	"bufio"
 	"bytes"
 	"errors"
 	"io"
@@ -35,16 +36,16 @@ var extensionEmbeddedFile string
 var embeddedExtensionsRepositoryPath string
 
 var extensionPath string
-var extensionDirEmbedded = EmbeddedExtensions + "/"
-var extensionPathEmbedded = extensionPath + extensionDirEmbedded
-var extensionDirCustom = CustomExtensions + "/"
-var extensionPathCustom = extensionPath + extensionDirCustom
+var extensionDirEmbedded = EmbeddedExtensions + string(filepath.Separator)
+var extensionPathEmbedded = extensionPath + extensionDirEmbedded + string(filepath.Separator)
+var extensionDirCustom = CustomExtensions + string(filepath.Separator) + string(filepath.Separator)
+var extensionPathCustom = extensionPath + extensionDirCustom + string(filepath.Separator)
 
 var extensionLogsPath string
-var extensionLogsDirEmbedded = extensionDirEmbedded
-var extensionLogsPathEmbedded = extensionLogsPath + extensionLogsDirEmbedded
-var extensionLogsDirCustom = "custom/"
-var extensionLogsPathCustom = extensionLogsPath + extensionLogsDirCustom
+var extensionLogsDirEmbedded = extensionDirEmbedded + string(filepath.Separator)
+var extensionLogsPathEmbedded = extensionLogsPath + extensionLogsDirEmbedded + string(filepath.Separator)
+var extensionLogsDirCustom = "custom" + string(filepath.Separator)
+var extensionLogsPathCustom = extensionLogsPath + extensionLogsDirCustom + string(filepath.Separator)
 
 /*
 Extension structure
@@ -62,13 +63,24 @@ type Extensions struct {
 }
 
 /*
-Init initialise the extensionManager package
+Init initialise the extensionManager package.
+embeddedExtensionDescriptor the path to the file listing the embedded extension names.
+embeddedExtensionsRepositoryPath the directory path where the extensions are located. This path will be extended with "embeded" or "custom" depending of the type of extension.
+extensionPath the directory path where the extension will be copied by the registration process. This path will be extended with "embeded" or "custom" depending of the type of extension.
+extensionLogsPath the directory path where the logs will be save. This path will be extended with "embeded" or "custom" depending of the type of extension.
 */
 func Init(embeddedExtensionDescriptor string, embeddedExtensionsRepositoryPath string, extensionPath string, extensionLogsPath string) {
 	SetExtensionEmbeddedFile(embeddedExtensionDescriptor)
-	SetEmbeddedExtensionsRepositoryPath(embeddedExtensionsRepositoryPath)
+	err := SetEmbeddedExtensionsRepositoryPath(embeddedExtensionsRepositoryPath)
+	if err != nil {
+		log.Fatal(err)
+	}
 	SetExtensionPath(extensionPath)
 	SetExtensionLogsPath(extensionLogsPath)
+	err = registerEmbededExtensions(true)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 //SetExtensionEmbeddedFile sets the embedded extension path file descriptor
@@ -80,15 +92,27 @@ func SetExtensionEmbeddedFile(_extensionEmbeddedFile string) {
 /*
 SetEmbeddedExtensionsRepositoryPath set the path where the embedded extension are stored
 */
-func SetEmbeddedExtensionsRepositoryPath(_embeddedExtensionsRepositoryPath string) {
-	embeddedExtensionsRepositoryPath = _embeddedExtensionsRepositoryPath
+func SetEmbeddedExtensionsRepositoryPath(_embeddedExtensionsRepositoryPath string) error {
+	if _, err := os.Stat(_embeddedExtensionsRepositoryPath); os.IsNotExist(err) {
+		return err
+	}
+	embeddedExtensionsRepositoryPath = _embeddedExtensionsRepositoryPath + string(filepath.Separator)
+	return nil
 }
 
 //SetExtensionPath set the path where the extensions must be deployed
 func SetExtensionPath(_extensionPath string) {
 	extensionPath = _extensionPath
 	extensionPathEmbedded = _extensionPath + extensionDirEmbedded
+	if _, err := os.Stat(extensionPathEmbedded); os.IsNotExist(err) {
+		log.Debug("Create dir:" + extensionPathEmbedded)
+		os.MkdirAll(extensionPathEmbedded, 0744)
+	}
 	extensionPathCustom = _extensionPath + extensionDirCustom
+	if _, err := os.Stat(extensionPathCustom); os.IsNotExist(err) {
+		log.Debug("Create dir:" + extensionPathCustom)
+		os.MkdirAll(extensionPathCustom, 0744)
+	}
 }
 
 //SetExtensionLogsPath set the path where the extensions logs are kept
@@ -273,15 +297,20 @@ func getEmbeddedExtensionRepoPath(extensionName string) (string, error) {
 	log.Debug("Entering in... getEmbeddedExtensionRepoPath")
 	log.Debug("extensionName:" + extensionName)
 	log.Debug("embeddedExtensionsRepositoryPath:" + embeddedExtensionsRepositoryPath)
+
 	files, err := ioutil.ReadDir(embeddedExtensionsRepositoryPath + extensionName)
 	if err != nil {
 		log.Debug(err.Error())
 		return "", err
 	}
 	if len(files) == 0 {
-		return "", errors.New("No version available for embedded extension " + extensionName)
+		return "", errors.New("extension directory " + extensionName + " is empty")
 	}
-	return embeddedExtensionsRepositoryPath + extensionName + string(filepath.Separator) + files[0].Name() + string(filepath.Separator), nil
+	if len(files) == 1 && !files[0].IsDir() {
+		log.Info("No version available for embedded extension " + extensionName)
+		return embeddedExtensionsRepositoryPath + extensionName + string(filepath.Separator) + files[0].Name() + string(filepath.Separator), nil
+	}
+	return embeddedExtensionsRepositoryPath + extensionName + string(filepath.Separator), nil
 }
 
 //CopyExtensionToEmbeddedExtensionPath copy the extension to the extension directory
@@ -525,6 +554,25 @@ func restoreExtension(extensionName string) error {
 	err = global.CopyRecursive(backupPath, extensionPath)
 	log.Debug("Restore of " + extensionPath + " from " + backupPath)
 	return err
+}
+
+//registerEmbededExtension register all embeded extensions
+func registerEmbededExtensions(force bool) error {
+	file, err := os.Open(extensionEmbeddedFile)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		RegisterExtension(scanner.Text(), "", force)
+	}
+
+	if err := scanner.Err(); err != nil {
+		return err
+	}
+	return nil
 }
 
 //RegisterExtension register an extension
