@@ -593,12 +593,14 @@ func (sm *States) topoSortGraph(graph *simple.DirectedGraph, statesMap map[int64
 func (sm *States) checkStatesToRerun() error {
 	statesVisited := make(map[string]string, 0)
 	for i := 0; i < len(sm.StateArray); i++ {
-		for _, stateName := range sm.StateArray[i].StatesToRerun {
-			if _, ok := statesVisited[stateName]; ok {
-				return errors.New("State " + sm.StateArray[i].Name + " contains the StatesToRerun element " + stateName + " which is before the state")
+		if !sm.StateArray[i].Deleted {
+			for _, stateName := range sm.StateArray[i].StatesToRerun {
+				if _, ok := statesVisited[stateName]; ok {
+					return errors.New("State " + sm.StateArray[i].Name + " contains the StatesToRerun element " + stateName + " which is before the state")
+				}
 			}
+			statesVisited[sm.StateArray[i].Name] = sm.StateArray[i].Name
 		}
-		statesVisited[sm.StateArray[i].Name] = sm.StateArray[i].Name
 	}
 	return nil
 }
