@@ -36,16 +36,16 @@ var extensionEmbeddedFile string
 var embeddedExtensionsRepositoryPath string
 
 var extensionPath string
-var extensionDirEmbedded = EmbeddedExtensions + string(filepath.Separator)
-var extensionPathEmbedded = extensionPath + extensionDirEmbedded + string(filepath.Separator)
-var extensionDirCustom = CustomExtensions + string(filepath.Separator) + string(filepath.Separator)
-var extensionPathCustom = extensionPath + extensionDirCustom + string(filepath.Separator)
+var extensionDirEmbedded = EmbeddedExtensions
+var extensionPathEmbedded = extensionPath + extensionDirEmbedded
+var extensionDirCustom = CustomExtensions + string(filepath.Separator)
+var extensionPathCustom = extensionPath + extensionDirCustom
 
 var extensionLogsPath string
-var extensionLogsDirEmbedded = extensionDirEmbedded + string(filepath.Separator)
-var extensionLogsPathEmbedded = extensionLogsPath + extensionLogsDirEmbedded + string(filepath.Separator)
-var extensionLogsDirCustom = "custom" + string(filepath.Separator)
-var extensionLogsPathCustom = extensionLogsPath + extensionLogsDirCustom + string(filepath.Separator)
+var extensionLogsDirEmbedded = extensionDirEmbedded
+var extensionLogsPathEmbedded = extensionLogsPath + extensionLogsDirEmbedded
+var extensionLogsDirCustom = CustomExtensions
+var extensionLogsPathCustom = extensionLogsPath + extensionLogsDirCustom
 
 /*
 Extension structure
@@ -86,7 +86,7 @@ func Init(embeddedExtensionDescriptor string, embeddedExtensionsRepositoryPath s
 //SetExtensionEmbeddedFile sets the embedded extension path file descriptor
 func SetExtensionEmbeddedFile(_extensionEmbeddedFile string) {
 	log.Debug("Entering in... SetExtensionEmbeddedFile")
-	extensionEmbeddedFile = _extensionEmbeddedFile
+	extensionEmbeddedFile = strings.TrimRight(_extensionEmbeddedFile, string(filepath.Separator))
 }
 
 /*
@@ -96,19 +96,19 @@ func SetEmbeddedExtensionsRepositoryPath(_embeddedExtensionsRepositoryPath strin
 	if _, err := os.Stat(_embeddedExtensionsRepositoryPath); os.IsNotExist(err) {
 		return err
 	}
-	embeddedExtensionsRepositoryPath = _embeddedExtensionsRepositoryPath
+	embeddedExtensionsRepositoryPath = strings.TrimRight(_embeddedExtensionsRepositoryPath, string(filepath.Separator))
 	return nil
 }
 
 //SetExtensionPath set the path where the extensions must be deployed
 func SetExtensionPath(_extensionPath string) {
-	extensionPath = _extensionPath
-	extensionPathEmbedded = _extensionPath + extensionDirEmbedded
+	extensionPath = strings.TrimRight(_extensionPath, string(filepath.Separator))
+	extensionPathEmbedded = filepath.Join(extensionPath, extensionDirEmbedded)
 	if _, err := os.Stat(extensionPathEmbedded); os.IsNotExist(err) {
 		log.Debug("Create dir:" + extensionPathEmbedded)
 		os.MkdirAll(extensionPathEmbedded, 0744)
 	}
-	extensionPathCustom = _extensionPath + extensionDirCustom
+	extensionPathCustom = filepath.Join(extensionPath, extensionDirCustom)
 	if _, err := os.Stat(extensionPathCustom); os.IsNotExist(err) {
 		log.Debug("Create dir:" + extensionPathCustom)
 		os.MkdirAll(extensionPathCustom, 0744)
@@ -117,9 +117,9 @@ func SetExtensionPath(_extensionPath string) {
 
 //SetExtensionLogsPath set the path where the extensions logs are kept
 func SetExtensionLogsPath(_extensionLogsPath string) {
-	extensionLogsPath = _extensionLogsPath
-	extensionLogsPathEmbedded = _extensionLogsPath + extensionDirEmbedded
-	extensionLogsPathCustom = _extensionLogsPath + extensionDirCustom
+	extensionLogsPath = strings.TrimRight(_extensionLogsPath, string(filepath.Separator))
+	extensionLogsPathEmbedded = filepath.Join(extensionLogsPath, extensionDirEmbedded)
+	extensionLogsPathCustom = filepath.Join(extensionLogsPath, extensionDirCustom)
 }
 
 //GetExtensionPath retrieves the extension path
@@ -163,9 +163,9 @@ func GetRegisteredExtensionPath(extensionName string) (string, error) {
 		return "", err
 	}
 	if isEmbeddedExtension {
-		extensionPath = GetExtensionPathEmbedded() + extensionName + string(filepath.Separator)
+		extensionPath = filepath.Join(GetExtensionPathEmbedded(), extensionName)
 	} else {
-		extensionPath = GetExtensionPathCustom() + extensionName + string(filepath.Separator)
+		extensionPath = filepath.Join(GetExtensionPathCustom(), extensionName)
 	}
 	return extensionPath, nil
 }
@@ -177,9 +177,9 @@ func GetRelativeExtensionPath(extensionName string) string {
 	isEmbeddedExtension, _ := IsEmbeddedExtension(extensionName)
 	log.Debug("isEmbeddedExtension:" + extensionName + " =>" + strconv.FormatBool(isEmbeddedExtension))
 	if isEmbeddedExtension {
-		extensionPath = extensionDirEmbedded + extensionName + string(filepath.Separator)
+		extensionPath = filepath.Join(extensionDirEmbedded, extensionName)
 	} else {
-		extensionPath = extensionDirCustom + extensionName + string(filepath.Separator)
+		extensionPath = filepath.Join(extensionDirCustom, extensionName)
 	}
 	return extensionPath
 }
@@ -209,7 +209,7 @@ func IsExtensionRegistered(extensionName string) bool {
 //IsCustomExtensionRegistered Check if an extension is register by browzing the extensions directory
 func IsCustomExtensionRegistered(filename string) bool {
 	log.Debug("Entering in... IsCustomExtensionRegistered")
-	if _, err := os.Stat(GetExtensionPathCustom() + filename); os.IsNotExist(err) {
+	if _, err := os.Stat(filepath.Join(GetExtensionPathCustom(), filename)); os.IsNotExist(err) {
 		return false
 	}
 	return true
@@ -218,7 +218,8 @@ func IsCustomExtensionRegistered(filename string) bool {
 //IsEmbeddedxtensionRegistered Check if an extension is register by browzing the extensions directory
 func IsEmbeddedExtensionRegistered(filename string) bool {
 	log.Debug("Entering in... IsEmbeddedExtensionRegistered")
-	if _, err := os.Stat(GetExtensionPathEmbedded() + filename); os.IsNotExist(err) {
+	log.Debug(filepath.Join(GetExtensionPathEmbedded(), filename))
+	if _, err := os.Stat(filepath.Join(GetExtensionPathEmbedded(), filename)); os.IsNotExist(err) {
 		return false
 	}
 	return true
@@ -298,7 +299,7 @@ func getEmbeddedExtensionRepoPath(extensionName string) (string, error) {
 	log.Debug("extensionName:" + extensionName)
 	log.Debug("embeddedExtensionsRepositoryPath:" + embeddedExtensionsRepositoryPath)
 
-	files, err := ioutil.ReadDir(embeddedExtensionsRepositoryPath + extensionName)
+	files, err := ioutil.ReadDir(filepath.Join(embeddedExtensionsRepositoryPath, extensionName))
 	if err != nil {
 		log.Debug(err.Error())
 		return "", err
@@ -307,22 +308,21 @@ func getEmbeddedExtensionRepoPath(extensionName string) (string, error) {
 		return "", errors.New("extension directory " + extensionName + " is empty")
 	}
 	if len(files) == 1 && files[0].IsDir() {
-		return embeddedExtensionsRepositoryPath + extensionName + string(filepath.Separator) + files[0].Name() + string(filepath.Separator), nil
+		return filepath.Join(embeddedExtensionsRepositoryPath, extensionName, files[0].Name()), nil
 	}
 	log.Info("No version available for embedded extension " + extensionName)
-	return embeddedExtensionsRepositoryPath + extensionName + string(filepath.Separator), nil
+	return filepath.Join(embeddedExtensionsRepositoryPath, extensionName), nil
 }
 
 //CopyExtensionToEmbeddedExtensionPath copy the extension to the extension directory
 func CopyExtensionToEmbeddedExtensionPath(extensionName string) error {
 	log.Debug("Entering in... CopyExtensionToEmbeddedExtensionPath")
-	destDir := GetExtensionPathEmbedded() + extensionName
+	destDir := filepath.Join(GetExtensionPathEmbedded(), extensionName)
 	extensionRepoPath, err := getEmbeddedExtensionRepoPath(extensionName)
 	if err != nil {
 		return err
 	}
 
-	extensionRepoPath = strings.TrimRight(extensionRepoPath, string(filepath.Separator))
 	log.Debug("extensionRepoPath:" + extensionRepoPath)
 	if _, err := os.Stat(extensionRepoPath); err != nil {
 		return err
@@ -337,8 +337,8 @@ func CopyExtensionToEmbeddedExtensionPath(extensionName string) error {
 		}
 		log.Debug("path:" + path)
 		log.Debug("extensionRepoPath:" + extensionRepoPath)
-		log.Debug("GetExtensionPathEmbedded()+extensionName:" + GetExtensionPathEmbedded() + extensionName)
-		newPath := strings.Replace(path, extensionRepoPath, GetExtensionPathEmbedded()+extensionName, 1)
+		log.Debug("GetExtensionPathEmbedded()+extensionName:" + filepath.Join(GetExtensionPathEmbedded(), extensionName))
+		newPath := strings.Replace(path, extensionRepoPath, filepath.Join(GetExtensionPathEmbedded(), extensionName), 1)
 		log.Debug("newPath:" + newPath)
 		switch {
 		case f.IsDir():
@@ -614,7 +614,7 @@ func RegisterExtension(extensionName, zipPath string, force bool) error {
 			}
 		}
 		errInstall = CopyExtensionToEmbeddedExtensionPath(extensionName)
-		extensionPath = GetExtensionPathEmbedded() + extensionName
+		extensionPath = filepath.Join(GetExtensionPathEmbedded(), extensionName)
 	} else {
 		if zipPath != "" {
 			errInstall = Unzip(zipPath, GetExtensionPathCustom(), extensionName)
@@ -624,7 +624,7 @@ func RegisterExtension(extensionName, zipPath string, force bool) error {
 		} else {
 			errInstall = errors.New("the zipPath parameter is missing")
 		}
-		extensionPath = GetExtensionPathCustom() + extensionName
+		extensionPath = filepath.Join(GetExtensionPathCustom(), extensionName)
 	}
 	var errGen error
 	if errInstall == nil {
@@ -649,7 +649,7 @@ func RegisterExtension(extensionName, zipPath string, force bool) error {
 
 func generateStatesFile(extensionName, extensionPath string) error {
 	log.Debug("Entering in... generateStatesFile")
-	manifest, err := ioutil.ReadFile(extensionPath + string(filepath.Separator) + "extension-manifest.yml")
+	manifest, err := ioutil.ReadFile(filepath.Join(extensionPath, "extension-manifest.yml"))
 	if err != nil {
 		return err
 	}
@@ -674,7 +674,7 @@ func generateStatesFile(extensionName, extensionPath string) error {
 		return err
 	}
 	log.Debug("states file content:\n" + out)
-	return ioutil.WriteFile(extensionPath+string(filepath.Separator)+"statesFile-"+extensionName+".yml", []byte(out), 0644)
+	return ioutil.WriteFile(filepath.Join(extensionPath, "statesFile-"+extensionName+".yml"), []byte(out), 0644)
 
 }
 
@@ -695,7 +695,7 @@ func UnregisterExtension(extensionName string) error {
 	if !IsCustomExtensionRegistered(extensionName) {
 		return errors.New("This extension is not registered")
 	}
-	err = os.RemoveAll(GetExtensionPathCustom() + extensionName)
+	err = os.RemoveAll(filepath.Join(GetExtensionPathCustom(), extensionName))
 	if err != nil {
 		return err
 	}

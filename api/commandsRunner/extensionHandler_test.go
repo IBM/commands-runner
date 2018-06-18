@@ -136,13 +136,13 @@ func TestRegisterExistingExtension(t *testing.T) {
 			t.Error(err.Error())
 		}
 	}
-	if _, err := os.Stat(extensionManager.GetExtensionPathCustom() + "/" + extensionName); os.IsNotExist(err) {
-		err = os.Mkdir(extensionManager.GetExtensionPathCustom()+"/"+extensionName, 0777)
+	if _, err := os.Stat(filepath.Join(extensionManager.GetExtensionPathCustom(), extensionName)); os.IsNotExist(err) {
+		err = os.Mkdir(filepath.Join(extensionManager.GetExtensionPathCustom(), extensionName), 0777)
 		if err != nil {
 			t.Error(err.Error())
 		}
 	}
-	fileCreated, err := os.Create(extensionManager.GetExtensionPathCustom() + filename)
+	fileCreated, err := os.Create(filepath.Join(extensionManager.GetExtensionPathCustom(), filename))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -178,7 +178,7 @@ func TestRegisterNonExistingExtension(t *testing.T) {
 
 	assert("Extension registration complete", rr.Body.String(), t)
 
-	if _, err := os.Stat(extensionManager.GetExtensionPathCustom() + "dummy-extension"); os.IsNotExist(err) {
+	if _, err := os.Stat(filepath.Join(extensionManager.GetExtensionPathCustom(), "dummy-extension")); os.IsNotExist(err) {
 		t.Errorf("project was not unzipped %v\n", err)
 	}
 
@@ -202,17 +202,17 @@ func TestRegisterCustomExtension(t *testing.T) {
 
 	assert("Extension registration complete", rr.Body.String(), t)
 
-	path := extensionManager.GetExtensionPathCustom() + extensionName
+	path := filepath.Join(extensionManager.GetExtensionPathCustom(), extensionName)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		t.Errorf("The path: %s, does not exist", path)
 	}
 
-	path += "/extension-manifest.yml"
+	path = filepath.Join(path, "extension-manifest.yml")
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		t.Errorf("The path: %s, does not exist", path)
 	}
 
-	path += "/scripts/success.sh"
+	path = filepath.Join(path, "/scripts/success.sh")
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		t.Errorf("The path: %s, does not exist", path)
 	}
@@ -281,7 +281,7 @@ func TestRegisterIBMExtensionFilesExists(t *testing.T) {
 
 	assert("Extension registration complete", rr.Body.String(), t)
 
-	path := extensionManager.GetExtensionPathEmbedded() + extensionName
+	path := filepath.Join(extensionManager.GetExtensionPathEmbedded(), extensionName)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		t.Errorf("The path: %s, does not exist", path)
 	}
@@ -294,7 +294,7 @@ func TestDeletionEndpointExists(t *testing.T) {
 	extensionName := "dummy-extension"
 	_ = os.Mkdir(extensionManager.GetExtensionPath(), 0777)
 	_ = os.Mkdir(extensionManager.GetExtensionPathCustom(), 0777)
-	_ = os.Mkdir(extensionManager.GetExtensionPathCustom()+extensionName, 0777)
+	_ = os.Mkdir(filepath.Join(extensionManager.GetExtensionPathCustom(), extensionName), 0777)
 
 	req, err := http.NewRequest("DELETE", "/cr/v1/extension/action=unregister?name="+extensionName, nil)
 	if err != nil {
@@ -409,14 +409,14 @@ func setupFileStructureLists() {
 	_ = os.Mkdir(extensionManager.GetExtensionPathCustom(), 0777)
 	_ = os.Mkdir(extensionManager.GetExtensionPathEmbedded(), 0777)
 	for _, extension := range extensions {
-		_ = os.Mkdir(extensionManager.GetExtensionPathCustom()+extension, 0777)
+		_ = os.Mkdir(filepath.Join(extensionManager.GetExtensionPathCustom(), extension), 0777)
 	}
 	for _, extension := range extensionsIBM {
-		_ = os.Mkdir(extensionManager.GetExtensionPathEmbedded()+extension, 0777)
+		_ = os.Mkdir(filepath.Join(extensionManager.GetExtensionPathEmbedded(), extension), 0777)
 	}
-	os.Create(extensionManager.GetExtensionPathCustom() + dontDeleteFile)
-	os.Create(extensionManager.GetExtensionPathCustom() + deleteFile)
-	os.Mkdir(extensionManager.GetExtensionPathCustom()+extensions[0]+"/do-not-return-embedded-dir", 0777)
+	os.Create(filepath.Join(extensionManager.GetExtensionPathCustom(), dontDeleteFile))
+	os.Create(filepath.Join(extensionManager.GetExtensionPathCustom(), deleteFile))
+	os.Mkdir(filepath.Join(extensionManager.GetExtensionPathCustom(), extensions[0], "/do-not-return-embedded-dir"), 0777)
 }
 
 func TestListAllExensions(t *testing.T) {
@@ -477,9 +477,10 @@ func TestListAllExensions(t *testing.T) {
 
 func TestListCustomerExensionsWithEmbeddedFolders(t *testing.T) {
 	t.Log("TESTING..................... TestListCustomerExensionsWithEmbeddedFolders")
+	log.SetLevel(log.DebugLevel)
 	setupFileStructureLists()
 
-	req, err := http.NewRequest("GET", "/cr/v1/extensions/?filter="+extensionManager.CustomExtensions, nil)
+	req, err := http.NewRequest("GET", "/cr/v1/extensions?filter="+extensionManager.CustomExtensions, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
