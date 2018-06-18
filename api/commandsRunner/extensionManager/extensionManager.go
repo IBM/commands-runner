@@ -345,19 +345,26 @@ func CopyExtensionToEmbeddedExtensionPath(extensionName string) error {
 			log.Debug("Create Directory:" + newPath)
 			err = os.MkdirAll(newPath, f.Mode())
 			if err != nil {
+				log.Error(err.Error())
 				return err
 			}
 		default:
 			log.Debug("Create Directory (file not dir):" + filepath.Dir(newPath))
-			os.MkdirAll(filepath.Dir(newPath), f.Mode())
+			err := os.MkdirAll(filepath.Dir(newPath), f.Mode())
+			if err != nil {
+				log.Error(err.Error())
+				return err
+			}
 			newFile, err := os.OpenFile(newPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
 			if err != nil {
+				log.Error(err.Error())
 				return err
 			}
 			defer newFile.Close()
 
 			_, err = io.Copy(newFile, file)
 			if err != nil {
+				log.Error(err.Error())
 				return err
 			}
 		}
