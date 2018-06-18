@@ -96,7 +96,7 @@ func SetEmbeddedExtensionsRepositoryPath(_embeddedExtensionsRepositoryPath strin
 	if _, err := os.Stat(_embeddedExtensionsRepositoryPath); os.IsNotExist(err) {
 		return err
 	}
-	embeddedExtensionsRepositoryPath = _embeddedExtensionsRepositoryPath + string(filepath.Separator)
+	embeddedExtensionsRepositoryPath = _embeddedExtensionsRepositoryPath
 	return nil
 }
 
