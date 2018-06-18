@@ -336,6 +336,8 @@ func CopyExtensionToEmbeddedExtensionPath(extensionName string) error {
 			return err
 		}
 		log.Debug("path:" + path)
+		log.Debug("extensionRepoPath:" + extensionRepoPath)
+		log.Debug("GetExtensionPathEmbedded()+extensionName:" + GetExtensionPathEmbedded() + extensionName)
 		newPath := strings.Replace(path, extensionRepoPath, GetExtensionPathEmbedded()+extensionName, 1)
 		log.Debug("newPath:" + newPath)
 		switch {
