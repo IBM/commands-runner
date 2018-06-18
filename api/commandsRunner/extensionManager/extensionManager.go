@@ -306,10 +306,10 @@ func getEmbeddedExtensionRepoPath(extensionName string) (string, error) {
 	if len(files) == 0 {
 		return "", errors.New("extension directory " + extensionName + " is empty")
 	}
-	if len(files) == 1 && !files[0].IsDir() {
-		log.Info("No version available for embedded extension " + extensionName)
+	if len(files) == 1 && files[0].IsDir() {
 		return embeddedExtensionsRepositoryPath + extensionName + string(filepath.Separator) + files[0].Name() + string(filepath.Separator), nil
 	}
+	log.Info("No version available for embedded extension " + extensionName)
 	return embeddedExtensionsRepositoryPath + extensionName + string(filepath.Separator), nil
 }
 
