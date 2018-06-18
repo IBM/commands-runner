@@ -343,7 +343,10 @@ func CopyExtensionToEmbeddedExtensionPath(extensionName string) error {
 		switch {
 		case f.IsDir():
 			log.Debug("Create Directory:" + newPath)
-			os.MkdirAll(newPath, f.Mode())
+			err = os.MkdirAll(newPath, f.Mode())
+			if err != nil {
+				return err
+			}
 		default:
 			log.Debug("Create Directory (file not dir):" + filepath.Dir(newPath))
 			os.MkdirAll(filepath.Dir(newPath), f.Mode())
