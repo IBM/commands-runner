@@ -108,6 +108,7 @@ An simple example is provided here [examples/extenions/simple-extension-with-ver
 #### Extension manifest format
 
 The extension-manifest is a yaml file. Only one attribute is mandatory `states` which is an array of state. The state structure can be found at [api/commandsRunner/stateManager/stateManager.go](./api/commandsRunner/stateManager/stateManager.go).<br>
+Manifest examples can be found in the [examples/extensions](./examples/extensions)
 
 #### How to setup the server to manage extension
 
