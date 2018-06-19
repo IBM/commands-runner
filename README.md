@@ -106,7 +106,7 @@ You can insert extension in a states file using the client CLI or API. An extens
 
 The extension can be either "embedded" or "customer", "embeded" means that the artifact is already provided in the environement (ie: part of the product distribution) and should not be register and can not be deleted. A "embeded" extension is defined in a extensions yaml file as in [examples/data/test-extensions.yml](./examples/data/test-extensions.yml). A "custom" extension must be registered using the client CLI and for that it must be embobined in a zip file.<br>
 
-Once the extension is in the environmeent (register), the exentions must be registered and then inserted in the states file and so when the commands-runner will be launched, the extension will get executed along the states file.
+Once the extension is in the environment (register), the exentions must be registered and then inserted in the states file and so when the commands-runner will be launched, the extension will get executed along the states file.
 
 Extensions can be inserted in an extension states file once the parent extension is registered.
 
