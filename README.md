@@ -71,7 +71,7 @@ states: An array of state
 ### Extensions
 You can insert extension in a states file using the client CLI or API. An extension is an artificat which contains a manifest describing (sub-)states to execute and where to insert this execution in the states file. Inserting an extension will create a new state in the states file and this new state will call the extension process and run it using the commands-runner.<br>
 
-The extension can be either "embedded" or "customer", "embeded" means that the artifact is already provided in the environement (ie: part of the product distribution) and should not be register and can not be deleted. A "embeded" extension is defined in a extensions yaml file as in [examples/data/test-extensions.yml](./examples/code/test-extensions.yml). A "custom" extension must be registered using the client CLI and for that it must be embobined in a zip file.<br>
+The extension can be either "embedded" or "customer", "embeded" means that the artifact is already provided in the environement (ie: part of the product distribution) and should not be register and can not be deleted. A "embeded" extension is defined in a extensions yaml file as in [examples/data/test-extensions.yml](./examples/data/test-extensions.yml). A "custom" extension must be registered using the client CLI and for that it must be embobined in a zip file.<br>
 
 Once the extension is in the environmeent (register), the exentions must be registered and then inserted in the states file and so when the commands-runner will be launched, the extension will get executed along the states file.
 
@@ -91,16 +91,15 @@ In [examples/server](./examples/server) example you can see that the extensionMa
 
 #### Embeded extension
 
-Embeded extension are provided by your distribution and so the "end-user" doesn't need to register them into the environment.
+Embeded extension are provided by your distribution and so the "end-user" doesn't need to register them into the environment. They are automatically registered based on the content embeddedExtensionDescriptor provided in the extensionManager.Init method.
+You can find an example of this file at [examples/data/test-extensions.yml](./examples/data/test-extensions.yml).
 
-#### Load custom extension
+### Register extensions
 
 If the end-user wants to register its own extension, he must create a zip file containing the extension structure.<br> 
 For example by executing: `tar -cvzf simple-extension.zip -C examples/extensions/simple-extension .`
 
 and then use the client CLI: `./cm extension -e <extension_name> register -p <archive_path>`
-
-#### Register extensions
 
 #### Insert extensions
 
