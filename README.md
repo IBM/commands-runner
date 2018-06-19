@@ -37,29 +37,6 @@ A state file example is provided in the [examples/data](./examples/data).
 4. Setup the client: `./client --url <server_url> --token <token> --cacert <cert_path> api save` and finally use it.
 5. launch `./client` for more information on all available commands.
 
-### Send config file to the server
-You can send a config file to the server before starting the processing of the state engine and this using the client command:
-```./client config  save -c <config_file_path>```
-
-<a name="configFileFormat"></a>
-The config file is a yaml file in the form of:
-
-```
-config:
-  property1: hello world
-  ...
-```
-
-The root attribute `config` is configurable using `configManager.SetConfigYamlRootKey("myconfig")` along with the config file name `configManager.SetConfigFileName("myconfig.yml")` (see: [examples/server/server.go](./examples/server/server.go))
-
-### Launch the commands-runner
-Once the server is up and running with your states file, you can launch the commands-runner using the command:
-```./client engine start```
-
-You can check the progress using command: 
-```./client logs -f```
-
-
 ### Use commands-runner in a program.
 There is code examples at [examples/code](./examples/code)
 
@@ -91,6 +68,28 @@ states: An array of state
 - name:
   ...
 ```
+### Send config file to the server
+You can send a config file to the server before starting the processing of the state engine and this using the client command:
+```./client config  save -c <config_file_path>```
+
+<a name="configFileFormat"></a>
+The config file is a yaml file in the form of:
+
+```
+config:
+  property1: hello world
+  ...
+```
+
+The root attribute `config` is configurable using `configManager.SetConfigYamlRootKey("myconfig")` along with the config file name `configManager.SetConfigFileName("myconfig.yml")` (see: [examples/server/server.go](./examples/server/server.go))
+
+### Launch the commands-runner
+Once the server is up and running with your states file, you can launch the commands-runner using the command:
+```./client engine start```
+
+You can check the progress using command: 
+```./client logs -f```
+
 
 ### Extensions
 
@@ -119,7 +118,7 @@ In [examples/server](./examples/server) example you can see that the extensionMa
 Embeded extension are provided by your distribution and so the "end-user" doesn't need to register them into the environment. They are automatically registered based on the content embeddedExtensionDescriptor provided in the extensionManager.Init method.
 You can find an example of this file at [examples/data/test-extensions.yml](./examples/data/test-extensions.yml).
 
-### Register custmm extensions
+#### Register custom extensions
 
 If the end-user wants to register its own extension, he must create a zip file containing the extension structure.<br> 
 For example by executing: 
@@ -128,7 +127,7 @@ For example by executing:
 and then use the client CLI: 
 ```./client extension -e <extension_name> register -p <archive_path>```
 
-### Send extension's configuration in the environment
+#### Send extension's configuration in the environment
 
 
 Like for the main state file, You can send a file (configuration) to the environemnt using:
