@@ -90,6 +90,14 @@ Once the server is up and running with your states file, you can launch the comm
 You can check the progress using command: 
 ```./client logs -f```
 
+The command runner works as follow:<br>
+
+1. Read the state files
+2. Stops if one of the state has a status RUNNING
+3. Starts the execution at the first state with status READY or FAILED, if the state is an extension then the commands runner will start the first state (READY or FAILED) of the extension process.
+4. If the state failed, the commands runner stops.
+5. If the state succeeded, the commands runner search for the next READY or FAILED status to execute.
+
 
 ### Extensions
 
