@@ -1,5 +1,5 @@
 # Commands Runner
-This project allows you to orchestrate commands by creating a descriptor file which is an array of states. Each state have a command to run, a status, a log location, which other states have to be reprocess in case of error and other parameters. The command runner will run the descriptor file and mark the state as SUCCEEDED or FAILED depending on the exit code of the command. You can also extend this project with your own specific requirements.<br>
+This project allows you to orchestrate commands by creating a descriptor file which is an array of states. Each state have a command to run, a status, a log locatio, a status which can have values (READY, SKIP, RUNNING, SUCCEEDED and FAILED) and other parameters. The command runner will run the descriptor file and mark the state as SUCCEEDED or FAILED depending on the exit code of the command. You can also extend this project with your own specific requirements.<br>
 
 ## Getting Started
 You can run the `commands runner` by installing it as a server or by calling it programmatically. You can also extend the server if needed.
@@ -143,6 +143,6 @@ Format see: [config file format](#configFileFormat)
 
 As the previous state and next state are defined in the `call_state` attribute of the `extension_manifest.yml`, to insert the extension in the states file, you have to execute.
 
-```./client states insert -i simple-extension```
+```./client states insert -i <extension_name>```
 
 
