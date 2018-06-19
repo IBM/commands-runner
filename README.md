@@ -97,6 +97,7 @@ The command runner works as follow:<br>
 3. Starts the execution at the first state with status READY or FAILED, if the state is an extension then the commands runner will start the first state (READY or FAILED) of the extension process.
 4. If the state failed, the commands runner stops.
 5. If the state succeeded, the commands runner search for the next READY or FAILED status to execute.
+6. If no more state to process then the commands runner stops.
 
 
 ### Extensions
