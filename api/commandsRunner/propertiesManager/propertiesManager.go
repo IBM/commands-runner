@@ -14,6 +14,7 @@ package propertiesManager
 import (
 	"errors"
 	"io/ioutil"
+	"path/filepath"
 	"reflect"
 	"strings"
 
@@ -65,10 +66,10 @@ func ReadProperties(extensionName string) (Properties, error) {
 	dataDirectory := GetConfigPath(extensionName)
 	//properties = make(global.Properties)
 	log.Debugf("dataDirectory:%s\n", dataDirectory)
-	raw, e := ioutil.ReadFile(dataDirectory + global.ConfigYamlFileName)
+	raw, e := ioutil.ReadFile(filepath.Join(dataDirectory, global.ConfigYamlFileName))
 	//log.Debugf("\n%s", string(raw))
 	if e != nil {
-		return nil, errors.New("Unable to read " + dataDirectory + global.ConfigYamlFileName + " " + e.Error())
+		return nil, errors.New("Unable to read " + filepath.Join(dataDirectory, global.ConfigYamlFileName) + " " + e.Error())
 	}
 	//	var bmxConfig BMXConfig
 	uiConfigCfg, err := config.ParseYamlBytes(raw)
@@ -114,7 +115,7 @@ func WriteProperties(extensionName string, ps Properties) error {
 	log.Debug("dataDirectory:" + dataDirectory)
 	propertiesYaml, err := RenderProperties(ps)
 	//	log.Debug("propertiesYaml:\n" + propertiesYaml)
-	err = ioutil.WriteFile(dataDirectory+global.ConfigYamlFileName, []byte(propertiesYaml), 0644)
+	err = ioutil.WriteFile(filepath.Join(dataDirectory, global.ConfigYamlFileName), []byte(propertiesYaml), 0644)
 	if err != nil {
 		return err
 	}

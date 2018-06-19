@@ -58,7 +58,7 @@ func getStatePath(extensionName string) string {
 		statesPathAux = statesPath
 	} else {
 		statesPathAux = extensionManager.GetRootExtensionPath(extensionManager.GetExtensionPath(), extensionName)
-		statesPathAux += "statesFile-" + extensionName + ".yml"
+		statesPathAux = filepath.Join(statesPathAux, "statesFile-"+extensionName+".yml")
 	}
 	return statesPathAux
 }

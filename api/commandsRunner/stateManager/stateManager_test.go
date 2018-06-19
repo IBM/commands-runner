@@ -126,9 +126,9 @@ func TestSetStatesOK(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	statesJson := "{\"states\":[{\"name\":\"director\",\"label\":\"Director\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cf\",\"label\":\"CloudFoundry\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
+	statesJSON := "{\"states\":[{\"name\":\"director\",\"label\":\"Director\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cf\",\"label\":\"CloudFoundry\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
 	var states States
-	json.Unmarshal([]byte(statesJson), &states)
+	json.Unmarshal([]byte(statesJSON), &states)
 	t.Log("Entering... TestSetStatesOK")
 	err = sm.SetStates(states, true)
 	if err != nil {
@@ -340,9 +340,9 @@ func TestSetStatesWithDelete(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	statesJson := "{\"states\":[{\"name\":\"director\",\"delete:\":true,\"label\":\"Director\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cf\",\"label\":\"CloudFoundry\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
+	statesJSON := "{\"states\":[{\"name\":\"director\",\"delete:\":true,\"label\":\"Director\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cf\",\"label\":\"CloudFoundry\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
 	var states States
-	json.Unmarshal([]byte(statesJson), &states)
+	json.Unmarshal([]byte(statesJSON), &states)
 	t.Log("Entering... TestSetStatesOK")
 	err = sm.SetStates(states, true)
 	if err != nil {
@@ -378,17 +378,17 @@ func TestSetStatesMerge(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	statesJson := "{\"states\":[{\"name\":\"director\",\"label\":\"Director\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cf\",\"label\":\"CloudFoundry\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
+	statesJSON := "{\"states\":[{\"name\":\"director\",\"label\":\"Director\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cf\",\"label\":\"CloudFoundry\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
 	var states States
-	json.Unmarshal([]byte(statesJson), &states)
+	json.Unmarshal([]byte(statesJSON), &states)
 	err = sm.SetStates(states, true)
 	statesData, _ := sm.convert2String()
 	t.Log(statesData)
 	if err != nil {
 		t.Error(err.Error())
 	}
-	statesJson = "{\"states\":[{\"name\":\"director\",\"label\":\"Director\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cf2\",\"label\":\"CloudFoundry2\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
-	json.Unmarshal([]byte(statesJson), &states)
+	statesJSON = "{\"states\":[{\"name\":\"director\",\"label\":\"Director\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cf2\",\"label\":\"CloudFoundry2\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
+	json.Unmarshal([]byte(statesJSON), &states)
 	err = sm.SetStates(states, false)
 	statesData, _ = sm.convert2String()
 	t.Log(statesData)
@@ -422,15 +422,15 @@ func TestSetStatesMergeWithDelete(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	statesJson := "{\"states\":[{\"name\":\"director\",\"label\":\"Director\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cf2\",\"label\":\"CloudFoundry\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
+	statesJSON := "{\"states\":[{\"name\":\"director\",\"label\":\"Director\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cf2\",\"label\":\"CloudFoundry\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
 	var states States
-	json.Unmarshal([]byte(statesJson), &states)
+	json.Unmarshal([]byte(statesJSON), &states)
 	err = sm.SetStates(states, true)
 	if err != nil {
 		t.Error(err.Error())
 	}
-	statesJson = "{\"states\":[{\"name\":\"director\",\"label\":\"Director\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cf\",\"deleted\":true,\"label\":\"CloudFoundry2\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
-	json.Unmarshal([]byte(statesJson), &states)
+	statesJSON = "{\"states\":[{\"name\":\"director\",\"label\":\"Director\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cf\",\"deleted\":true,\"label\":\"CloudFoundry2\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
+	json.Unmarshal([]byte(statesJSON), &states)
 	err = sm.SetStates(states, false)
 	if err != nil {
 		t.Error(err.Error())
@@ -464,15 +464,15 @@ func TestSetStatesMergeWithCycle(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	statesJson := "{\"states\":[{\"name\":\"director\",\"label\":\"Director\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cf\",\"label\":\"CloudFoundry\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
+	statesJSON := "{\"states\":[{\"name\":\"director\",\"label\":\"Director\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cf\",\"label\":\"CloudFoundry\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
 	var states States
-	json.Unmarshal([]byte(statesJson), &states)
+	json.Unmarshal([]byte(statesJSON), &states)
 	err = sm.SetStates(states, true)
 	if err != nil {
 		t.Error(err.Error())
 	}
-	statesJson = "{\"states\":[{\"name\":\"director\",\"label\":\"Director\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cf\",\"label\":\"CloudFoundry\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\",\"next_states\":[\"director\"]}]}"
-	json.Unmarshal([]byte(statesJson), &states)
+	statesJSON = "{\"states\":[{\"name\":\"director\",\"label\":\"Director\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cf\",\"label\":\"CloudFoundry\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\",\"next_states\":[\"director\"]}]}"
+	json.Unmarshal([]byte(statesJSON), &states)
 	statesData, _ := states.convert2String()
 	t.Log(statesData)
 	err = sm.SetStates(states, false)

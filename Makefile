@@ -55,3 +55,11 @@ dependency-graph-text:
 dependency-graph: dependency-graph-text
 	cat cmcli-dependency-graph.txt | dot -Tpng -o cmcli-dependency-graph.png
 	cat cm-dependency-graph.txt | dot -Tpng -o cm-dependency-graph.png
+
+.PHONY: server
+server:
+	go build -o server  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/examples/server
+
+.PHONY: client
+client:
+	go build -o client  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/examples/client

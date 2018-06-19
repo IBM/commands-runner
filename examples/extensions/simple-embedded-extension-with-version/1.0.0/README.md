@@ -1,0 +1,1 @@
+Simple extension. 1.0.0

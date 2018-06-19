@@ -31,7 +31,7 @@ func postInitServer() commandsRunner.InitFunc {
 		//You can add here new handler to enrich the server with new API.
 		commandsRunner.AddHandler("/myurl", handlers.HelloWorldHander, false)
 		//Specify here parameters for the extensionManager
-		extensionManager.Init("examples/data/test-extensions.yml", "examples/data/repo/", "examples/data/extensions/", "examples/data/logs/extensions")
+		extensionManager.Init("examples/data/test-extensions.yml", "examples/extensions", "examples/data/extensions/", "examples/data/logs/extensions")
 		//You can overwrite here default value for the configurationManager
 		//		configManager.SetConfigFileName("myconfig.yml")
 		//		configManager.SetConfigYamlRootKey("myconfig")

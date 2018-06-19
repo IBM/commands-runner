@@ -6,6 +6,11 @@
 /api/test/resource/config.*
 /api/test/resource/dummy-extension.zip
 api/commandsRunner/cm
+examples/data/extensions
+client
+server
 .idea
 vendor
 _vendor*
+.DS_Store
+simple-custom-extension.zip

@@ -13,6 +13,7 @@ package configManager
 import (
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 
 	log "github.com/sirupsen/logrus"
@@ -75,7 +76,7 @@ func TestGetProperties(t *testing.T) {
 	global.ConfigDirectory = "../../test/resource"
 	dataDirectory := extensionManager.GetRootExtensionPath(global.ConfigDirectory, global.CommandsRunnerStatesName)
 	t.Log("dataDirectory:" + dataDirectory)
-	err := ioutil.WriteFile(dataDirectory+"/"+global.ConfigYamlFileName, []byte(configString), 0644)
+	err := ioutil.WriteFile(filepath.Join(dataDirectory, global.ConfigYamlFileName), []byte(configString), 0644)
 	if err != nil {
 		t.Error("Can not create temp file")
 	}
@@ -102,7 +103,7 @@ func TestFindProperty(t *testing.T) {
 	t.Logf("%s\n", configString)
 	global.ConfigDirectory = "../../test/resource"
 	dataDirectory := extensionManager.GetRootExtensionPath(global.ConfigDirectory, global.CommandsRunnerStatesName)
-	err := ioutil.WriteFile(dataDirectory+"/"+global.ConfigYamlFileName, []byte(configString), 0644)
+	err := ioutil.WriteFile(filepath.Join(dataDirectory, global.ConfigYamlFileName), []byte(configString), 0644)
 	if err != nil {
 		t.Error("Can not create temp file")
 	}
@@ -132,7 +133,7 @@ func TestRemoveProperty(t *testing.T) {
 	t.Logf("%s\n", configString)
 	global.ConfigDirectory = "../../test/resource"
 	dataDirectory := extensionManager.GetRootExtensionPath(global.ConfigDirectory, global.CommandsRunnerStatesName)
-	err := ioutil.WriteFile(dataDirectory+"/"+global.ConfigYamlFileName, []byte(configString), 0644)
+	err := ioutil.WriteFile(filepath.Join(dataDirectory, global.ConfigYamlFileName), []byte(configString), 0644)
 	if err != nil {
 		t.Error("Can not create temp file")
 	}

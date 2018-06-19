@@ -13,6 +13,7 @@ package uiConfigManager
 import (
 	"errors"
 	"io/ioutil"
+	"path/filepath"
 
 	log "github.com/sirupsen/logrus"
 
@@ -49,7 +50,7 @@ func getUIConfig(extensionName string) ([]byte, error) {
 	if embeddedExtension {
 		rootPath = extensionManager.GetExtensionPathEmbedded()
 	}
-	manifest, err := ioutil.ReadFile(rootPath + extensionName + "/extension-manifest.yml")
+	manifest, err := ioutil.ReadFile(filepath.Join(rootPath, extensionName, "/extension-manifest.yml"))
 	if err != nil {
 		return nil, err
 	}
