@@ -35,6 +35,30 @@ A state file example is provided in the [examples/data](./examples/data).
 2. Build the client:  Once you created the client, you can build it with for example: `go build -o client  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/examples/client`.
 3. Create token: The server uses a token for authentication, run the command: `./client token create > <your_data_directory>/cr-token`, this will create a file `cr-token` in `<your_data_directory>`.
 4. Setup the client: `./client --url <server_url> --token <token> --cacert <cert_path> api save` and finally use it.
+5. launch `./client` for more information on all available commands.
+
+### Send config file to the server
+You can send a config file to the server before starting the processing of the state engine and this using the client command:
+```./client config  save -c <config_file_path>```
+
+<a name="configFileFormat"></a>
+The config file is a yaml file in the form of:
+
+```
+config:
+  property1: hello world
+  ...
+```
+
+The root attribute `config` is configurable using `configManager.SetConfigYamlRootKey("myconfig")` along with the config file name `configManager.SetConfigFileName("myconfig.yml")` (see: [examples/server/server.go](./examples/server/server.go))
+
+### Launch the commands-runner
+Once the server is up and running with your states file, you can launch the commands-runner using the command:
+```./client engine start```
+
+You can check the progress using command: 
+```./client logs -f```
+
 
 ### Use commands-runner in a program.
 There is code examples at [examples/code](./examples/code)
@@ -45,7 +69,7 @@ The states are executed sequentially but you can alter the sequence by adding fo
 in that case a preprocessing will be done to re-order the states in a topological order. At the first run all states are marked either READY or SKIP, after the first execution the states can be marked as "SUCCEEDED" (if the execution SUCCEEDED), "FAILED" (if the execution failed), 
 "SKIP" (if the state must be skipped) or "READY" (if the state is not executed and probably because a previous state failed). When the command runner starts the execution of the states file and it runs each state marked READY or FAILED, if the state execution failed then the state will be marked FAILED and the execution stops otherwise the state is marked "SUCCEEDED" and the execution continues. If a state is marked as SUCCEEDED or "SKIP" it will be not executed and the command runner will start the execution a the next READY or FAILED state.<br>
 
-### State file format:
+### States file format:
 
 ```
 states: An array of state
@@ -69,6 +93,7 @@ states: An array of state
 ```
 
 ### Extensions
+
 You can insert extension in a states file using the client CLI or API. An extension is an artificat which contains a manifest describing (sub-)states to execute and where to insert this execution in the states file. Inserting an extension will create a new state in the states file and this new state will call the extension process and run it using the commands-runner.<br>
 
 The extension can be either "embedded" or "customer", "embeded" means that the artifact is already provided in the environement (ie: part of the product distribution) and should not be register and can not be deleted. A "embeded" extension is defined in a extensions yaml file as in [examples/data/test-extensions.yml](./examples/data/test-extensions.yml). A "custom" extension must be registered using the client CLI and for that it must be embobined in a zip file.<br>
@@ -79,7 +104,7 @@ Extensions can be inserted in an extension states file once the parent extension
 
 #### Extension directory structure
 
-An simple example is provided here [examples/extenions/simple-extension](./examples/extenions/simple-extension). The only constraint is that the extension must have a `extension-manifest.yml` in the extenision root directory.
+An simple example is provided here [examples/extenions/simple-extension-with-version](./examples/extenions/simple-extension-with-version) or [examples/extenions/simple-extension-without-version](./examples/extenions/simple-extension-without-version). The version is an intermediate directory under the extension itself, it allows to see in the reposity which version gets deployed. The commands-runner doesn't support multiple versions in the repository for the time being. The only constraint is that the extension must have a `extension-manifest.yml` in the extenision root directory.
 
 #### Extension manifest format
 
@@ -94,15 +119,30 @@ In [examples/server](./examples/server) example you can see that the extensionMa
 Embeded extension are provided by your distribution and so the "end-user" doesn't need to register them into the environment. They are automatically registered based on the content embeddedExtensionDescriptor provided in the extensionManager.Init method.
 You can find an example of this file at [examples/data/test-extensions.yml](./examples/data/test-extensions.yml).
 
-### Register extensions
+### Register custmm extensions
 
 If the end-user wants to register its own extension, he must create a zip file containing the extension structure.<br> 
-For example by executing: `tar -cvzf simple-extension.zip -C examples/extensions/simple-extension .`
+For example by executing: 
+```zip simple-custom-extension.zip simple-custom-extension/*```
 
-and then use the client CLI: `./cm extension -e <extension_name> register -p <archive_path>`
+and then use the client CLI: 
+```./client extension -e <extension_name> register -p <archive_path>```
+
+### Send extension's configuration in the environment
+
+
+Like for the main state file, You can send a file (configuration) to the environemnt using:
+
+```./client extension -e <extension_name> save -c <config_file>```
+
+The config will be saved in the extension directory.
+
+Format see: [config file format](#configFileFormat)
 
 #### Insert extensions
 
+As the previous state and next state are defined in the `call_state` attribute of the `extension_manifest.yml`, to insert the extension in the states file, you have to execute.
 
+```./client states insert -i simple-extension```
 
 

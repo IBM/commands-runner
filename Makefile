@@ -59,3 +59,7 @@ dependency-graph: dependency-graph-text
 .PHONY: server
 server:
 	go build -o server  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/examples/server
+
+.PHONY: client
+client:
+	go build -o client  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/examples/client

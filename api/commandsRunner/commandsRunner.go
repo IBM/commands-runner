@@ -59,9 +59,9 @@ func validateToken(configDir string, protectedHandler http.HandlerFunc) http.Han
 		receivedToken := receivedTokens[1]
 
 		//Read official token
-		token, err := ioutil.ReadFile(configDir + "/" + global.TokenFileName)
+		token, err := ioutil.ReadFile(filepath.Join(configDir, global.TokenFileName))
 		if err != nil {
-			http.Error(w, "Token file not found:"+configDir+"/"+global.TokenFileName, http.StatusNotFound)
+			http.Error(w, "Token file not found:"+filepath.Join(configDir, global.TokenFileName), http.StatusNotFound)
 			return
 		}
 

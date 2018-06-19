@@ -310,7 +310,6 @@ func getEmbeddedExtensionRepoPath(extensionName string) (string, error) {
 	if len(files) == 1 && files[0].IsDir() {
 		return filepath.Join(embeddedExtensionsRepositoryPath, extensionName, files[0].Name()), nil
 	}
-	log.Info("No version available for embedded extension " + extensionName)
 	return filepath.Join(embeddedExtensionsRepositoryPath, extensionName), nil
 }
 
