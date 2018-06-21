@@ -81,7 +81,7 @@ config:
   ...
 ```
 
-The root attribute `config` is configurable using `comfig.SetConfigYamlRootKey("myconfig")` along with the config file name `comfig.SetConfigFileName("myconfig.yml")` (see: [examples/server/server.go](./examples/server/server.go))
+The root attribute `config` is configurable using `config.SetConfigYamlRootKey("myconfig")` along with the config file name `config.SetConfigFileName("myconfig.yml")` (see: [examples/server/server.go](./examples/server/server.go))
 
 ### Launch the commands-runner
 Once the server is up and running with your states file, you can launch the commands-runner using the command:
