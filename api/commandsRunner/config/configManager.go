@@ -49,7 +49,7 @@ func init() {
 
 /* Search a property in a ui config object, return an error if not found
  */
-func searchUIConfigProperty(extensionName, name string) (*config.Config, error) {
+func SearchUIConfigProperty(extensionName, name string) (*config.Config, error) {
 	log.Debug("Entering... searchUIConfigProperty:" + name)
 	b, err := uiConfig.GetUIConfig(extensionName)
 	if err != nil {
@@ -155,7 +155,7 @@ func PropertiesEncodeDecode(extensionName string, ps properties.Properties, enco
 	log.Debug("Entering in... PropertiesEncodeDecode")
 	pss := make(properties.Properties)
 	for key, val := range ps {
-		uiProperty, err := searchUIConfigProperty(extensionName, key)
+		uiProperty, err := SearchUIConfigProperty(extensionName, key)
 		if err == nil {
 			s, _ := config.RenderYaml(uiProperty)
 			log.Debug("uiProperty:" + s)
@@ -163,7 +163,7 @@ func PropertiesEncodeDecode(extensionName string, ps properties.Properties, enco
 			log.Debug("Encode:" + uiPropertyEncode)
 			if errEncode == nil {
 				log.Debug("uiPropertyEncode:" + uiPropertyEncode)
-				val, err = propertyEncodeDecode(uiPropertyEncode, val.(string), encode)
+				val, err = PropertyEncodeDecode(uiPropertyEncode, val.(string), encode)
 				if err != nil {
 					return nil, err
 				}
@@ -174,7 +174,7 @@ func PropertiesEncodeDecode(extensionName string, ps properties.Properties, enco
 	return pss, nil
 }
 
-func propertyEncodeDecode(encodingType string, val string, encode bool) (string, error) {
+func PropertyEncodeDecode(encodingType string, val string, encode bool) (string, error) {
 	log.Debug("Entering in... propertyEncodeDecode")
 	//Decode if needed, data string contains the value
 	var result string
