@@ -81,7 +81,7 @@ config:
   ...
 ```
 
-The root attribute `config` is configurable using `configManager.SetConfigYamlRootKey("myconfig")` along with the config file name `configManager.SetConfigFileName("myconfig.yml")` (see: [examples/server/server.go](./examples/server/server.go))
+The root attribute `config` is configurable using `comfig.SetConfigYamlRootKey("myconfig")` along with the config file name `comfig.SetConfigFileName("myconfig.yml")` (see: [examples/server/server.go](./examples/server/server.go))
 
 ### Launch the commands-runner
 Once the server is up and running with your states file, you can launch the commands-runner using the command:
@@ -116,7 +116,7 @@ An simple example is provided here [examples/extenions/simple-extension-with-ver
 
 #### Extension manifest format
 
-The extension-manifest is a yaml file. Only one attribute is mandatory `states` which is an array of state. The state structure can be found at [api/commandsRunner/stateManager/stateManager.go](./api/commandsRunner/stateManager/stateManager.go).<br>
+The extension-manifest is a yaml file. Only one attribute is mandatory `states` which is an array of state. The state structure can be found at [api/commandsRunner/stateManager/state.go](./api/commandsRunner/stateManager/state.go).<br>
 Manifest examples can be found in the [examples/extensions](./examples/extensions)
 
 #### How to setup the server to manage extension
@@ -125,7 +125,7 @@ In [examples/server](./examples/server) example you can see that the extensionMa
 
 #### Embeded extension
 
-Embeded extension are provided by your distribution and so the "end-user" doesn't need to register them into the environment. They are automatically registered based on the content embeddedExtensionDescriptor provided in the extensionManager.Init method.
+Embeded extension are provided by your distribution and so the "end-user" doesn't need to register them into the environment. They are automatically registered based on the content embeddedExtensionDescriptor provided in the extension.Init method.
 You can find an example of this file at [examples/data/test-extensions.yml](./examples/data/test-extensions.yml).
 
 #### Register custom extensions

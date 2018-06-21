@@ -14,7 +14,7 @@ import (
 func CallStateManager(statesPath string) {
 
 	//Create a new stateManagerInstance
-	stateManagerInstance, err := stateManager.NewStateManager(statesPath)
+	stateManagerInstance, err := state.NewStateManager(statesPath)
 	if err != nil {
 		log.Fatal(err.Error())
 	}

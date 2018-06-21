@@ -35,31 +35,33 @@ pre-req::
 
 .PHONY: go-test
 go-test:: 
-	go test -v github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/...
+	go test -p 1 -v github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/...
 
 .PHONY: copyright-check
 copyright-check:
 	./build-tools/copyright-check.sh
 
 .PHONY: all
-all:: pre-req copyright-check go-test
+all:: pre-req copyright-check go-test server client
 
 #This requires Graphitz and    ''
 .PHONY: dependency-graph-text
 dependency-graph-text:
 	go get github.com/kisielk/godepgraph
-	godepgraph  -p github.com,gonum.org,gopkg.in -s github.ibm.com/IBMPrivateCloud/commands-runner/api/cmcli | sed 's/github.ibm.com\/IBMPrivateCloud\/commands-runner\/api\///' > cmcli-dependency-graph.txt
+	godepgraph  -p github.com,gonum.org,gopkg.in -s github.ibm.com/IBMPrivateCloud/commands-runner/api/crcli | sed 's/github.ibm.com\/IBMPrivateCloud\/commands-runner\/api\///' > crcli-dependency-graph.txt
 	godepgraph  -p github.com,gonum.org,gopkg.in -s github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner | sed 's/github.ibm.com\/IBMPrivateCloud\//cfp-commands-runner\/api\///' > cm-dependency-graph.txt
 
 .PHONY: dependency-graph
 dependency-graph: dependency-graph-text
-	cat cmcli-dependency-graph.txt | dot -Tpng -o cmcli-dependency-graph.png
+	cat crcli-dependency-graph.txt | dot -Tpng -o crcli-dependency-graph.png
 	cat cm-dependency-graph.txt | dot -Tpng -o cm-dependency-graph.png
 
 .PHONY: server
 server:
-	go build -o server  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/examples/server
+	mkdir -p examples/_build
+	go build -o examples/_build/server  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/examples/server
 
 .PHONY: client
 client:
-	go build -o client  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/examples/client
+	mkdir -p examples/_build
+	go build -o examples/_build/client  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/examples/client

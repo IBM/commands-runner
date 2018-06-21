@@ -3,25 +3,25 @@ package helloWorld
 import (
 	"net/http"
 
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunnerCLI/configManagerClient"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunnerCLI/clientManager"
 )
 
-type MyConfigManagerClient struct {
-	CMC *configManagerClient.ConfigManagerClient
+type MyCommandsRunnerClient struct {
+	CMC *clientManager.CommandsRunnerClient
 }
 
-func NewClient(urlIn string, outputFormat string, timeout string, caCertPath string, insecureSSL bool, token string) (*MyConfigManagerClient, error) {
-	client, errClient := configManagerClient.NewClient(urlIn, outputFormat, timeout, caCertPath, insecureSSL, token)
+func NewClient(urlIn string, outputFormat string, timeout string, caCertPath string, insecureSSL bool, token string) (*MyCommandsRunnerClient, error) {
+	client, errClient := clientManager.NewClient(urlIn, outputFormat, timeout, caCertPath, insecureSSL, token)
 	if errClient != nil {
 		return nil, errClient
 	}
-	myClient := &MyConfigManagerClient{client}
+	myClient := &MyCommandsRunnerClient{client}
 	return myClient, nil
 }
 
-func (cmc *MyConfigManagerClient) HelloWorld() (string, error) {
+func (crc *MyCommandsRunnerClient) HelloWorld() (string, error) {
 	url := "myurl"
-	data, _, err := cmc.CMC.RestCall(http.MethodGet, "/", url, nil, nil)
+	data, _, err := crc.CMC.RestCall(http.MethodGet, "/", url, nil, nil)
 	if err != nil {
 		return "", err
 	}

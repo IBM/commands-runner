@@ -17,7 +17,7 @@ import (
 	cli "gopkg.in/urfave/cli.v1"
 
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunnerCLI/configManagerClient"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunnerCLI/clientManager"
 )
 
 const COPYRIGHT string = `###############################################################################
@@ -62,7 +62,7 @@ func Client() *cli.App {
 	var status string
 
 	getStatus := func(c *cli.Context) error {
-		client, errClient := configManagerClient.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -77,7 +77,7 @@ func Client() *cli.App {
 	}
 
 	setStatus := func(c *cli.Context) error {
-		client, errClient := configManagerClient.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -92,7 +92,7 @@ func Client() *cli.App {
 	}
 
 	getAPI := func(c *cli.Context) error {
-		data, errClient := configManagerClient.GetAPISetup(OutputFormat)
+		data, errClient := clientManager.GetAPISetup(OutputFormat)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -102,7 +102,7 @@ func Client() *cli.App {
 	}
 
 	setAPI := func(c *cli.Context) error {
-		errClient := configManagerClient.SetAPISetup(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		errClient := clientManager.SetAPISetup(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -111,7 +111,7 @@ func Client() *cli.App {
 	}
 
 	removeAPI := func(c *cli.Context) error {
-		errClient := configManagerClient.RemoveAPISetup()
+		errClient := clientManager.RemoveAPISetup()
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -121,15 +121,15 @@ func Client() *cli.App {
 
 	createToken := func(c *cli.Context) error {
 		if tokenOutputFilePath != "" {
-			return configManagerClient.NewTokenFile(tokenOutputFilePath)
+			return clientManager.NewTokenFile(tokenOutputFilePath)
 		}
-		data := configManagerClient.NewToken()
+		data := clientManager.NewToken()
 		fmt.Print(data)
 		return nil
 	}
 
 	getLogs := func(c *cli.Context) error {
-		client, errClient := configManagerClient.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -143,7 +143,7 @@ func Client() *cli.App {
 	}
 
 	getConfig := func(c *cli.Context) error {
-		client, errClient := configManagerClient.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -158,7 +158,7 @@ func Client() *cli.App {
 	}
 
 	setConfig := func(c *cli.Context) error {
-		client, errClient := configManagerClient.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -173,7 +173,7 @@ func Client() *cli.App {
 	}
 
 	getUIConfig := func(c *cli.Context) error {
-		client, errClient := configManagerClient.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -188,7 +188,7 @@ func Client() *cli.App {
 	}
 
 	deploy := func(c *cli.Context) error {
-		client, errClient := configManagerClient.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -210,7 +210,7 @@ func Client() *cli.App {
 	}
 
 	isRunning := func(c *cli.Context) error {
-		client, errClient := configManagerClient.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -225,7 +225,7 @@ func Client() *cli.App {
 	}
 
 	reset := func(c *cli.Context) error {
-		client, errClient := configManagerClient.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -242,7 +242,7 @@ func Client() *cli.App {
 		if extensionName == "" {
 			extensionName = global.CommandsRunnerStatesName
 		}
-		client, errClient := configManagerClient.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -256,7 +256,7 @@ func Client() *cli.App {
 	}
 
 	getState := func(c *cli.Context) error {
-		client, errClient := configManagerClient.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -274,7 +274,7 @@ func Client() *cli.App {
 		if extensionName == "" {
 			extensionName = global.CommandsRunnerStatesName
 		}
-		client, errClient := configManagerClient.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -292,7 +292,7 @@ func Client() *cli.App {
 		if extensionName == "" {
 			extensionName = global.CommandsRunnerStatesName
 		}
-		client, errClient := configManagerClient.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -310,7 +310,7 @@ func Client() *cli.App {
 		if extensionName == "" {
 			extensionName = global.CommandsRunnerStatesName
 		}
-		client, errClient := configManagerClient.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -328,7 +328,7 @@ func Client() *cli.App {
 		if extensionName == "" {
 			extensionName = global.CommandsRunnerStatesName
 		}
-		client, errClient := configManagerClient.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -346,7 +346,7 @@ func Client() *cli.App {
 		if extensionName == "" {
 			extensionName = global.CommandsRunnerStatesName
 		}
-		client, errClient := configManagerClient.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -364,7 +364,7 @@ func Client() *cli.App {
 		if extensionName == "" {
 			extensionName = global.CommandsRunnerStatesName
 		}
-		client, errClient := configManagerClient.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -384,7 +384,7 @@ func Client() *cli.App {
 			fmt.Println(err.Error())
 			return err
 		}
-		client, errClient := configManagerClient.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -399,7 +399,7 @@ func Client() *cli.App {
 	}
 
 	register := func(c *cli.Context) error {
-		client, errClient := configManagerClient.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -414,7 +414,7 @@ func Client() *cli.App {
 	}
 
 	unregister := func(c *cli.Context) error {
-		client, errClient := configManagerClient.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -429,7 +429,7 @@ func Client() *cli.App {
 	}
 
 	getExtensions := func(c *cli.Context) error {
-		client, errClient := configManagerClient.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -444,7 +444,7 @@ func Client() *cli.App {
 	}
 
 	curl := func(c *cli.Context) error {
-		client, errClient := configManagerClient.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -458,7 +458,7 @@ func Client() *cli.App {
 	}
 
 	getPCMLogLevel := func(c *cli.Context) error {
-		client, errClient := configManagerClient.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -469,7 +469,7 @@ func Client() *cli.App {
 	}
 
 	setPCMLogLevel := func(c *cli.Context) error {
-		client, errClient := configManagerClient.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
