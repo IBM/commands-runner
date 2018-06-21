@@ -19,15 +19,17 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/crManager"
-
 	log "github.com/sirupsen/logrus"
 	cli "gopkg.in/urfave/cli.v1"
 
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/configManager"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/commandsRunner"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/config"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/extension"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/logger"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/statusManager"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/state"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/status"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/uiConfig"
 )
 
 const COPYRIGHT string = `###############################################################################
@@ -105,7 +107,7 @@ func start() {
 			log.Errorf("ListenAndServeTLS error: %v", err)
 		}
 	}()
-	statusManager.SetStatus(statusManager.CMStatus, "Up")
+	status.SetStatus(status.CMStatus, "Up")
 	// if _, err := os.Stat(serverCertificatePath); err == nil {
 	// 	if _, err := os.Stat(serverKeyPath); err == nil {
 
@@ -127,19 +129,19 @@ func Init(port string, portSSL string, configDir string, certificatePath string,
 	serverConfigDir = configDir
 	serverCertificatePath = certificatePath
 	serverKeyPath = keyPath
-	configManager.SetConfigPath(configDir)
-	SetStatePath(stateFilePath)
-	AddHandler("/cr/v1/state", handleState, true)
-	AddHandler("/cr/v1/state/", handleState, true)
-	AddHandler("/cr/v1/states", handleStates, true)
-	AddHandler("/cr/v1/engine", handleEngine, true)
-	AddHandler("/cr/v1/pcm/", handleCR, true)
-	AddHandler("/cr/v1/status", handleStatus, true)
-	AddHandler("/cr/v1/extension", handleExtension, true)
-	AddHandler("/cr/v1/extensions/", handleExtensions, true)
-	AddHandler("/cr/v1/uiconfig/", handleUIConfig, true)
-	AddHandler("/cr/v1/config", handleConfig, true)
-	AddHandler("/cr/v1/config/", handleConfig, true)
+	config.SetConfigPath(configDir)
+	state.SetStatePath(stateFilePath)
+	AddHandler("/cr/v1/state", state.HandleState, true)
+	AddHandler("/cr/v1/state/", state.HandleState, true)
+	AddHandler("/cr/v1/states", state.HandleStates, true)
+	AddHandler("/cr/v1/engine", state.HandleEngine, true)
+	AddHandler("/cr/v1/pcm/", commandsRunner.HandleCR, true)
+	AddHandler("/cr/v1/status", status.HandleStatus, true)
+	AddHandler("/cr/v1/extension", extension.HandleExtension, true)
+	AddHandler("/cr/v1/extensions/", extension.HandleExtensions, true)
+	AddHandler("/cr/v1/uiconfig/", uiConfig.HandleUIConfig, true)
+	AddHandler("/cr/v1/config", config.HandleConfig, true)
+	AddHandler("/cr/v1/config/", config.HandleConfig, true)
 }
 
 func ServerStart(preInitFunc InitFunc, postInitFunc InitFunc, preStartFunc InitFunc) {
@@ -183,8 +185,8 @@ func ServerStart(preInitFunc InitFunc, postInitFunc InitFunc, preStartFunc InitF
 				},
 			},
 			Action: func(c *cli.Context) error {
-				crManager.LogPath = configDir + string(filepath.Separator) + "commands-runner.log"
-				file, _ := os.Create(crManager.LogPath)
+				commandsRunner.LogPath = configDir + string(filepath.Separator) + "commands-runner.log"
+				file, _ := os.Create(commandsRunner.LogPath)
 				out := io.MultiWriter(file, os.Stderr)
 				log.SetOutput(out)
 				logLevel := os.Getenv("CM_TRACE")

@@ -7,8 +7,7 @@
 /api/test/resource/dummy-extension.zip
 api/commandsRunner/cm
 examples/data/extensions
-client
-server
+examples/_build
 .idea
 vendor
 _vendor*

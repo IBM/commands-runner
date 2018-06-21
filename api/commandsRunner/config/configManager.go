@@ -1,0 +1,257 @@
+/*
+###############################################################################
+# Licensed Materials - Property of IBM Copyright IBM Corporation 2017, 2018. All Rights Reserved.
+# U.S. Government Users Restricted Rights - Use, duplication or disclosure restricted by GSA ADP
+# Schedule Contract with IBM Corp.
+#
+# Contributors:
+#  IBM Corporation - initial API and implementation
+###############################################################################
+*/
+/* File contains generic code to manage the uiconfig */
+package config
+
+import (
+	"encoding/base64"
+	"errors"
+	"path/filepath"
+	"strconv"
+
+	log "github.com/sirupsen/logrus"
+
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/extension"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/properties"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/uiConfig"
+
+	"github.com/olebedev/config"
+)
+
+const COPYRIGHT string = `###############################################################################
+# Licensed Materials - Property of IBM Copyright IBM Corporation 2017, 2018. All Rights Reserved.
+# U.S. Government Users Restricted Rights - Use, duplication or disclosure restricted by GSA ADP
+# Schedule Contract with IBM Corp.
+#
+# Contributors:
+#  IBM Corporation - initial API and implementation
+###############################################################################`
+
+type Config struct {
+	Properties properties.Properties `json:"config" yaml:"config"`
+}
+
+var props properties.Properties
+
+//Initialize the properties map
+func init() {
+	props = make(properties.Properties)
+}
+
+/* Search a property in a ui config object, return an error if not found
+ */
+func SearchUIConfigProperty(extensionName, name string) (*config.Config, error) {
+	log.Debug("Entering... searchUIConfigProperty:" + name)
+	b, err := uiConfig.GetUIConfig(extensionName)
+	if err != nil {
+		return nil, err
+	}
+	uiCFDeploy, err := config.ParseJson(string(b))
+	//Search list of groups
+	groups, err := uiCFDeploy.List("groups")
+	log.Debug("Group size:" + strconv.Itoa(len(groups)))
+	if err != nil {
+		log.Debug("Search groups error:" + err.Error())
+		return nil, err
+	}
+	//Loop on all groups
+	for groupIndex, _ := range groups {
+		//Retrieve the properties attribute from the group
+		properties, errProps := uiCFDeploy.List("groups." + strconv.Itoa(groupIndex) + ".properties")
+		log.Debug("properties size:" + strconv.Itoa(len(properties)))
+		if errProps != nil {
+			log.Debug("Search properties error:" + errProps.Error())
+			return nil, errProps
+		}
+		//Loop on all properties
+		for propertiesIndex, _ := range properties {
+			//Retrieve the property
+			property, errProp := uiCFDeploy.Get("groups." + strconv.Itoa(groupIndex) + ".properties." + strconv.Itoa(propertiesIndex))
+			if errProp != nil {
+				log.Debug("Search property error:" + errProp.Error())
+				return nil, errProp
+			}
+			//Retrieve the property "nane"
+			nameFound, errName := property.String("name")
+			log.Debug("UI Property found:" + nameFound)
+			if errName != nil {
+				log.Debug("Search nameFound error:" + errName.Error())
+				return nil, errName
+			}
+			//Check if it is the searched name
+			if nameFound == name {
+				log.Debug("Found Property:" + name)
+				return property, nil
+			}
+		}
+	}
+	return nil, errors.New(name + " not found!")
+}
+
+/*
+Set the config path and read the properties
+If property file not present, an empty file is created
+The Listener stops if the file can not be created
+*/
+func SetConfigPath(configDirectoryP string) {
+	//Build the uiconfig path
+	global.ConfigDirectory = configDirectoryP
+	configPathYaml := configDirectoryP + string(filepath.Separator) + global.ConfigYamlFileName
+	log.Debugf("configPathYaml:%s", configPathYaml)
+	//Read the current properties
+	properties.ReadProperties(global.CommandsRunnerStatesName)
+}
+
+/*
+Set the config file name
+*/
+func SetConfigFileName(configFileName string) {
+	global.ConfigYamlFileName = configFileName
+}
+
+/*
+Set the config root key
+*/
+func SetConfigYamlRootKey(rootKey string) {
+	global.ConfigYamlRootKey = rootKey
+}
+
+/*
+Save the property map in the property file
+Reread the file afterward
+*/
+func SetProperties(extensionName string, ps properties.Properties) error {
+	log.Debug("Entering... SetProperties")
+	registered := extension.IsExtensionRegistered(extensionName)
+	if !registered {
+		err := errors.New("Extension " + extensionName + "not registered yet")
+		log.Debug(err.Error())
+		return err
+	}
+	err := properties.WriteProperties(extensionName, ps)
+	if err != nil {
+		return err
+	}
+	props, err = properties.ReadProperties(extensionName)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+/*
+Encode decode properties
+*/
+func PropertiesEncodeDecode(extensionName string, ps properties.Properties, encode bool) (properties.Properties, error) {
+	log.Debug("Entering in... PropertiesEncodeDecode")
+	pss := make(properties.Properties)
+	for key, val := range ps {
+		uiProperty, err := SearchUIConfigProperty(extensionName, key)
+		if err == nil {
+			s, _ := config.RenderYaml(uiProperty)
+			log.Debug("uiProperty:" + s)
+			uiPropertyEncode, errEncode := uiProperty.String("encode")
+			log.Debug("Encode:" + uiPropertyEncode)
+			if errEncode == nil {
+				log.Debug("uiPropertyEncode:" + uiPropertyEncode)
+				val, err = PropertyEncodeDecode(uiPropertyEncode, val.(string), encode)
+				if err != nil {
+					return nil, err
+				}
+			}
+		}
+		pss[key] = val
+	}
+	return pss, nil
+}
+
+func PropertyEncodeDecode(encodingType string, val string, encode bool) (string, error) {
+	log.Debug("Entering in... propertyEncodeDecode")
+	//Decode if needed, data string contains the value
+	var result string
+	switch encodingType {
+	case "base64":
+		if encode {
+			result = base64.StdEncoding.EncodeToString([]byte(val))
+		} else {
+			dataDecode, errDecode := base64.StdEncoding.DecodeString(val)
+			if errDecode != nil {
+				return "", errDecode
+			}
+			result = string(dataDecode)
+		}
+	default:
+		result = val
+	}
+	log.Debug("Result:" + result)
+	return result, nil
+}
+
+/*
+Read the property file and populate the map.
+If read can not be done, the error is forwarded
+*/
+func GetProperties(extensionName string) (properties.Properties, error) {
+	log.Debug("Entering in... GetProperties")
+	log.Debug("extensionName:" + extensionName)
+	properties, e := properties.ReadProperties(extensionName)
+	if e != nil {
+		return nil, e
+	}
+	return properties, nil
+}
+
+/*
+Remove a property from the map
+*/
+func RemoveProperty(extensionName string, key string) error {
+	propertiesAux, err := properties.ReadProperties(extensionName)
+	if err != nil {
+		return err
+	}
+	delete(propertiesAux, key)
+	SetProperties(extensionName, propertiesAux)
+	propertiesAux, err = properties.ReadProperties(extensionName)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+/*
+Search for a given property
+*/
+func FindProperty(extensionName string, key string) (interface{}, error) {
+	properties, err := properties.ReadProperties(extensionName)
+	if err != nil {
+		return nil, err
+	}
+	if p, ok := properties[key]; ok {
+		return p, nil
+	}
+	err = errors.New("Property " + key + " not found")
+	return nil, err
+}
+
+/*
+Add a property
+*/
+func AddProperty(extensionName string, key string, value interface{}) error {
+	var err error
+	props, err = properties.ReadProperties(extensionName)
+	if err != nil {
+		return err
+	}
+	props[key] = value
+	SetProperties(extensionName, props)
+	return nil
+}
