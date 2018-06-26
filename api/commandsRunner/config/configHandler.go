@@ -145,7 +145,7 @@ func setPropertiesEndpoint(w http.ResponseWriter, req *http.Request) {
 			body = content
 		}
 	}
-	log.Debug(body)
+	log.Debug(string(body))
 	extensionName, _, errExtName := state.GetExtensionNameFromRequest(req)
 	if errExtName != nil {
 		logger.AddCallerField().Error(errExtName.Error())
@@ -156,7 +156,7 @@ func setPropertiesEndpoint(w http.ResponseWriter, req *http.Request) {
 	err = json.Unmarshal(body, &bmxConfig)
 	//log.Debug("Body:\n" + string(body))
 	if err != nil {
-		log.Debug("It is a yanl")
+		log.Debug("It is a yaml")
 		err = yaml.Unmarshal(body, &bmxConfig)
 		ps = bmxConfig.Properties
 	} else {
