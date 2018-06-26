@@ -118,7 +118,34 @@ Method: POST
 func setPropertiesEndpoint(w http.ResponseWriter, req *http.Request) {
 	log.Debug("Entering....... setPropertiesEndpoint")
 	var ps properties.Properties
-	body, err := ioutil.ReadAll(req.Body)
+	var body []byte
+	var err error
+	mReader, _ := req.MultipartReader()
+	if mReader == nil {
+		log.Debug("Not a multipart")
+		body, err = ioutil.ReadAll(req.Body)
+	} else {
+		form, err := mReader.ReadForm(100000)
+		if err != nil {
+			logger.AddCallerField().Error(err.Error())
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		if fileHeaders, ok := form.File["file"]; ok {
+			log.Debug("Found part named 'file'")
+			log.Debug(fileHeaders[0].Filename)
+			file, err := fileHeaders[0].Open()
+			if err != nil {
+				logger.AddCallerField().Error(err.Error())
+				http.Error(w, err.Error(), 500)
+				return
+			}
+			content := make([]byte, fileHeaders[0].Size)
+			file.Read(content)
+			body = content
+		}
+	}
+	log.Debug(body)
 	extensionName, _, errExtName := state.GetExtensionNameFromRequest(req)
 	if errExtName != nil {
 		logger.AddCallerField().Error(errExtName.Error())
