@@ -131,21 +131,23 @@ func setPropertiesEndpoint(w http.ResponseWriter, req *http.Request) {
 			http.Error(w, err.Error(), 500)
 			return
 		}
-		if fileHeaders, ok := form.File["file"]; ok {
-			log.Debug("Found part named 'file'")
-			log.Debug(fileHeaders[0].Filename)
-			file, err := fileHeaders[0].Open()
-			if err != nil {
-				logger.AddCallerField().Error(err.Error())
-				http.Error(w, err.Error(), 500)
-				return
+		if fileHeaders, ok := form.File["config"]; ok {
+			log.Debug("Found part named 'config'")
+			for index, fileHeader := range fileHeaders {
+				log.Debug(fileHeader.Filename + " part " + strconv.Itoa(index))
+				file, err := fileHeader.Open()
+				if err != nil {
+					logger.AddCallerField().Error(err.Error())
+					http.Error(w, err.Error(), 500)
+					return
+				}
+				content := make([]byte, fileHeader.Size)
+				file.Read(content)
+				body = append(body, content...)
+				file.Close()
 			}
-			content := make([]byte, fileHeaders[0].Size)
-			file.Read(content)
-			body = content
 		}
 	}
-	log.Debug(string(body))
 	extensionName, _, errExtName := state.GetExtensionNameFromRequest(req)
 	if errExtName != nil {
 		logger.AddCallerField().Error(errExtName.Error())

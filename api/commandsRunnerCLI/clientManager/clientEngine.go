@@ -49,7 +49,7 @@ func (crc *CommandsRunnerClient) IsRunningEngine(extensionName string) (string, 
 	if err != nil {
 		return "", err
 	}
-	if errCode != http.StatusOK && errCode != http.StatusProcessing {
+	if errCode != http.StatusOK && errCode != http.StatusCreated {
 		return "", errors.New("Unable to retrieve the status")
 	}
 	if errCode == http.StatusOK {
