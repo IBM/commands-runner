@@ -154,7 +154,7 @@ func GetIsRunningEndpoint(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, err.Error(), 500)
 	}
 	if running {
-		w.WriteHeader(http.StatusProcessing)
+		w.WriteHeader(http.StatusCreated)
 	} else {
 		w.WriteHeader(http.StatusOK)
 	}

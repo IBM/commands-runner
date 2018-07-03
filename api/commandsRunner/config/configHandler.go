@@ -118,7 +118,36 @@ Method: POST
 func setPropertiesEndpoint(w http.ResponseWriter, req *http.Request) {
 	log.Debug("Entering....... setPropertiesEndpoint")
 	var ps properties.Properties
-	body, err := ioutil.ReadAll(req.Body)
+	var body []byte
+	var err error
+	mReader, _ := req.MultipartReader()
+	if mReader == nil {
+		log.Debug("Not a multipart")
+		body, err = ioutil.ReadAll(req.Body)
+	} else {
+		form, err := mReader.ReadForm(100000)
+		if err != nil {
+			logger.AddCallerField().Error(err.Error())
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		if fileHeaders, ok := form.File["config"]; ok {
+			log.Debug("Found part named 'config'")
+			for index, fileHeader := range fileHeaders {
+				log.Debug(fileHeader.Filename + " part " + strconv.Itoa(index))
+				file, err := fileHeader.Open()
+				if err != nil {
+					logger.AddCallerField().Error(err.Error())
+					http.Error(w, err.Error(), 500)
+					return
+				}
+				content := make([]byte, fileHeader.Size)
+				file.Read(content)
+				body = append(body, content...)
+				file.Close()
+			}
+		}
+	}
 	extensionName, _, errExtName := state.GetExtensionNameFromRequest(req)
 	if errExtName != nil {
 		logger.AddCallerField().Error(errExtName.Error())
@@ -129,7 +158,7 @@ func setPropertiesEndpoint(w http.ResponseWriter, req *http.Request) {
 	err = json.Unmarshal(body, &bmxConfig)
 	//log.Debug("Body:\n" + string(body))
 	if err != nil {
-		log.Debug("It is a yanl")
+		log.Debug("It is a yaml")
 		err = yaml.Unmarshal(body, &bmxConfig)
 		ps = bmxConfig.Properties
 	} else {
