@@ -13,3 +13,4 @@ vendor
 _vendor*
 .DS_Store
 simple-custom-extension.zip
+.vscode
