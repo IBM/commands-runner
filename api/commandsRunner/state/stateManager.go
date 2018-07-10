@@ -139,8 +139,8 @@ func (sm *States) readStates() error {
 	log.Debug("Entering... readStates")
 	log.Debug("statesPath... " + sm.StatesPath)
 	// Read state file.
-	sm.lock()
-	defer sm.unlock()
+	// sm.lock()
+	//	defer sm.unlock()
 	log.Debugf("sm address %p:", &sm)
 	statesData, err := ioutil.ReadFile(sm.StatesPath)
 	//	log.Debugf("StatesData=%s", statesData)
@@ -257,8 +257,8 @@ func (sm *States) writeStates() error {
 	log.Debug("Entering... writeStates")
 	log.Debug("Marshal states")
 	//	log.Debug(sm )
-	sm.lock()
-	defer sm.unlock()
+	//	sm.lock()
+	// defer sm.unlock()
 	statesData, err := sm.convert2ByteArray()
 	log.Debugf("statesData: %s", string(statesData))
 	if err != nil {
@@ -336,6 +336,8 @@ func (sm *States) GetStates(status string) (*States, error) {
 //States marked deleted in the new states will be removed for the current states.
 func (sm *States) SetStates(states States, overwrite bool) error {
 	log.Debug("Entering... SetStates")
+	sm.lock()
+	defer sm.unlock()
 	states.setDefaultValues()
 	err := states.topoSort()
 	if err != nil {
@@ -839,6 +841,8 @@ func (sm *States) setStateStatus(state State, status string, recursively bool) e
 //No RUNNING state must be found.
 func (sm *States) ResetEngine() error {
 	log.Debug("Entering... ResetEngine")
+	sm.lock()
+	defer sm.unlock()
 	//Read states
 	errStates := sm.readStates()
 	if errStates != nil {
@@ -878,6 +882,8 @@ func (sm *States) GetState(state string) (*State, error) {
 //SetState Set a state status
 func (sm *States) SetState(state string, status string, reason string, script string, scriptTimout int, recursivelly bool) error {
 	log.Debugf("Read states=%s\n", state)
+	sm.lock()
+	defer sm.unlock()
 	errStates := sm.readStates()
 	if errStates != nil {
 		return errStates
@@ -1075,6 +1081,8 @@ func (sm *States) InsertState(state State, pos int, stateName string, before boo
 //Array start in Go at 0 but here the pos 1 is the elem 0
 func (sm *States) DeleteState(pos int, stateName string) error {
 	log.Debug("Entering..... DeleteState")
+	sm.lock()
+	defer sm.unlock()
 	errStates := sm.readStates()
 	if errStates != nil {
 		return errStates
