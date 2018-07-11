@@ -182,7 +182,7 @@ func (sm *States) setDefaultValues() {
 			if sm.isCustomStatePath() {
 				dir = extension.GetExtensionLogsPathCustom()
 			}
-			sm.StateArray[index].LogPath = dir + sm.StateArray[index].Name + string(filepath.Separator) + sm.StateArray[index].Name + ".log"
+			sm.StateArray[index].LogPath = filepath.Join(dir, sm.StateArray[index].Name, sm.StateArray[index].Name+".log")
 			//			log.Debug("Set state.LogPath to " + sm.StateArray[index].LogPath)
 		}
 		if sm.StateArray[index].Script == "" {
