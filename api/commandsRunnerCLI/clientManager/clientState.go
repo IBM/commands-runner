@@ -89,14 +89,14 @@ func (crc *CommandsRunnerClient) SetState(extensionName string, stateName string
 	}
 	if scriptTimeout != "" {
 		if query != "" {
-			query = query + ";amp&"
+			query = query + "&amp;"
 		}
 		query = query + "script-timeout=" + scriptTimeout
 	}
 	//build url
 	url := "state/" + stateName + "?" + query
 	if extensionName != "" {
-		url += ";amp&extension-name=" + extensionName
+		url += "&amp;extension-name=" + extensionName
 	}
 	//Call the rest api
 	data, errCode, err := crc.RestCall(http.MethodPut, global.BaseURL, url, nil, nil)
