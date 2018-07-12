@@ -23,7 +23,7 @@ func (crc *CommandsRunnerClient) ResetEngine(extensionName string) (string, erro
 	//Build url
 	url := "engine?action=reset"
 	if extensionName != "" {
-		url += "&amp;extension-name=" + extensionName
+		url += "&extension-name=" + extensionName
 	}
 	//Call rest api
 	_, errCode, err := crc.RestCall(http.MethodPut, global.BaseURL, url, nil, nil)
@@ -63,13 +63,13 @@ func (crc *CommandsRunnerClient) StartEngine(extensionName string, fromState str
 	//build url
 	url := "engine?action=start"
 	if extensionName != "" {
-		url += "&amp;extension-name=" + extensionName
+		url += "&extension-name=" + extensionName
 	}
 	if fromState != "" {
-		url += "&amp;from-state=" + fromState
+		url += "&from-state=" + fromState
 	}
 	if toState != "" {
-		url += "&amp;to-state=" + toState
+		url += "&to-state=" + toState
 	}
 	//Call rest api
 	_, errCode, err := crc.RestCall(http.MethodPut, global.BaseURL, url, nil, nil)
