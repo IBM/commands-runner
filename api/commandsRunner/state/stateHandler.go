@@ -257,13 +257,6 @@ func PutStatesEndpoint(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, errSM.Error(), http.StatusBadRequest)
 		return
 	}
-	/*
-		if _, err := os.Stat(sm.StatesPath); os.IsNotExist(err) {
-			log.Debug(errors.New("State file " + sm.StatesPath + " doesn't exist"))
-			http.Error(w, errSM.Error(), http.StatusBadRequest)
-			return
-		}
-	*/
 	overwrite := true
 	var errCvt error
 	if overwriteFound, okOverwrite := m["overwrite"]; okOverwrite {
@@ -285,8 +278,14 @@ func PutStatesEndpoint(w http.ResponseWriter, req *http.Request) {
 		body := html.UnescapeString(bodyRaw)
 		err = yaml.Unmarshal([]byte(body), &states)
 		if err == nil {
-			err = sm.SetStates(states, overwrite)
-			if err != nil {
+			if len(states.StateArray) != 0 {
+				err = sm.SetStates(states, overwrite)
+				if err != nil {
+					logger.AddCallerField().Error(err.Error())
+					http.Error(w, err.Error(), 500)
+				}
+			} else {
+				err = errors.New("No states provided")
 				logger.AddCallerField().Error(err.Error())
 				http.Error(w, err.Error(), 500)
 			}
