@@ -221,13 +221,27 @@ func GetStatesEndpoint(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, errSM.Error(), http.StatusBadRequest)
 		return
 	}
-	//Retreive the first-line
 	status := ""
 	if statusFound, okStatus := m["status"]; okStatus {
 		log.Debug("status:%s", statusFound)
 		status = statusFound[0]
 	}
-	states, err := sm.GetStates(status)
+
+	extensionsString := "false"
+	if extensionsFound, okExtensions := m["extensions-only"]; okExtensions {
+		log.Debug("extensions:%s", extensionsFound)
+		extensionsString = extensionsFound[0]
+	}
+	extensionsOnly, err := strconv.ParseBool(extensionsString)
+
+	recursiveString := "false"
+	if recursiveFound, okRecursive := m["recursive"]; okRecursive {
+		log.Debug("recursive:%s", recursiveFound)
+		recursiveString = recursiveFound[0]
+	}
+	recursive, err := strconv.ParseBool(recursiveString)
+
+	states, err := sm.GetStates(status, extensionsOnly, recursive)
 	if err == nil {
 		//		json.NewEncoder(w).Encode(states)
 		enc := json.NewEncoder(w)

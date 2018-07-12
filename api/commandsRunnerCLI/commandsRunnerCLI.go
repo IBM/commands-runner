@@ -279,7 +279,7 @@ func Client() *cli.App {
 			fmt.Println(errClient.Error())
 			return errClient
 		}
-		data, err := client.GetStates(extensionName, "")
+		data, err := client.GetStates(extensionName, "", false, false)
 		if err != nil {
 			fmt.Println(err.Error())
 			return err
@@ -379,17 +379,17 @@ func Client() *cli.App {
 	}
 
 	findStates := func(c *cli.Context) error {
-		if searchStatus == "" {
-			err := errors.New("--status, -s missing")
-			fmt.Println(err.Error())
-			return err
-		}
+		// if searchStatus == "" {
+		// 	err := errors.New("--status, -s missing")
+		// 	fmt.Println(err.Error())
+		// 	return err
+		// }
 		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
 		}
-		data, err := client.GetStates(extensionName, searchStatus)
+		data, err := client.GetStates(extensionName, searchStatus, c.Bool("extension"), c.Bool("recursive"))
 		if err != nil {
 			fmt.Println(err.Error())
 			return err
@@ -910,6 +910,14 @@ func Client() *cli.App {
 							Name:        "status, s",
 							Usage:       "Status to find",
 							Destination: &searchStatus,
+						},
+						cli.BoolFlag{
+							Name:  "extension, e",
+							Usage: "Search extension states only",
+						},
+						cli.BoolFlag{
+							Name:  "recursive, r",
+							Usage: "Search recursively in the extension states",
 						},
 					},
 					Action: findStates,

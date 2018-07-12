@@ -187,7 +187,6 @@ func TestInsertDeleteStateStates(t *testing.T) {
 			string(outFileData), string(inFileData))
 	}
 }
-
 func TestSetEmptyStates(t *testing.T) {
 	t.Log("Entering................. TestInsertStateEmptyStates")
 	stateFile := "../../test/resource/states-insert-delete.yaml"

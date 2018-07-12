@@ -116,7 +116,7 @@ func (crc *CommandsRunnerClient) GetLogs(extensionName string, stateName string,
 		return err
 	}
 	//Retrieve list of states and unmarshal
-	data, err := crc.getRestStates(extensionName, "")
+	data, err := crc.getRestStates(extensionName, "", false, false)
 	if err != nil {
 		return err
 	}

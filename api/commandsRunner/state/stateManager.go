@@ -309,27 +309,43 @@ func (sm *States) _getState(state string) (*State, error) {
 }
 
 //GetStates returns the list of states with a given status. if the status is an empty string then it returns all states.
-func (sm *States) GetStates(status string) (*States, error) {
+func (sm *States) GetStates(status string, extensionsOnly bool, recursive bool) (*States, error) {
 	log.Debug("Entering... GetStates")
 	errStates := sm.readStates()
 	if errStates != nil {
 		return nil, errStates
 	}
 	var states States
+	for i := 0; i < len(sm.StateArray); i++ {
+		if strings.HasPrefix(sm.StateArray[i].Script, "cm extension") {
+			states.StateArray = append(states.StateArray, sm.StateArray[i])
+			if recursive {
+				smp, err := getStateManager(sm.StateArray[i].Name)
+				if err != nil {
+					return nil, err
+				}
+				subStates, err := smp.GetStates(status, extensionsOnly, recursive)
+				if err != nil {
+					return nil, err
+				}
+				states.StateArray = append(states.StateArray, subStates.StateArray...)
+			}
+		} else if !extensionsOnly {
+			states.StateArray = append(states.StateArray, sm.StateArray[i])
+		}
+	}
 	//Filter on status
+	var resultStates States
 	if status != "" {
-		for i := 0; i < len(sm.StateArray); i++ {
-			if sm.StateArray[i].Status == status {
-				states.StateArray = append(states.StateArray, sm.StateArray[i])
+		for i := 0; i < len(states.StateArray); i++ {
+			if states.StateArray[i].Status == status {
+				resultStates.StateArray = append(resultStates.StateArray, states.StateArray[i])
 			}
 		}
 	} else {
-		for i := 0; i < len(sm.StateArray); i++ {
-			states.StateArray = append(states.StateArray, sm.StateArray[i])
-		}
-
+		resultStates = states
 	}
-	return &states, nil
+	return &resultStates, nil
 }
 
 //SetStates Set the current states with a new states. If overwrite is false, then the 2 states will be merged.
@@ -1137,7 +1153,7 @@ func (sm *States) getLogPath(state string) (string, error) {
 //GetLogs Get logs from a given position, a given length. The length is the number of characters to return if bychar is true otherwize is the number of lines.
 func (sm *States) GetLogs(position int64, length int64, bychar bool) (string, error) {
 	var data []byte
-	states, err := sm.GetStates("")
+	states, err := sm.GetStates("", false, false)
 	if err != nil {
 		return string(data), err
 	}
