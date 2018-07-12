@@ -564,7 +564,7 @@ func Client() *cli.App {
 			Flags: []cli.Flag{
 				cli.StringFlag{
 					Name:        "list, l",
-					Usage:       "Which extensions to list (IBM or custom), leave empty for all",
+					Usage:       "Which extensions to list (embedded or custom), leave empty for all",
 					Destination: &extensionsToList,
 				},
 				cli.BoolFlag{

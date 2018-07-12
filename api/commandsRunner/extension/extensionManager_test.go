@@ -49,3 +49,13 @@ func TestIsExtension(t *testing.T) {
 		t.Error("cfp-ext-template is an IBM extension")
 	}
 }
+
+func TestListRegisteredExtensions(t *testing.T) {
+	log.SetLevel(log.DebugLevel)
+	SetExtensionPath("../../test/data/extensions/")
+	extensions, err := ListExtensions("", false)
+	if err != nil {
+		t.Error(err.Error())
+	}
+	t.Logf("%v", extensions)
+}

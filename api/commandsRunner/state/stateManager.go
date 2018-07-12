@@ -988,6 +988,8 @@ func (sm *States) setStateStatusWithTimeStamp(isStart bool, state string, status
 func (sm *States) InsertState(state State, pos int, stateName string, before bool) error {
 	log.Debug("Entering..... InsertState")
 	log.Debug("State name: " + stateName)
+	sm.lock()
+	defer sm.unlock()
 	errStates := sm.readStates()
 	if errStates != nil {
 		return errStates

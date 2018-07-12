@@ -375,7 +375,7 @@ func PutInsertStateStatesEndpoint(w http.ResponseWriter, req *http.Request) {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
-			manifestPath = manifestPath + string(filepath.Separator) + "extension-manifest.yml"
+			manifestPath = filepath.Join(manifestPath, "extension-manifest.yml")
 			log.Debug("manifestPath: " + manifestPath)
 			manifestBytes, err := ioutil.ReadFile(manifestPath)
 			if err != nil {
