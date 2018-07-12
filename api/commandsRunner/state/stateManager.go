@@ -320,7 +320,7 @@ func (sm *States) GetStates(status string, extensionsOnly bool, recursive bool) 
 		if strings.HasPrefix(sm.StateArray[i].Script, "cm extension") {
 			states.StateArray = append(states.StateArray, sm.StateArray[i])
 			if recursive {
-				smp, err := getStateManager(sm.StateArray[i].Name)
+				smp, err := getAddStateManager(sm.StateArray[i].Name)
 				if err != nil {
 					return nil, err
 				}
