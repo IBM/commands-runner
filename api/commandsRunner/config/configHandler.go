@@ -98,25 +98,25 @@ func getPropertiesEndpoint(w http.ResponseWriter, req *http.Request) {
 	}
 	properties, err = PropertiesEncodeDecode(extensionName, properties, true)
 	if err != nil {
-		log.Debug(err.Error())
+		logger.AddCallerField().Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-	cfg, err := config.ParseJson(global.ConfigRootKey)
+	cfg, err := config.ParseJson("{}")
 	if err != nil {
-		log.Debug(err.Error())
+		logger.AddCallerField().Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 	err = cfg.Set(global.ConfigRootKey, properties)
 	if err != nil {
-		log.Debug(err.Error())
+		logger.AddCallerField().Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-	result, err := config.RenderJson(cfg)
+	result, err := config.RenderJson(cfg.Root)
 	if err != nil {
-		log.Debug(err.Error())
+		logger.AddCallerField().Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}

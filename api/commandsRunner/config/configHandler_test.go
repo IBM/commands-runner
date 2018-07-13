@@ -15,6 +15,8 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+
+	log "github.com/sirupsen/logrus"
 )
 
 //Commenting because there is a concurrence issue when we use 2 different states file
@@ -43,6 +45,49 @@ func TestSaveConfig(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 
 	// Check the status code is what we expect.
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v: %v",
+			status, http.StatusOK, rr.Body)
+	}
+}
+
+func TestGetConfig(t *testing.T) {
+	t.Log("Entering................. TestSaveConfig")
+	log.SetLevel(log.DebugLevel)
+	SetConfigPath("../../test/resource")
+	SetConfigFileName("config-test-save.yml")
+
+	req, err := http.NewRequest("GET", "/cr/v1/config", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(HandleConfig)
+
+	handler.ServeHTTP(rr, req)
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v: %v",
+			status, http.StatusOK, rr.Body)
+	}
+}
+
+func TestGetConfigCustomized(t *testing.T) {
+	t.Log("Entering................. TestSaveConfig")
+	log.SetLevel(log.DebugLevel)
+	SetConfigPath("../../test/resource")
+	SetConfigFileName("uiconfig-test-save.yml")
+	SetConfigRootKey("uiconfig")
+
+	req, err := http.NewRequest("GET", "/cr/v1/config", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(HandleConfig)
+
+	handler.ServeHTTP(rr, req)
 	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v: %v",
 			status, http.StatusOK, rr.Body)
