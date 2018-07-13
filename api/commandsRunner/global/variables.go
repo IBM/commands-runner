@@ -23,5 +23,5 @@ var ConfigDirectory string
 //ConfigYamlFileName default file name for the config file.
 var ConfigYamlFileName = "config.yml"
 
-//ConfigYamlRootKey default root key for the yaml config file.
-var ConfigYamlRootKey = "config"
+//ConfigRootKey default root key for the yaml config file.
+var ConfigRootKey = "config"

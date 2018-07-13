@@ -21,12 +21,12 @@ import (
 func TestSaveConfig(t *testing.T) {
 	t.Log("Entering................. TestSaveConfig")
 	SetConfigPath("../../test/resource/CloudFoundry")
-	body, err := os.Open("../../test/resource/uiconfig-test-save.yml")
+	body, err := os.Open("../../test/resource/config-test-save.yml")
 	defer body.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
-	req, err := http.NewRequest("POST", "/cr/v1/bmxconfig", body)
+	req, err := http.NewRequest("POST", "/cr/v1/config", body)
 	if err != nil {
 		t.Fatal(err)
 	}

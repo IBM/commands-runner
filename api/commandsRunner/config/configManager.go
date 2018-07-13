@@ -121,8 +121,8 @@ func SetConfigFileName(configFileName string) {
 /*
 Set the config root key
 */
-func SetConfigYamlRootKey(rootKey string) {
-	global.ConfigYamlRootKey = rootKey
+func SetConfigRootKey(rootKey string) {
+	global.ConfigRootKey = rootKey
 }
 
 /*

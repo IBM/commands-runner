@@ -33,7 +33,7 @@ const COPYRIGHT_TEST string = `#################################################
 
 //var bmxConfigString string = "{\"Prop1\":{\"name\":\"Prop1\",\"value\":\"Val1\"},\"Prop2\":{\"name\":\"Prop2\",\"value\":\"Val2\"},\"subnet\":{\"name\":\"subnet\",\"value\":\"192.168.100.0/24\"}}"
 
-var configString string = global.ConfigYamlRootKey + ":\n  env_name: \"itdove\"\n  host_directory: \"/itdove/data\"\n  subnet: \"192.168.100.0/24\""
+var configString string = global.ConfigRootKey + ":\n  env_name: \"itdove\"\n  host_directory: \"/itdove/data\"\n  subnet: \"192.168.100.0/24\""
 
 //var global.ConfigDirectory string = "../../test/resource"
 //var properties properties.Properties

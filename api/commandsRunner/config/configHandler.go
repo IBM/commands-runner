@@ -17,12 +17,13 @@ import (
 	"regexp"
 	"strconv"
 
+	"github.com/olebedev/config"
 	log "github.com/sirupsen/logrus"
 
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/logger"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/properties"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/state"
-	yaml "gopkg.in/yaml.v2"
 )
 
 //handle COnfig rest api requests
@@ -154,16 +155,30 @@ func setPropertiesEndpoint(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, errExtName.Error(), 500)
 		return
 	}
-	var bmxConfig Config
-	err = json.Unmarshal(body, &bmxConfig)
-	//log.Debug("Body:\n" + string(body))
+	//	var bmxConfig Config
+	var cfg *config.Config
+	cfg, err = config.ParseJson(string(body))
 	if err != nil {
 		log.Debug("It is a yaml")
-		err = yaml.Unmarshal(body, &bmxConfig)
-		ps = bmxConfig.Properties
+		cfg, err = config.ParseYaml(string(body))
+		if err != nil {
+			logger.AddCallerField().Error(err.Error())
+			http.Error(w, err.Error(), 500)
+		}
+		ps, err = cfg.Map(global.ConfigRootKey)
 	} else {
-		ps, _ = PropertiesEncodeDecode(extensionName, bmxConfig.Properties, false)
+		ps, err = cfg.Map(global.ConfigRootKey)
+		ps, _ = PropertiesEncodeDecode(extensionName, ps, false)
 	}
+	// err = json.Unmarshal(body, &bmxConfig)
+	// //log.Debug("Body:\n" + string(body))
+	// if err != nil {
+	// 	log.Debug("It is a yaml")
+	// 	err = yaml.Unmarshal(body, &bmxConfig)
+	// 	ps = bmxConfig.Properties
+	// } else {
+	// 	ps, _ = PropertiesEncodeDecode(extensionName, bmxConfig.Properties, false)
+	// }
 	log.Debug("PS decoded")
 	if err == nil {
 		log.Debug("Set Properties")

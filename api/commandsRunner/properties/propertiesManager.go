@@ -78,7 +78,7 @@ func ReadProperties(extensionName string) (Properties, error) {
 		return nil, err
 	}
 	var properties Properties
-	properties, err = uiConfigCfg.Map(global.ConfigYamlRootKey)
+	properties, err = uiConfigCfg.Map(global.ConfigRootKey)
 	//	err := yaml.Unmarshal(raw, &bmxConfig)
 	if err != nil {
 		log.Debug(err.Error())
@@ -92,11 +92,11 @@ func ReadProperties(extensionName string) (Properties, error) {
 //RenderProperties converts properties into string
 func RenderProperties(ps Properties) (string, error) {
 	log.Debug("Entering... renderProperties")
-	uiConfigYaml, err := config.ParseYaml(global.ConfigYamlRootKey + ":")
+	uiConfigYaml, err := config.ParseYaml(global.ConfigRootKey + ":")
 	if err != nil {
 		log.Debug("parse:" + err.Error())
 	}
-	err = uiConfigYaml.Set(global.ConfigYamlRootKey, ps)
+	err = uiConfigYaml.Set(global.ConfigRootKey, ps)
 	if err != nil {
 		log.Debug("Set:" + err.Error())
 	}
