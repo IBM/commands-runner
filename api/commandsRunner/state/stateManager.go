@@ -315,7 +315,11 @@ func (sm *States) GetStates(status string, extensionsOnly bool, recursive bool) 
 	if errStates != nil {
 		return nil, errStates
 	}
-	var states States
+	states := &States{
+		StateArray: make([]State, 0),
+		StatesPath: sm.StatesPath,
+		mux:        &sync.Mutex{},
+	}
 	for i := 0; i < len(sm.StateArray); i++ {
 		if strings.HasPrefix(sm.StateArray[i].Script, "cm extension") {
 			states.StateArray = append(states.StateArray, sm.StateArray[i])
@@ -343,7 +347,7 @@ func (sm *States) GetStates(status string, extensionsOnly bool, recursive bool) 
 			}
 		}
 	} else {
-		resultStates = states
+		resultStates = *states
 	}
 	return &resultStates, nil
 }
