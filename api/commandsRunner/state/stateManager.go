@@ -710,13 +710,14 @@ func (sm *States) mergeStates(newStates States) error {
 		//otherwize insert it as a new node.
 		if _, ok := statesNodesID[sm.StateArray[i].Name]; ok {
 			log.Debug("Update new Node with old status: " + sm.StateArray[i].Name)
+			log.Debugf("Before Merge state: %v", sm.StateArray[i])
 			state := statesMap[statesNodesID[sm.StateArray[i].Name]]
+			log.Debugf("Before Merge state: %v", state)
 			state.Status = sm.StateArray[i].Status
 			state.StartTime = sm.StateArray[i].StartTime
 			state.EndTime = sm.StateArray[i].EndTime
 			state.Reason = sm.StateArray[i].Reason
-			statesMap[statesNodesID[sm.StateArray[i].Name]] = state
-			log.Debugf("Merged state: %v", state)
+			log.Debugf("Merged state: %v", sm.StateArray[i])
 			log.Debug("New State Node Updated with old status: " + state.Name)
 		} else {
 			log.Debug("Add old Node: " + sm.StateArray[i].Name)

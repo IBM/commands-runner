@@ -112,6 +112,7 @@ func TestGetStatesWithStatus(t *testing.T) {
 		}
 		t.Error("Expected 1 state got:" + strconv.Itoa(len(states.StateArray)))
 	}
+	t.Error("")
 }
 
 func TestSetStatesOK(t *testing.T) {
@@ -421,7 +422,7 @@ func TestSetStatesMergeWithDelete(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	statesJSON := "{\"states\":[{\"name\":\"director\",\"label\":\"Director\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cf2\",\"label\":\"CloudFoundry\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
+	statesJSON := "{\"states\":[{\"name\":\"director\",\"label\":\"Director\",\"status\":\"SUCCEEDED\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cf2\",\"label\":\"CloudFoundry\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
 	var states States
 	json.Unmarshal([]byte(statesJSON), &states)
 	err = sm.SetStates(states, true)
@@ -431,10 +432,6 @@ func TestSetStatesMergeWithDelete(t *testing.T) {
 	statesJSON = "{\"states\":[{\"name\":\"director\",\"label\":\"Director\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cf\",\"deleted\":true,\"label\":\"CloudFoundry2\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
 	json.Unmarshal([]byte(statesJSON), &states)
 	err = sm.SetStates(states, false)
-	if err != nil {
-		t.Error(err.Error())
-	}
-	err = sm.ResetEngine()
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -448,6 +445,13 @@ func TestSetStatesMergeWithDelete(t *testing.T) {
 	if statesResult.StateArray[0].Name != "director" &&
 		statesResult.StateArray[1].Name != "cf2" {
 		t.Error("Wrong order")
+	}
+	if statesResult.StateArray[0].Status != StateSUCCEEDED {
+		t.Error("Director doesn't have the correct status. expecting SUCCEEDED got " + statesResult.StateArray[0].Status)
+	}
+	err = sm.ResetEngine()
+	if err != nil {
+		t.Error(err.Error())
 	}
 }
 

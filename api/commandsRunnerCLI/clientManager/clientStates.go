@@ -32,7 +32,7 @@ func (crc *CommandsRunnerClient) getRestStates(extensionName string, status stri
 		url += "&extension-name=" + extensionName
 	}
 	if status != "" {
-		url += "?status=" + status
+		url += "&status=" + status
 	}
 	//Call rest api
 	data, errCode, err := crc.RestCall(http.MethodGet, global.BaseURL, url, nil, nil)
