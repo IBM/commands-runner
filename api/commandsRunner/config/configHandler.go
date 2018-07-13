@@ -45,7 +45,7 @@ func HandleConfig(w http.ResponseWriter, req *http.Request) {
 			getPropertyEndpoint(w, req)
 		}
 	case "POST":
-		setPropertiesEndpoint(w, req)
+		SetPropertiesEndpoint(w, req)
 	default:
 		http.Error(w, "Unsupported method:"+req.Method, http.StatusNotFound)
 	}
@@ -79,6 +79,15 @@ Method: GET
 func getPropertiesEndpoint(w http.ResponseWriter, req *http.Request) {
 	//Check format
 	regexp.MustCompile("/cr/v1/(config)$")
+	GetPropertiesEndpoint(w, req)
+}
+
+/*
+Retrieve all properties
+URL: /cr/v1/config/
+Method: GET
+*/
+func GetPropertiesEndpoint(w http.ResponseWriter, req *http.Request) {
 	extensionName, _, err := state.GetExtensionNameFromRequest(req)
 	if err != nil {
 		logger.AddCallerField().Error(err.Error())
@@ -135,7 +144,7 @@ Set the properties
 URL: /cr/v1/config/
 Method: POST
 */
-func setPropertiesEndpoint(w http.ResponseWriter, req *http.Request) {
+func SetPropertiesEndpoint(w http.ResponseWriter, req *http.Request) {
 	log.Debug("Entering....... setPropertiesEndpoint")
 	var ps properties.Properties
 	var body []byte

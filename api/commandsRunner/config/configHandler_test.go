@@ -17,6 +17,7 @@ import (
 	"testing"
 
 	log "github.com/sirupsen/logrus"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 )
 
 //Commenting because there is a concurrence issue when we use 2 different states file
@@ -55,6 +56,7 @@ func TestGetConfig(t *testing.T) {
 	t.Log("Entering................. TestSaveConfig")
 	log.SetLevel(log.DebugLevel)
 	SetConfigPath("../../test/resource")
+	bckConfigFileName := global.ConfigYamlFileName
 	SetConfigFileName("config-test-save.yml")
 
 	req, err := http.NewRequest("GET", "/cr/v1/config", nil)
@@ -70,13 +72,16 @@ func TestGetConfig(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v: %v",
 			status, http.StatusOK, rr.Body)
 	}
+	SetConfigFileName(bckConfigFileName)
 }
 
 func TestGetConfigCustomized(t *testing.T) {
 	t.Log("Entering................. TestSaveConfig")
 	log.SetLevel(log.DebugLevel)
 	SetConfigPath("../../test/resource")
+	bckConfigFileName := global.ConfigYamlFileName
 	SetConfigFileName("uiconfig-test-save.yml")
+	bckConfigRootKey := global.ConfigRootKey
 	SetConfigRootKey("uiconfig")
 
 	req, err := http.NewRequest("GET", "/cr/v1/config", nil)
@@ -92,4 +97,6 @@ func TestGetConfigCustomized(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v: %v",
 			status, http.StatusOK, rr.Body)
 	}
+	SetConfigFileName(bckConfigFileName)
+	SetConfigRootKey(bckConfigRootKey)
 }
