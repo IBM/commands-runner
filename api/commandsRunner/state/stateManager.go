@@ -715,8 +715,9 @@ func (sm *States) mergeStates(newStates States) error {
 			state.StartTime = sm.StateArray[i].StartTime
 			state.EndTime = sm.StateArray[i].EndTime
 			state.Reason = sm.StateArray[i].Reason
-			sm.StateArray[i] = *state
-			log.Debug("NEw State Node Updated with old status: " + state.Name)
+			statesMap[statesNodesID[sm.StateArray[i].Name]] = state
+			log.Debugf("Merged state: %v", state)
+			log.Debug("New State Node Updated with old status: " + state.Name)
 		} else {
 			log.Debug("Add old Node: " + sm.StateArray[i].Name)
 			n := newGraph.NewNode()
