@@ -11,13 +11,13 @@
 package clientManager
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"os"
 
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/config"
+	olconfig "github.com/olebedev/config"
+
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 )
 
@@ -37,14 +37,20 @@ func (crc *CommandsRunnerClient) GetConfig(extensionName string) (string, error)
 	}
 	//Convert to text otherwize return the json
 	if crc.OutputFormat == "text" {
-		var configAux config.Config
-		jsonErr := json.Unmarshal([]byte(data), &configAux)
+		//	var configAux config.Config
+		cfg, jsonErr := olconfig.ParseJson(data)
+		if jsonErr != nil {
+			fmt.Println(jsonErr.Error())
+			return "", jsonErr
+		}
+		ps, jsonErr := cfg.Map(global.ConfigRootKey)
+		//		jsonErr = json.Unmarshal([]byte(data), &configAux)
 		if jsonErr != nil {
 			fmt.Println(jsonErr.Error())
 			return "", jsonErr
 		}
 		out := ""
-		for k, v := range configAux.Properties {
+		for k, v := range ps {
 			out += fmt.Sprintf("=>\n")
 			out += fmt.Sprintf("Name      : %s\n", k)
 			out += fmt.Sprintf("Value     : %s\n", v)

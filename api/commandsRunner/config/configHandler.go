@@ -87,9 +87,9 @@ func getPropertiesEndpoint(w http.ResponseWriter, req *http.Request) {
 	}
 	//Retrieve properties
 	properties, err := GetProperties(extensionName)
-	bmxConfig := &Config{
-		Properties: properties,
-	}
+	// bmxConfig := &Config{
+	// 	Properties: properties,
+	// }
 
 	if err != nil {
 		logger.AddCallerField().Error(err.Error())
@@ -102,9 +102,28 @@ func getPropertiesEndpoint(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-	enc := json.NewEncoder(w)
-	enc.SetIndent("", "  ")
-	err = enc.Encode(bmxConfig)
+	cfg, err := config.ParseJson(global.ConfigRootKey)
+	if err != nil {
+		log.Debug(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	err = cfg.Set(global.ConfigRootKey, properties)
+	if err != nil {
+		log.Debug(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	result, err := config.RenderJson(cfg)
+	if err != nil {
+		log.Debug(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	_, err = w.Write([]byte(result))
+	// enc := json.NewEncoder(w)
+	// enc.SetIndent("", "  ")
+	// err = enc.Encode(bmxConfig)
 	if err != nil {
 		logger.AddCallerField().Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)

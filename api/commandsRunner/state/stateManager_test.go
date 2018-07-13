@@ -112,7 +112,6 @@ func TestGetStatesWithStatus(t *testing.T) {
 		}
 		t.Error("Expected 1 state got:" + strconv.Itoa(len(states.StateArray)))
 	}
-	t.Error("")
 }
 
 func TestSetStatesOK(t *testing.T) {
