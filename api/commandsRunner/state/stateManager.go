@@ -182,7 +182,7 @@ func (sm *States) setDefaultValues() {
 			if sm.isCustomStatePath() {
 				dir = extension.GetExtensionLogsPathCustom()
 			}
-			sm.StateArray[index].LogPath = dir + sm.StateArray[index].Name + string(filepath.Separator) + sm.StateArray[index].Name + ".log"
+			sm.StateArray[index].LogPath = filepath.Join(dir, sm.StateArray[index].Name, sm.StateArray[index].Name+".log")
 			//			log.Debug("Set state.LogPath to " + sm.StateArray[index].LogPath)
 		}
 		if sm.StateArray[index].Script == "" {
@@ -309,27 +309,47 @@ func (sm *States) _getState(state string) (*State, error) {
 }
 
 //GetStates returns the list of states with a given status. if the status is an empty string then it returns all states.
-func (sm *States) GetStates(status string) (*States, error) {
+func (sm *States) GetStates(status string, extensionsOnly bool, recursive bool) (*States, error) {
 	log.Debug("Entering... GetStates")
 	errStates := sm.readStates()
 	if errStates != nil {
 		return nil, errStates
 	}
-	var states States
+	states := &States{
+		StateArray: make([]State, 0),
+		StatesPath: sm.StatesPath,
+		mux:        &sync.Mutex{},
+	}
+	for i := 0; i < len(sm.StateArray); i++ {
+		if strings.HasPrefix(sm.StateArray[i].Script, "cm extension") {
+			states.StateArray = append(states.StateArray, sm.StateArray[i])
+			if recursive {
+				smp, err := getAddStateManager(sm.StateArray[i].Name)
+				if err != nil {
+					return nil, err
+				}
+				subStates, err := smp.GetStates(status, extensionsOnly, recursive)
+				if err != nil {
+					return nil, err
+				}
+				states.StateArray = append(states.StateArray, subStates.StateArray...)
+			}
+		} else if !extensionsOnly {
+			states.StateArray = append(states.StateArray, sm.StateArray[i])
+		}
+	}
 	//Filter on status
+	var resultStates States
 	if status != "" {
-		for i := 0; i < len(sm.StateArray); i++ {
-			if sm.StateArray[i].Status == status {
-				states.StateArray = append(states.StateArray, sm.StateArray[i])
+		for i := 0; i < len(states.StateArray); i++ {
+			if states.StateArray[i].Status == status {
+				resultStates.StateArray = append(resultStates.StateArray, states.StateArray[i])
 			}
 		}
 	} else {
-		for i := 0; i < len(sm.StateArray); i++ {
-			states.StateArray = append(states.StateArray, sm.StateArray[i])
-		}
-
+		resultStates = *states
 	}
-	return &states, nil
+	return &resultStates, nil
 }
 
 //SetStates Set the current states with a new states. If overwrite is false, then the 2 states will be merged.
@@ -690,12 +710,15 @@ func (sm *States) mergeStates(newStates States) error {
 		//otherwize insert it as a new node.
 		if _, ok := statesNodesID[sm.StateArray[i].Name]; ok {
 			log.Debug("Update new Node with old status: " + sm.StateArray[i].Name)
+			log.Debugf("Before Merge state: %v", sm.StateArray[i])
 			state := statesMap[statesNodesID[sm.StateArray[i].Name]]
+			log.Debugf("Before Merge state: %v", state)
 			state.Status = sm.StateArray[i].Status
 			state.StartTime = sm.StateArray[i].StartTime
 			state.EndTime = sm.StateArray[i].EndTime
 			state.Reason = sm.StateArray[i].Reason
-			log.Debug("NEw State Node Updated with old status: " + state.Name)
+			log.Debugf("Merged state: %v", sm.StateArray[i])
+			log.Debug("New State Node Updated with old status: " + state.Name)
 		} else {
 			log.Debug("Add old Node: " + sm.StateArray[i].Name)
 			n := newGraph.NewNode()
@@ -988,6 +1011,8 @@ func (sm *States) setStateStatusWithTimeStamp(isStart bool, state string, status
 func (sm *States) InsertState(state State, pos int, stateName string, before bool) error {
 	log.Debug("Entering..... InsertState")
 	log.Debug("State name: " + stateName)
+	sm.lock()
+	defer sm.unlock()
 	errStates := sm.readStates()
 	if errStates != nil {
 		return errStates
@@ -1135,7 +1160,7 @@ func (sm *States) getLogPath(state string) (string, error) {
 //GetLogs Get logs from a given position, a given length. The length is the number of characters to return if bychar is true otherwize is the number of lines.
 func (sm *States) GetLogs(position int64, length int64, bychar bool) (string, error) {
 	var data []byte
-	states, err := sm.GetStates("")
+	states, err := sm.GetStates("", false, false)
 	if err != nil {
 		return string(data), err
 	}

@@ -221,13 +221,27 @@ func GetStatesEndpoint(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, errSM.Error(), http.StatusBadRequest)
 		return
 	}
-	//Retreive the first-line
 	status := ""
 	if statusFound, okStatus := m["status"]; okStatus {
 		log.Debug("status:%s", statusFound)
 		status = statusFound[0]
 	}
-	states, err := sm.GetStates(status)
+
+	extensionsString := "false"
+	if extensionsFound, okExtensions := m["extensions-only"]; okExtensions {
+		log.Debug("extensions:%s", extensionsFound)
+		extensionsString = extensionsFound[0]
+	}
+	extensionsOnly, err := strconv.ParseBool(extensionsString)
+
+	recursiveString := "false"
+	if recursiveFound, okRecursive := m["recursive"]; okRecursive {
+		log.Debug("recursive:%s", recursiveFound)
+		recursiveString = recursiveFound[0]
+	}
+	recursive, err := strconv.ParseBool(recursiveString)
+
+	states, err := sm.GetStates(status, extensionsOnly, recursive)
 	if err == nil {
 		//		json.NewEncoder(w).Encode(states)
 		enc := json.NewEncoder(w)
@@ -257,13 +271,6 @@ func PutStatesEndpoint(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, errSM.Error(), http.StatusBadRequest)
 		return
 	}
-	/*
-		if _, err := os.Stat(sm.StatesPath); os.IsNotExist(err) {
-			log.Debug(errors.New("State file " + sm.StatesPath + " doesn't exist"))
-			http.Error(w, errSM.Error(), http.StatusBadRequest)
-			return
-		}
-	*/
 	overwrite := true
 	var errCvt error
 	if overwriteFound, okOverwrite := m["overwrite"]; okOverwrite {
@@ -285,8 +292,14 @@ func PutStatesEndpoint(w http.ResponseWriter, req *http.Request) {
 		body := html.UnescapeString(bodyRaw)
 		err = yaml.Unmarshal([]byte(body), &states)
 		if err == nil {
-			err = sm.SetStates(states, overwrite)
-			if err != nil {
+			if len(states.StateArray) != 0 {
+				err = sm.SetStates(states, overwrite)
+				if err != nil {
+					logger.AddCallerField().Error(err.Error())
+					http.Error(w, err.Error(), 500)
+				}
+			} else {
+				err = errors.New("No states provided")
 				logger.AddCallerField().Error(err.Error())
 				http.Error(w, err.Error(), 500)
 			}
@@ -375,7 +388,7 @@ func PutInsertStateStatesEndpoint(w http.ResponseWriter, req *http.Request) {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
-			manifestPath = manifestPath + string(filepath.Separator) + "extension-manifest.yml"
+			manifestPath = filepath.Join(manifestPath, "extension-manifest.yml")
 			log.Debug("manifestPath: " + manifestPath)
 			manifestBytes, err := ioutil.ReadFile(manifestPath)
 			if err != nil {

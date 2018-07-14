@@ -23,18 +23,16 @@ import (
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/state"
 )
 
-func (crc *CommandsRunnerClient) getRestStates(extensionName string, status string) (string, error) {
+func (crc *CommandsRunnerClient) getRestStates(extensionName string, status string, extensionOnly bool, recursive bool) (string, error) {
 	//build url
 	url := "states"
+	url += "?extensions-only=" + strconv.FormatBool(extensionOnly)
+	url += "&recursive=" + strconv.FormatBool(recursive)
+	if extensionName != "" {
+		url += "&extension-name=" + extensionName
+	}
 	if status != "" {
-		url += "?status=" + status
-		if extensionName != "" {
-			url += ";amp&extension-name=" + extensionName
-		}
-	} else {
-		if extensionName != "" {
-			url += "?extension-name=" + extensionName
-		}
+		url += "&status=" + status
 	}
 	//Call rest api
 	data, errCode, err := crc.RestCall(http.MethodGet, global.BaseURL, url, nil, nil)
@@ -45,8 +43,8 @@ func (crc *CommandsRunnerClient) getRestStates(extensionName string, status stri
 }
 
 //GetStates returns the states having a specific status
-func (crc *CommandsRunnerClient) GetStates(extensionName string, status string) (string, error) {
-	data, err := crc.getRestStates(extensionName, status)
+func (crc *CommandsRunnerClient) GetStates(extensionName string, status string, extensionOnly bool, recursive bool) (string, error) {
+	data, err := crc.getRestStates(extensionName, status, extensionOnly, recursive)
 	if err != nil {
 		return "", err
 	}
@@ -134,7 +132,7 @@ func (crc *CommandsRunnerClient) SetStatesStatuses(extensionName string, newStat
 	if errCode != http.StatusOK {
 		return "", errors.New("Unable to set States statuses:" + data)
 	}
-	data, err = crc.GetStates(extensionName, "")
+	data, err = crc.GetStates(extensionName, "", false, false)
 	if err != nil {
 		return "", err
 	}
@@ -146,15 +144,15 @@ func (crc *CommandsRunnerClient) InsertStateStates(extensionName string, pos int
 		err := errors.New("A state file or extension name missing")
 		return "", err
 	}
-	url := "states?action=insert;amp&pos=" + strconv.Itoa(pos) + ";amp&before=" + strconv.FormatBool(before)
+	url := "states?action=insert&pos=" + strconv.Itoa(pos) + "&before=" + strconv.FormatBool(before)
 	if extensionName != "" {
-		url += ";amp&extension-name=" + extensionName
+		url += "&extension-name=" + extensionName
 	}
 	if stateName != "" {
-		url += ";amp&state-name=" + stateName
+		url += "&state-name=" + stateName
 	}
 	if insertExtensionName != "" {
-		url += ";amp&insert-extension-name=" + insertExtensionName
+		url += "&insert-extension-name=" + insertExtensionName
 	}
 	//Call the rest API
 	var file io.Reader
@@ -174,7 +172,7 @@ func (crc *CommandsRunnerClient) InsertStateStates(extensionName string, pos int
 	if errCode != http.StatusOK {
 		return "", errors.New("Unable to insert state in states file\n" + data)
 	}
-	data, err = crc.GetStates(extensionName, "")
+	data, err = crc.GetStates(extensionName, "", false, false)
 	if err != nil {
 		return "", err
 	}
@@ -182,12 +180,12 @@ func (crc *CommandsRunnerClient) InsertStateStates(extensionName string, pos int
 }
 
 func (crc *CommandsRunnerClient) DeleteStateStates(extensionName string, pos int, stateName string) (string, error) {
-	url := "states?action=delete;amp&pos=" + strconv.Itoa(pos)
+	url := "states?action=delete&pos=" + strconv.Itoa(pos)
 	if extensionName != "" {
-		url += ";amp&extension-name=" + extensionName
+		url += "&extension-name=" + extensionName
 	}
 	if stateName != "" {
-		url += ";amp&state-name=" + stateName
+		url += "&state-name=" + stateName
 	}
 	//Call the rest API
 	data, errCode, err := crc.RestCall(http.MethodPut, global.BaseURL, url, nil, nil)
@@ -197,7 +195,7 @@ func (crc *CommandsRunnerClient) DeleteStateStates(extensionName string, pos int
 	if errCode != http.StatusOK {
 		return "", errors.New("Unable to delete state at position" + strconv.Itoa(pos) + " in states file\n" + data)
 	}
-	data, err = crc.GetStates(extensionName, "")
+	data, err = crc.GetStates(extensionName, "", false, false)
 	if err != nil {
 		return "", err
 	}

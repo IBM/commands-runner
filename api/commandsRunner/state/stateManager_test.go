@@ -65,7 +65,7 @@ func TestGetStatesOK(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	states, err := sm.GetStates("")
+	states, err := sm.GetStates("", false, false)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -102,7 +102,7 @@ func TestGetStatesWithStatus(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	states, err := sm.GetStates(StateRUNNING)
+	states, err := sm.GetStates(StateRUNNING, false, false)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -158,7 +158,7 @@ func TestSetStatesStatusesOK(t *testing.T) {
 	if state.Status != StateSKIP {
 		t.Error("Status not set as SKIP as expected:" + state.Status)
 	}
-	states, err := sm.GetStates(StateSKIP)
+	states, err := sm.GetStates(StateSKIP, false, false)
 	if len(states.StateArray) > 1 {
 		t.Error("Another state was set to SKIP")
 	}
@@ -192,7 +192,7 @@ func TestSetStatesStatusesFromTo(t *testing.T) {
 	if state.Status == StateSKIP {
 		t.Error("Status set as SKIP as expected:" + state.Status)
 	}
-	states, err := sm.GetStates(StateSKIP)
+	states, err := sm.GetStates(StateSKIP, false, false)
 	if len(states.StateArray) != 3 {
 		t.Error("Not the correct number of states were set to SKIP")
 	}
@@ -213,7 +213,7 @@ func TestSetStatesStatusesFromTo(t *testing.T) {
 	if state.Status == StateSKIP {
 		t.Error("Status set as SKIP and got :" + state.Status)
 	}
-	states, err = sm.GetStates(StateSKIP)
+	states, err = sm.GetStates(StateSKIP, false, false)
 	if len(states.StateArray) != 2 {
 		t.Error("Not the correct number of states were set to SKIP")
 	}
@@ -234,7 +234,7 @@ func TestSetStatesStatusesFromTo(t *testing.T) {
 	if state.Status == StateSKIP {
 		t.Error("Status set as SKIP as expected:" + state.Status)
 	}
-	states, err = sm.GetStates(StateSKIP)
+	states, err = sm.GetStates(StateSKIP, false, false)
 	if len(states.StateArray) != 1 {
 		t.Error("Not the correct number of states were set to SKIP")
 	}
@@ -255,7 +255,7 @@ func TestSetStatesStatusesFromTo(t *testing.T) {
 	if state.Status == StateSKIP {
 		t.Error("Status set as SKIP as expected:" + state.Status)
 	}
-	states, err = sm.GetStates(StateSKIP)
+	states, err = sm.GetStates(StateSKIP, false, false)
 	if len(states.StateArray) != 2 {
 		t.Error("Not the correct number of states were set to SKIP")
 	}
@@ -276,7 +276,7 @@ func TestSetStatesStatusesFromTo(t *testing.T) {
 	if state.Status != StateSKIP {
 		t.Error("Status set as SKIP as expected:" + state.Status)
 	}
-	states, err = sm.GetStates(StateSKIP)
+	states, err = sm.GetStates(StateSKIP, false, false)
 	if len(states.StateArray) != 4 {
 		t.Error("Not the correct number of states were set to SKIP")
 	}
@@ -301,7 +301,7 @@ func TestSetStatesStatusesFromTo(t *testing.T) {
 	if state.Status != StateSKIP {
 		t.Error("Status set as SKIP as expected:" + state.Status)
 	}
-	states, err = sm.GetStates(StateSKIP)
+	states, err = sm.GetStates(StateSKIP, false, false)
 	if len(states.StateArray) != 2 {
 		t.Error("Not the correct number of states were set to SKIP")
 	}
@@ -347,7 +347,7 @@ func TestSetStatesWithDelete(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	statesResult, err := sm.GetStates("director")
+	statesResult, err := sm.GetStates("director", false, false)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -355,7 +355,7 @@ func TestSetStatesWithDelete(t *testing.T) {
 	if len(states.StateArray) > 0 {
 		t.Error("Director not removed")
 	}
-	statesResult, err = sm.GetStates("cf")
+	statesResult, err = sm.GetStates("cf", false, false)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -398,7 +398,7 @@ func TestSetStatesMerge(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	statesResult, err := sm.GetStates("")
+	statesResult, err := sm.GetStates("", false, false)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -421,7 +421,7 @@ func TestSetStatesMergeWithDelete(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	statesJSON := "{\"states\":[{\"name\":\"director\",\"label\":\"Director\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cf2\",\"label\":\"CloudFoundry\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
+	statesJSON := "{\"states\":[{\"name\":\"director\",\"label\":\"Director\",\"status\":\"SUCCEEDED\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cf2\",\"label\":\"CloudFoundry\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
 	var states States
 	json.Unmarshal([]byte(statesJSON), &states)
 	err = sm.SetStates(states, true)
@@ -434,11 +434,7 @@ func TestSetStatesMergeWithDelete(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	err = sm.ResetEngine()
-	if err != nil {
-		t.Error(err.Error())
-	}
-	statesResult, err := sm.GetStates("")
+	statesResult, err := sm.GetStates("", false, false)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -448,6 +444,13 @@ func TestSetStatesMergeWithDelete(t *testing.T) {
 	if statesResult.StateArray[0].Name != "director" &&
 		statesResult.StateArray[1].Name != "cf2" {
 		t.Error("Wrong order")
+	}
+	if statesResult.StateArray[0].Status != StateSUCCEEDED {
+		t.Error("Director doesn't have the correct status. expecting SUCCEEDED got " + statesResult.StateArray[0].Status)
+	}
+	err = sm.ResetEngine()
+	if err != nil {
+		t.Error(err.Error())
 	}
 }
 
@@ -1053,7 +1056,7 @@ func TestEngineSuccess(t *testing.T) {
 	t.Log("Execute states file")
 	sm.Execute("task1", "task3")
 	t.Log("Get Failed states")
-	states, errStates := sm.GetStates(StateFAILED)
+	states, errStates := sm.GetStates(StateFAILED, false, false)
 	if errStates != nil {
 		t.Error(errStates.Error())
 	}
@@ -1083,7 +1086,7 @@ func TestEngineWithRerunAfter(t *testing.T) {
 	t.Log("Execute states file")
 	sm.Execute("task1", "task3")
 	t.Log("Get Failed states")
-	states, errStates := sm.GetStates(StateFAILED)
+	states, errStates := sm.GetStates(StateFAILED, false, false)
 	if errStates != nil {
 		t.Error(errStates.Error())
 	}
@@ -1193,7 +1196,7 @@ func TestStatusFailedDependency(t *testing.T) {
 	t.Log("Execute states file")
 	sm.Execute("task1", "task3")
 	t.Log("Get Failed states")
-	states, errStates := sm.GetStates("")
+	states, errStates := sm.GetStates("", false, false)
 	if errStates != nil {
 		t.Error(errStates.Error())
 	}
@@ -1230,7 +1233,7 @@ func TestEngineFailure(t *testing.T) {
 	}
 	time.Sleep(10 * time.Second)
 	t.Log("Get Failed states")
-	states, errStates := sm.GetStates(StateFAILED)
+	states, errStates := sm.GetStates(StateFAILED, false, false)
 	if errStates != nil {
 		t.Error(errStates.Error())
 	}

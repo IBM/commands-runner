@@ -22,7 +22,7 @@ import (
 )
 
 func (crc *CommandsRunnerClient) getExtensions(extensionsToList string, catalog bool) (string, error) {
-	url := "/extensions/?filter=" + extensionsToList + ";amp&catalog=" + strconv.FormatBool(catalog)
+	url := "/extensions?filter=" + extensionsToList + "&catalog=" + strconv.FormatBool(catalog)
 	data, errCode, err := crc.RestCall(http.MethodGet, global.BaseURL, url, nil, nil)
 	if errCode != http.StatusOK {
 		return "", errors.New("Unable to get extensions, please check logs")
@@ -49,5 +49,5 @@ func (crc *CommandsRunnerClient) GetExtensions(extensionToList string, catalog b
 		}
 		return out, nil
 	}
-	return convertJSONToYAML(data)
+	return crc.convertJSONOrYAML(data)
 }

@@ -34,7 +34,7 @@ func postInitServer() commandsRunner.InitFunc {
 		extension.Init("examples/data/test-extensions.yml", "examples/extensions", "examples/data/extensions/", "examples/data/logs/extensions")
 		//You can overwrite here default value for the configurationManager
 		//		configManager.SetConfigFileName("myconfig.yml")
-		//		configManager.SetConfigYamlRootKey("myconfig")
+		//		configManager.SetConfigRootKey("myconfig")
 	})
 }
 

@@ -25,9 +25,9 @@ import (
 func (crc *CommandsRunnerClient) getLogsByChars(extensionName string, stateName string, firstChar int64, nbChar int64) (string, error) {
 	//build the url
 	url := "state/" + stateName + "/log?first-char=" + strconv.FormatInt(firstChar, 10)
-	url += ";amp&length=" + strconv.FormatInt(nbChar, 10)
+	url += "&length=" + strconv.FormatInt(nbChar, 10)
 	if extensionName != "" {
-		url += ";amp&extension-name=" + extensionName
+		url += "&extension-name=" + extensionName
 	}
 	//Call the rest API
 	data, _, err := crc.RestCall(http.MethodGet, global.BaseURL, url, nil, nil)
@@ -116,7 +116,7 @@ func (crc *CommandsRunnerClient) GetLogs(extensionName string, stateName string,
 		return err
 	}
 	//Retrieve list of states and unmarshal
-	data, err := crc.getRestStates(extensionName, "")
+	data, err := crc.getRestStates(extensionName, "", false, false)
 	if err != nil {
 		return err
 	}

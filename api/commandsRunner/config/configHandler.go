@@ -17,12 +17,13 @@ import (
 	"regexp"
 	"strconv"
 
+	"github.com/olebedev/config"
 	log "github.com/sirupsen/logrus"
 
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/logger"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/properties"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/state"
-	yaml "gopkg.in/yaml.v2"
 )
 
 //handle COnfig rest api requests
@@ -44,7 +45,7 @@ func HandleConfig(w http.ResponseWriter, req *http.Request) {
 			getPropertyEndpoint(w, req)
 		}
 	case "POST":
-		setPropertiesEndpoint(w, req)
+		SetPropertiesEndpoint(w, req)
 	default:
 		http.Error(w, "Unsupported method:"+req.Method, http.StatusNotFound)
 	}
@@ -78,6 +79,15 @@ Method: GET
 func getPropertiesEndpoint(w http.ResponseWriter, req *http.Request) {
 	//Check format
 	regexp.MustCompile("/cr/v1/(config)$")
+	GetPropertiesEndpoint(w, req)
+}
+
+/*
+Retrieve all properties
+URL: /cr/v1/config/
+Method: GET
+*/
+func GetPropertiesEndpoint(w http.ResponseWriter, req *http.Request) {
 	extensionName, _, err := state.GetExtensionNameFromRequest(req)
 	if err != nil {
 		logger.AddCallerField().Error(err.Error())
@@ -86,9 +96,9 @@ func getPropertiesEndpoint(w http.ResponseWriter, req *http.Request) {
 	}
 	//Retrieve properties
 	properties, err := GetProperties(extensionName)
-	bmxConfig := &Config{
-		Properties: properties,
-	}
+	// bmxConfig := &Config{
+	// 	Properties: properties,
+	// }
 
 	if err != nil {
 		logger.AddCallerField().Error(err.Error())
@@ -97,13 +107,32 @@ func getPropertiesEndpoint(w http.ResponseWriter, req *http.Request) {
 	}
 	properties, err = PropertiesEncodeDecode(extensionName, properties, true)
 	if err != nil {
-		log.Debug(err.Error())
+		logger.AddCallerField().Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-	enc := json.NewEncoder(w)
-	enc.SetIndent("", "  ")
-	err = enc.Encode(bmxConfig)
+	cfg, err := config.ParseJson("{}")
+	if err != nil {
+		logger.AddCallerField().Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	err = cfg.Set(global.ConfigRootKey, properties)
+	if err != nil {
+		logger.AddCallerField().Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	result, err := config.RenderJson(cfg.Root)
+	if err != nil {
+		logger.AddCallerField().Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	_, err = w.Write([]byte(result))
+	// enc := json.NewEncoder(w)
+	// enc.SetIndent("", "  ")
+	// err = enc.Encode(bmxConfig)
 	if err != nil {
 		logger.AddCallerField().Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -115,7 +144,7 @@ Set the properties
 URL: /cr/v1/config/
 Method: POST
 */
-func setPropertiesEndpoint(w http.ResponseWriter, req *http.Request) {
+func SetPropertiesEndpoint(w http.ResponseWriter, req *http.Request) {
 	log.Debug("Entering....... setPropertiesEndpoint")
 	var ps properties.Properties
 	var body []byte
@@ -154,16 +183,30 @@ func setPropertiesEndpoint(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, errExtName.Error(), 500)
 		return
 	}
-	var bmxConfig Config
-	err = json.Unmarshal(body, &bmxConfig)
-	//log.Debug("Body:\n" + string(body))
+	//	var bmxConfig Config
+	var cfg *config.Config
+	cfg, err = config.ParseJson(string(body))
 	if err != nil {
 		log.Debug("It is a yaml")
-		err = yaml.Unmarshal(body, &bmxConfig)
-		ps = bmxConfig.Properties
+		cfg, err = config.ParseYaml(string(body))
+		if err != nil {
+			logger.AddCallerField().Error(err.Error())
+			http.Error(w, err.Error(), 500)
+		}
+		ps, err = cfg.Map(global.ConfigRootKey)
 	} else {
-		ps, _ = PropertiesEncodeDecode(extensionName, bmxConfig.Properties, false)
+		ps, err = cfg.Map(global.ConfigRootKey)
+		ps, _ = PropertiesEncodeDecode(extensionName, ps, false)
 	}
+	// err = json.Unmarshal(body, &bmxConfig)
+	// //log.Debug("Body:\n" + string(body))
+	// if err != nil {
+	// 	log.Debug("It is a yaml")
+	// 	err = yaml.Unmarshal(body, &bmxConfig)
+	// 	ps = bmxConfig.Properties
+	// } else {
+	// 	ps, _ = PropertiesEncodeDecode(extensionName, bmxConfig.Properties, false)
+	// }
 	log.Debug("PS decoded")
 	if err == nil {
 		log.Debug("Set Properties")

@@ -24,6 +24,7 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	yaml "gopkg.in/yaml.v2"
 
 	"github.com/olebedev/config"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
@@ -51,8 +52,15 @@ var extensionLogsPathCustom = extensionLogsPath + extensionLogsDirCustom
 Extension structure
 */
 type Extension struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
+	Name      string    `json:"name"`
+	Type      string    `json:"type"`
+	CallState CallState `json:"call_state"`
+}
+
+type CallState struct {
+	StatesToRerun  []string `yaml:"states_to_rerun" json:"states_to_rerun"`
+	PreviousStates []string `yaml:"previous_states" json:"previous_states"`
+	NextStates     []string `yaml:"next_states" json:"next_states"`
 }
 
 /*
@@ -427,11 +435,37 @@ func listRegisteredExtensionsDir(extensionPath string) (*Extensions, error) {
 	for _, file := range files {
 		if file.IsDir() {
 			var extension Extension
+			var callState CallState
 			extension.Name = file.Name()
 			if extensionPath == GetExtensionPathCustom() {
 				extension.Type = CustomExtensions
 			} else {
 				extension.Type = EmbeddedExtensions
+			}
+			log.Debug("extension.Name: " + extension.Name)
+			manifestPath := filepath.Join(extensionPath, extension.Name, "extension-manifest.yml")
+			log.Debug("manifestPath: " + manifestPath)
+			manifestBytes, err := ioutil.ReadFile(manifestPath)
+			if err != nil {
+				return &extensionList, err
+			}
+			cfg, err := config.ParseYaml(string(manifestBytes))
+			if err != nil {
+				return &extensionList, err
+			}
+			stateCfg, err := cfg.Get("call_state")
+			if err == nil {
+				stateString, err := config.RenderYaml(stateCfg.Root)
+				if err != nil {
+					return &extensionList, err
+				}
+				log.Debug("call_state: " + stateString)
+				err = yaml.Unmarshal([]byte(stateString), &callState)
+				if err != nil {
+					return &extensionList, err
+				}
+				log.Debugf("%v", callState)
+				extension.CallState = callState
 			}
 			extensionList.Extensions[extension.Name] = extension
 		}

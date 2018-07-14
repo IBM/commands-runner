@@ -187,6 +187,35 @@ func TestInsertDeleteStateStates(t *testing.T) {
 			string(outFileData), string(inFileData))
 	}
 }
+func TestSetEmptyStates(t *testing.T) {
+	t.Log("Entering................. TestInsertStateEmptyStates")
+	stateFile := "../../test/resource/states-insert-delete.yaml"
+	extension.SetExtensionPath("../../test/data/extensions/")
+	extension.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
+	SetStatePath(stateFile)
+	addStateManagerToMap("cfp-ext-template", stateFile)
+	inFileData, err := ioutil.ReadFile(stateFile)
+	t.Log(string(inFileData))
+	req, err := http.NewRequest("PUT", "/cr/v1/states?extension-name=cfp-ext-template", strings.NewReader(""))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(HandleStates)
+
+	// Our handlers satisfy http.Handler, so we can call their ServeHTTP method
+	// directly and pass in our Request and ResponseRecorder.
+	handler.ServeHTTP(rr, req)
+
+	// Check the status code is what we expect.
+	if status := rr.Code; status != http.StatusInternalServerError {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusInternalServerError)
+	}
+
+}
 
 func TestInsertDeleteStateStatesAutoLocation(t *testing.T) {
 	t.Log("Entering................. TestInsertDeleteStateStatesAutoLocation")

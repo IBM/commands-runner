@@ -119,7 +119,7 @@ func TestRegisterExistingExtension(t *testing.T) {
 	SetExtensionPath("../../test/resource/tmp/")
 
 	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
-	SetExtensionPath("../../test/data/extensions/")
+	//	SetExtensionPath("../../test/data/extensions/")
 	extensionName := "dummy-extension"
 	filename := "dummy-extension.zip"
 	if _, err := os.Stat(GetExtensionPath()); os.IsNotExist(err) {
@@ -408,9 +408,11 @@ func setupFileStructureLists() {
 	_ = os.Mkdir(GetExtensionPathEmbedded(), 0777)
 	for _, extension := range extensions {
 		_ = os.Mkdir(filepath.Join(GetExtensionPathCustom(), extension), 0777)
+		os.Create(filepath.Join(GetExtensionPathCustom(), extension, "extension-manifest.yml"))
 	}
 	for _, extension := range extensionsIBM {
 		_ = os.Mkdir(filepath.Join(GetExtensionPathEmbedded(), extension), 0777)
+		os.Create(filepath.Join(GetExtensionPathEmbedded(), extension, "extension-manifest.yml"))
 	}
 	os.Create(filepath.Join(GetExtensionPathCustom(), dontDeleteFile))
 	os.Create(filepath.Join(GetExtensionPathCustom(), deleteFile))
@@ -418,6 +420,7 @@ func setupFileStructureLists() {
 }
 
 func TestListAllExensions(t *testing.T) {
+	log.SetLevel(log.DebugLevel)
 	t.Log("TESTING..................... TestListAllExensions")
 	setupFileStructureLists()
 
@@ -431,7 +434,7 @@ func TestListAllExensions(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 
 	if rr.Code != 200 {
-		t.Fatalf("GET endpoints returned: %v", rr.Code)
+		t.Fatalf("GET endpoints returned: %v %v", rr.Code, rr.Body.String())
 	}
 
 	var extensions Extensions
@@ -467,6 +470,7 @@ func TestListAllExensions(t *testing.T) {
 	}
 	extensions.Extensions[extension6.Name] = *extension6
 	expected, _ := json.MarshalIndent(&extensions, "", "  ")
+	t.Log(rr.Body.String())
 	//	expected := `{"extensions":{"extensionsIBM": ["IBM-extension1", "IBM-extension2"],"extensionsCustom": ["dummy-extension1", "dummy-extension2", "dummy-extension3", "dummy-extension4"]}}`
 	assert(strings.TrimSpace(string(expected)), strings.TrimSpace(rr.Body.String()), t)
 	//assert(expected, rr.Body.String(), t)
