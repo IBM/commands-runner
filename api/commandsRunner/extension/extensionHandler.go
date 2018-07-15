@@ -11,7 +11,9 @@
 package extension
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
 	"io/ioutil"
 	"mime"
@@ -117,7 +119,9 @@ func unregisterExtension(w http.ResponseWriter, req *http.Request) {
 func registerExtension(w http.ResponseWriter, req *http.Request) {
 	log.Debug("Entering in... registerExtension")
 	//Get filename from zip
-	_, params, _ := mime.ParseMediaType(req.Header.Get("Content-Disposition"))
+	log.Debug("Content-Disposition:" + req.Header.Get("Content-Disposition"))
+	mediaType, params, _ := mime.ParseMediaType(req.Header.Get("Content-Disposition"))
+	log.Debug("mediaType:" + mediaType)
 	filename := params["filename"]
 	log.Debug("filename:" + filename)
 	extension := filepath.Ext(filename)
@@ -149,7 +153,12 @@ func registerExtension(w http.ResponseWriter, req *http.Request) {
 		defer file.Close()
 
 		body, err := readBody(req, "extension")
-		size, err := io.WriteString(file, string(body))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		size, err := io.Copy(file, bytes.NewReader(body))
+		//		size, err := io.Copy(file, req.Body)
 		if err != nil {
 			logger.AddCallerField().Errorf("Unable to copy body in temp file: %v", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -196,12 +205,13 @@ func registerExtension(w http.ResponseWriter, req *http.Request) {
 
 func readBody(req *http.Request, fileName string) ([]byte, error) {
 	var body []byte
-	mReader, _ := req.MultipartReader()
-	if mReader == nil {
+	mediaType, _, _ := mime.ParseMediaType(req.Header.Get("Content-Disposition"))
+	if mediaType == "upload" {
 		log.Debug("Not a multipart")
 		body, err := ioutil.ReadAll(req.Body)
 		return body, err
-	} else {
+	} else if mediaType == "form-data" {
+		mReader, _ := req.MultipartReader()
 		form, err := mReader.ReadForm(100000)
 		if err != nil {
 			logger.AddCallerField().Error(err.Error())
@@ -222,6 +232,8 @@ func readBody(req *http.Request, fileName string) ([]byte, error) {
 				file.Close()
 			}
 		}
+	} else {
+		return body, errors.New("Unsupported mediaType:" + mediaType)
 	}
 	return body, nil
 }
