@@ -148,7 +148,8 @@ func registerExtension(w http.ResponseWriter, req *http.Request) {
 		}
 		defer file.Close()
 
-		size, err := io.Copy(file, req.Body)
+		body, err := readBody(req, "extension")
+		size, err := io.WriteString(file, string(body))
 		if err != nil {
 			logger.AddCallerField().Errorf("Unable to copy body in temp file: %v", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -191,4 +192,36 @@ func registerExtension(w http.ResponseWriter, req *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("Extension registration complete"))
+}
+
+func readBody(req *http.Request, fileName string) ([]byte, error) {
+	var body []byte
+	mReader, _ := req.MultipartReader()
+	if mReader == nil {
+		log.Debug("Not a multipart")
+		body, err := ioutil.ReadAll(req.Body)
+		return body, err
+	} else {
+		form, err := mReader.ReadForm(100000)
+		if err != nil {
+			logger.AddCallerField().Error(err.Error())
+			return body, err
+		}
+		if fileHeaders, ok := form.File[fileName]; ok {
+			log.Debug("Found part named " + fileName)
+			for index, fileHeader := range fileHeaders {
+				log.Debug(fileHeader.Filename + " part " + strconv.Itoa(index))
+				file, err := fileHeader.Open()
+				if err != nil {
+					logger.AddCallerField().Error(err.Error())
+					return body, err
+				}
+				content := make([]byte, fileHeader.Size)
+				file.Read(content)
+				body = append(body, content...)
+				file.Close()
+			}
+		}
+	}
+	return body, nil
 }

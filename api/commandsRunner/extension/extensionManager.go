@@ -576,7 +576,7 @@ func backupExtension(extensionName string) (bool, error) {
 	if extensionPath == "" {
 		return false, nil
 	}
-	backupPath := "/tmp/" + extensionName + string(filepath.Separator)
+	backupPath := filepath.Join("/tmp", extensionName) + string(filepath.Separator)
 	err = os.RemoveAll(backupPath)
 	if err != nil {
 		return false, err
@@ -591,7 +591,7 @@ func restoreExtension(extensionName string) error {
 	if err != nil {
 		return err
 	}
-	backupPath := "/tmp/" + extensionName + string(filepath.Separator)
+	backupPath := filepath.Join("/tmp", extensionName) + string(filepath.Separator)
 	err = os.RemoveAll(extensionPath)
 	if err != nil {
 		return err
