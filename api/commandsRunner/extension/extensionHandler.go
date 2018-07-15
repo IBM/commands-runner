@@ -13,7 +13,6 @@ package extension
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"io"
 	"io/ioutil"
 	"mime"
@@ -210,7 +209,7 @@ func readBody(req *http.Request, fileName string) ([]byte, error) {
 		log.Debug("Not a multipart")
 		body, err := ioutil.ReadAll(req.Body)
 		return body, err
-	} else if mediaType == "form-data" {
+	} else {
 		mReader, _ := req.MultipartReader()
 		form, err := mReader.ReadForm(100000)
 		if err != nil {
@@ -232,8 +231,6 @@ func readBody(req *http.Request, fileName string) ([]byte, error) {
 				file.Close()
 			}
 		}
-	} else {
-		return body, errors.New("Unsupported mediaType:" + mediaType)
 	}
 	return body, nil
 }
