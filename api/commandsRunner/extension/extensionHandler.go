@@ -128,6 +128,7 @@ func registerExtension(w http.ResponseWriter, req *http.Request) {
 	log.Debug("Content-Disposition:" + req.Header.Get("Content-Disposition"))
 	var filename, extension string
 	var mReader *multipart.Reader
+	var part *multipart.Part
 	contentDisposition := req.Header.Get("Content-Disposition")
 	if contentDisposition != "" {
 		mediaType, params, _ := mime.ParseMediaType(contentDisposition)
@@ -137,7 +138,7 @@ func registerExtension(w http.ResponseWriter, req *http.Request) {
 		var err error
 		mReader, err = req.MultipartReader()
 		if err == nil {
-			part, err := mReader.NextPart()
+			part, err = mReader.NextPart()
 			if err != nil {
 				logger.AddCallerField().Error(err)
 				http.Error(w, err.Error(), http.StatusBadGateway)
@@ -175,12 +176,13 @@ func registerExtension(w http.ResponseWriter, req *http.Request) {
 		}
 		defer file.Close()
 
-		body, err := readBody(req, filename, mReader)
+		body, err := readBody(req, filename, part)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		size, err := io.Copy(file, bytes.NewReader(body))
+		log.Debugf("Size:%v", size)
 		//		size, err := io.Copy(file, req.Body)
 		if err != nil {
 			logger.AddCallerField().Errorf("Unable to copy body in temp file: %v", err)
@@ -226,40 +228,46 @@ func registerExtension(w http.ResponseWriter, req *http.Request) {
 	w.Write([]byte("Extension registration complete"))
 }
 
-func readBody(req *http.Request, fileName string, mReader *multipart.Reader) ([]byte, error) {
+func readBody(req *http.Request, fileName string, part *multipart.Part) ([]byte, error) {
+	log.Debug("Enterring.... readBody")
 	var body []byte
+	var err error
 	mediaType, _, _ := mime.ParseMediaType(req.Header.Get("Content-Disposition"))
 	if mediaType == "upload" {
 		log.Debug("Not a multipart")
-		body, err := ioutil.ReadAll(req.Body)
+		body, err = ioutil.ReadAll(req.Body)
 		return body, err
 	} else {
-		// body, err := ioutil.ReadAll(part)
-		// log.Debug("Body:" + string(body))
-		// if err != nil {
-		// 	logger.AddCallerField().Error(err.Error())
-		// 	return body, err
-		// }
-		form, err := mReader.ReadForm(100000)
+		body, err = ioutil.ReadAll(part)
+		log.Debug("Body:" + string(body))
 		if err != nil {
 			logger.AddCallerField().Error(err.Error())
 			return body, err
 		}
-		if fileHeaders, ok := form.File[fileName]; ok {
-			log.Debug("Found part named " + fileName)
-			for index, fileHeader := range fileHeaders {
-				log.Debug(fileHeader.Filename + " part " + strconv.Itoa(index))
-				file, err := fileHeader.Open()
-				if err != nil {
-					logger.AddCallerField().Error(err.Error())
-					return body, err
-				}
-				content := make([]byte, fileHeader.Size)
-				file.Read(content)
-				body = append(body, content...)
-				file.Close()
-			}
-		}
+		// log.Debug("fileName:" + fileName)
+		// form, err := mReader.ReadForm(100000)
+		// if err != nil {
+		// 	logger.AddCallerField().Error(err.Error())
+		// 	return body, err
+		// }
+		// log.Debug("Form:%v", form)
+		// if fileHeaders, ok := form.File[fileName]; ok {
+		// 	log.Debug("Found part named " + fileName)
+		// 	for index, fileHeader := range fileHeaders {
+		// 		log.Debug(fileHeader.Filename + " part " + strconv.Itoa(index))
+		// 		file, err := fileHeader.Open()
+		// 		if err != nil {
+		// 			logger.AddCallerField().Error(err.Error())
+		// 			return body, err
+		// 		}
+		// 		content := make([]byte, fileHeader.Size)
+		// 		file.Read(content)
+		// 		body = append(body, content...)
+		// 		file.Close()
+		// 	}
+		// } else {
+		// 	log.Debug("File not found")
+		// }
 	}
 	return body, nil
 }
