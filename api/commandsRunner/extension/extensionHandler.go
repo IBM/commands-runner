@@ -174,7 +174,7 @@ func registerExtension(w http.ResponseWriter, req *http.Request) {
 		}
 		defer file.Close()
 
-		body, err := readBody(req, part)
+		body, err := readBody(req, filename)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -225,7 +225,7 @@ func registerExtension(w http.ResponseWriter, req *http.Request) {
 	w.Write([]byte("Extension registration complete"))
 }
 
-func readBody(req *http.Request, part *multipart.Part) ([]byte, error) {
+func readBody(req *http.Request, fileName string) ([]byte, error) {
 	var body []byte
 	mediaType, _, _ := mime.ParseMediaType(req.Header.Get("Content-Disposition"))
 	if mediaType == "upload" {
@@ -233,26 +233,33 @@ func readBody(req *http.Request, part *multipart.Part) ([]byte, error) {
 		body, err := ioutil.ReadAll(req.Body)
 		return body, err
 	} else {
-		body, err := ioutil.ReadAll(part)
+		// body, err := ioutil.ReadAll(part)
+		// log.Debug("Body:" + string(body))
+		// if err != nil {
+		// 	logger.AddCallerField().Error(err.Error())
+		// 	return body, err
+		// }
+		mReader, _ := req.MultipartReader()
+		form, err := mReader.ReadForm(100000)
 		if err != nil {
 			logger.AddCallerField().Error(err.Error())
 			return body, err
 		}
-		// if fileHeaders, ok := form.File[fileName]; ok {
-		// 	log.Debug("Found part named " + fileName)
-		// 	for index, fileHeader := range fileHeaders {
-		// 		log.Debug(fileHeader.Filename + " part " + strconv.Itoa(index))
-		// 		file, err := fileHeader.Open()
-		// 		if err != nil {
-		// 			logger.AddCallerField().Error(err.Error())
-		// 			return body, err
-		// 		}
-		// 		content := make([]byte, fileHeader.Size)
-		// 		file.Read(content)
-		// 		body = append(body, content...)
-		// 		file.Close()
-		// 	}
-		// }
+		if fileHeaders, ok := form.File[fileName]; ok {
+			log.Debug("Found part named " + fileName)
+			for index, fileHeader := range fileHeaders {
+				log.Debug(fileHeader.Filename + " part " + strconv.Itoa(index))
+				file, err := fileHeader.Open()
+				if err != nil {
+					logger.AddCallerField().Error(err.Error())
+					return body, err
+				}
+				content := make([]byte, fileHeader.Size)
+				file.Read(content)
+				body = append(body, content...)
+				file.Close()
+			}
+		}
 	}
 	return body, nil
 }
