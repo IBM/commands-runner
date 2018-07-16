@@ -12,6 +12,8 @@ package global
 
 import (
 	"io"
+	"net/http"
+	"net/url"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -73,4 +75,20 @@ func GetHomeDir() string {
 	}
 	log.Debug("HomeDir=" + homeDir)
 	return homeDir
+}
+
+//getExtensionName from request
+func GetExtensionNameFromRequest(req *http.Request) (string, url.Values, error) {
+	log.Debug("Entering in GetExtensionNameFromRequest")
+	m, errRQ := url.ParseQuery(req.URL.RawQuery)
+	if errRQ != nil {
+		return "", m, errRQ
+	}
+	extensionName := CommandsRunnerStatesName
+	extensionNameFound, okExtensionName := m["extension-name"]
+	if okExtensionName {
+		log.Debugf("ExtensionName:%s", extensionNameFound)
+		extensionName = extensionNameFound[0]
+	}
+	return extensionName, m, nil
 }

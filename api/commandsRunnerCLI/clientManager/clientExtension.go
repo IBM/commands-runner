@@ -43,14 +43,18 @@ func (crc *CommandsRunnerClient) UnregisterExtension(extensionName string) (stri
 
 func (crc *CommandsRunnerClient) registerExtension(pathToZip, extensionName string, force bool) (int, error) {
 	url := "extension"
+	if extensionName != "" {
+		url += "?extension-name=" + extensionName
+	}
 	headers := make(map[string]string)
 
 	if pathToZip != "" {
 		headers["Content-Type"] = "application/zip"
 		headers["Content-Disposition"] = "upload; filename=" + filepath.Base(pathToZip)
 	}
-	headers["Extension-Name"] = extensionName
+	//	headers["Extension-Name"] = extensionName
 	headers["Force"] = strconv.FormatBool(force)
+	//	url += "&force=" + strconv.FormatBool(force)
 	var file io.Reader
 	var errFile error
 	if pathToZip != "" {
@@ -73,7 +77,7 @@ func (crc *CommandsRunnerClient) unregisterExtension(extensionName string) error
 	if extensionName == "" {
 		return errors.New("Extension name missing")
 	}
-	url := "extension?name=" + extensionName
+	url := "extension?extension-name=" + extensionName
 
 	response, errCode, err := crc.RestCall(http.MethodDelete, global.BaseURL, url, nil, nil)
 	if err != nil {

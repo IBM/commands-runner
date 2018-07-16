@@ -115,27 +115,11 @@ func getAddStateManager(extensionName string) (*States, error) {
 	return getStateManager(extensionName)
 }
 
-//getExtensionName from request
-func GetExtensionNameFromRequest(req *http.Request) (string, url.Values, error) {
-	log.Debug("Entering in GetExtensionNameFromRequest")
-	m, errRQ := url.ParseQuery(req.URL.RawQuery)
-	if errRQ != nil {
-		return "", m, errRQ
-	}
-	extensionName := global.CommandsRunnerStatesName
-	extensionNameFound, okExtensionName := m["extension-name"]
-	if okExtensionName {
-		log.Debugf("ExtensionName:%s", extensionNameFound)
-		extensionName = extensionNameFound[0]
-	}
-	return extensionName, m, nil
-}
-
 //Search the stateManager based on the extension-name parameter's request.
 func getStateManagerFromRequest(req *http.Request) (*States, url.Values, error) {
 	log.Debug("Entering in getStateManagerFromRequest")
 	log.Debug(req.URL.Path)
-	extensionName, m, err := GetExtensionNameFromRequest(req)
+	extensionName, m, err := global.GetExtensionNameFromRequest(req)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -402,10 +386,15 @@ func PutInsertStateStatesEndpoint(w http.ResponseWriter, req *http.Request) {
 			}
 			stateCfg, err := cfg.Get("call_state")
 			if err != nil {
-				http.Error(w, "extension-manifest.yml: "+err.Error(), http.StatusBadRequest)
-				return
+				err = cfg.Set("call_state.name", insertExtensionName)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusBadRequest)
+					return
+				}
+				stateCfg, _ = cfg.Get("call_state")
+			} else {
+				err = stateCfg.Set("name", insertExtensionName)
 			}
-			err = stateCfg.Set("name", insertExtensionName)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return

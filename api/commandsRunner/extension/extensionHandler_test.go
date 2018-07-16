@@ -12,6 +12,7 @@ package extension
 
 import (
 	"archive/zip"
+	"bytes"
 	"encoding/json"
 	"io"
 	"mime/multipart"
@@ -103,14 +104,51 @@ func createFileUploadRequest(pathToFile, extensionName string, t *testing.T) *ht
 		zipit("../../test/resource/extensions/custom-extension", pathToFile)
 		body, _ := os.Open(pathToFile)
 		writer := multipart.NewWriter(body)
-		req, _ = http.NewRequest("POST", "/cr/v1/extension/action=register", body)
+		req, _ = http.NewRequest("POST", "/cr/v1/extension?extension-name="+extensionName, body)
 		req.Header.Set("Content-Type", writer.FormDataContentType())
 		req.Header.Set("Content-Disposition", "upload; filename="+filepath.Base(pathToFile))
 	} else {
-		req, _ = http.NewRequest("POST", "/cr/v1/extension/action=register", nil)
+		req, _ = http.NewRequest("POST", "/cr/v1/extension?extension-name="+extensionName, nil)
 	}
-	req.Header.Set("Extension-Name", extensionName)
+	//	req.Header.Set("Extension-Name", extensionName)
 	return req
+}
+
+func createFileFormDataRequest(pathToFile string, t *testing.T) (*http.Request, error) {
+	var req *http.Request
+	if pathToFile != "" {
+		zipit("../../test/resource/extensions/custom-extension", pathToFile)
+		file, err := os.Open(pathToFile)
+		if err != nil {
+			return nil, err
+		}
+		defer file.Close()
+
+		body := &bytes.Buffer{}
+		writer := multipart.NewWriter(body)
+		part, err := writer.CreateFormFile(filepath.Base(pathToFile), filepath.Base(pathToFile))
+		if err != nil {
+			return nil, err
+		}
+		_, err = io.Copy(part, file)
+
+		// for key, val := range params {
+		// 	_ = writer.WriteField(key, val)
+		// }
+		err = writer.Close()
+		if err != nil {
+			return nil, err
+		}
+
+		req, err := http.NewRequest("POST", "/cr/v1/extension", body)
+		t.Logf("req: %v", req)
+		req.Header.Set("Content-Type", writer.FormDataContentType())
+		return req, err
+	} else {
+		req, _ = http.NewRequest("POST", "/cr/v1/extension", nil)
+	}
+	//	req.Header.Set("Extension-Name", extensionName)
+	return req, nil
 }
 
 func TestRegisterExistingExtension(t *testing.T) {
@@ -185,6 +223,8 @@ func TestRegisterNonExistingExtension(t *testing.T) {
 
 func TestRegisterCustomExtension(t *testing.T) {
 	t.Log("Entering........... TestExtensionUnzip")
+	cleanup()
+	log.SetLevel(log.DebugLevel)
 	// Dummy GetExtensionPath()
 	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
 	SetExtensionPath("../../test/resource/tmp/")
@@ -215,7 +255,47 @@ func TestRegisterCustomExtension(t *testing.T) {
 		t.Errorf("The path: %s, does not exist", path)
 	}
 
-	//	cleanup()
+	cleanup()
+}
+
+func TestRegisterCustomExtensionWihtFormData(t *testing.T) {
+	t.Log("Entering........... TestExtensionUnzip")
+	cleanup()
+	log.SetLevel(log.DebugLevel)
+	// Dummy GetExtensionPath()
+	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
+	SetExtensionPath("../../test/resource/tmp/")
+	filename := "dummy-extension.zip"
+	extensionName := "dummy-extension"
+	_ = os.Mkdir(GetExtensionPath(), 0777)
+	_ = os.Mkdir(GetExtensionPathCustom(), 0777)
+
+	req, err := createFileFormDataRequest("../../test/resource/"+filename, t)
+	if err != nil {
+		t.Error(err.Error())
+	}
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(HandleExtension)
+	handler.ServeHTTP(rr, req)
+
+	assert("Extension registration complete", rr.Body.String(), t)
+
+	path := filepath.Join(GetExtensionPathCustom(), extensionName)
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		t.Errorf("The path: %s, does not exist", path)
+	}
+
+	path = filepath.Join(path, "extension-manifest.yml")
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		t.Errorf("The path: %s, does not exist", path)
+	}
+
+	path = filepath.Join(path, "/scripts/success.sh")
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		t.Errorf("The path: %s, does not exist", path)
+	}
+
+	//cleanup()
 }
 
 func TestRegisterCustomExtensionWithIBMExtensionName(t *testing.T) {
@@ -294,7 +374,7 @@ func TestDeletionEndpointExists(t *testing.T) {
 	_ = os.Mkdir(GetExtensionPathCustom(), 0777)
 	_ = os.Mkdir(filepath.Join(GetExtensionPathCustom(), extensionName), 0777)
 
-	req, err := http.NewRequest("DELETE", "/cr/v1/extension/action=unregister?name="+extensionName, nil)
+	req, err := http.NewRequest("DELETE", "/cr/v1/extension?extension-name="+extensionName, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -318,7 +398,7 @@ func TestDeletionExtensionExists(t *testing.T) {
 	_ = os.Mkdir(GetExtensionPathCustom(), 0777)
 	_ = os.Mkdir(GetExtensionPathCustom()+"/dummy-extension", 0777)
 
-	req, err := http.NewRequest("DELETE", "/cr/v1/extension/action=unregister?name="+extensionName, nil)
+	req, err := http.NewRequest("DELETE", "/cr/v1/extension?extension-name="+extensionName, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -355,7 +435,7 @@ func TestDeletionFromFileSystem(t *testing.T) {
 	os.Create(GetExtensionPathCustom() + dontDeleteFile)
 	os.Create(GetExtensionPathCustom() + "/dummy-extension/" + deleteFile)
 
-	req, err := http.NewRequest("DELETE", "/cr/v1/extension/action=unregister?name="+extensionName, nil)
+	req, err := http.NewRequest("DELETE", "/cr/v1/extension?extension-name="+extensionName, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

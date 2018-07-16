@@ -23,7 +23,6 @@ import (
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/logger"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/properties"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/state"
 )
 
 //handle COnfig rest api requests
@@ -60,7 +59,7 @@ func getPropertyEndpoint(w http.ResponseWriter, req *http.Request) {
 	//Check format
 	validatePath := regexp.MustCompile("/cr/v1/(config)/([\\w]*)$")
 	params := validatePath.FindStringSubmatch(req.URL.Path)
-	extensionName, _, err := state.GetExtensionNameFromRequest(req)
+	extensionName, _, err := global.GetExtensionNameFromRequest(req)
 	//Retrieve the property name
 	property, err := FindProperty(extensionName, params[2])
 	if err == nil {
@@ -88,7 +87,7 @@ URL: /cr/v1/config/
 Method: GET
 */
 func GetPropertiesEndpoint(w http.ResponseWriter, req *http.Request) {
-	extensionName, _, err := state.GetExtensionNameFromRequest(req)
+	extensionName, _, err := global.GetExtensionNameFromRequest(req)
 	if err != nil {
 		logger.AddCallerField().Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -177,7 +176,7 @@ func SetPropertiesEndpoint(w http.ResponseWriter, req *http.Request) {
 			}
 		}
 	}
-	extensionName, _, errExtName := state.GetExtensionNameFromRequest(req)
+	extensionName, _, errExtName := global.GetExtensionNameFromRequest(req)
 	if errExtName != nil {
 		logger.AddCallerField().Error(errExtName.Error())
 		http.Error(w, errExtName.Error(), 500)
