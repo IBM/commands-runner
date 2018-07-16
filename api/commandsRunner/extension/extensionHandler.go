@@ -25,7 +25,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/logger"
 )
 
@@ -119,11 +118,11 @@ func unregisterExtension(w http.ResponseWriter, req *http.Request) {
 
 func registerExtension(w http.ResponseWriter, req *http.Request) {
 	log.Debug("Entering in... registerExtension")
-	extensionName, _, err := global.GetExtensionNameFromRequest(req)
-	if err != nil {
-		logger.AddCallerField().Errorf("Error reading extension from request: %v", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	extensionName := ""
+	m, _ := url.ParseQuery(req.URL.RawQuery)
+	if extensionNameFound, okENamextension := m["extension-name"]; okENamextension {
+		log.Debug("extensions name :%s", extensionNameFound)
+		extensionName = extensionNameFound[0]
 	}
 	//Get filename from zip
 	log.Debug("Content-Disposition:" + req.Header.Get("Content-Disposition"))

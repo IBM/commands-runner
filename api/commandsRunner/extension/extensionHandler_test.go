@@ -185,6 +185,7 @@ func TestRegisterNonExistingExtension(t *testing.T) {
 
 func TestRegisterCustomExtension(t *testing.T) {
 	t.Log("Entering........... TestExtensionUnzip")
+	log.SetLevel(log.DebugLevel)
 	// Dummy GetExtensionPath()
 	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
 	SetExtensionPath("../../test/resource/tmp/")
