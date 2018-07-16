@@ -13,6 +13,7 @@ package extension
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
 	"io/ioutil"
 	"mime"
@@ -24,6 +25,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/logger"
 )
 
@@ -103,7 +105,7 @@ func listExtension(w http.ResponseWriter, req *http.Request) {
 
 func unregisterExtension(w http.ResponseWriter, req *http.Request) {
 	query, _ := url.ParseQuery(req.URL.RawQuery)
-	extensionName := query["name"][0]
+	extensionName := query["extension-name"][0]
 	log.Debugf("Query: %s", extensionName)
 
 	err := UnregisterExtension(extensionName)
@@ -117,6 +119,12 @@ func unregisterExtension(w http.ResponseWriter, req *http.Request) {
 
 func registerExtension(w http.ResponseWriter, req *http.Request) {
 	log.Debug("Entering in... registerExtension")
+	extensionName, _, err := global.GetExtensionNameFromRequest(req)
+	if err != nil {
+		logger.AddCallerField().Errorf("Error reading extension from request: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	//Get filename from zip
 	log.Debug("Content-Disposition:" + req.Header.Get("Content-Disposition"))
 	mediaType, params, _ := mime.ParseMediaType(req.Header.Get("Content-Disposition"))
@@ -125,7 +133,7 @@ func registerExtension(w http.ResponseWriter, req *http.Request) {
 	log.Debug("filename:" + filename)
 	extension := filepath.Ext(filename)
 	log.Debug("extension:" + extension)
-	extensionName := req.Header.Get("Extension-Name")
+	// extensionName := req.Header.Get("Extension-Name")
 	if extensionName == "" {
 		extensionName = filename[0 : len(filename)-len(extension)]
 	}
@@ -209,7 +217,7 @@ func readBody(req *http.Request, fileName string) ([]byte, error) {
 		log.Debug("Not a multipart")
 		body, err := ioutil.ReadAll(req.Body)
 		return body, err
-	} else {
+	} else if mediaType == "form-data" {
 		mReader, _ := req.MultipartReader()
 		form, err := mReader.ReadForm(100000)
 		if err != nil {
@@ -231,6 +239,8 @@ func readBody(req *http.Request, fileName string) ([]byte, error) {
 				file.Close()
 			}
 		}
+	} else {
+		return body, errors.New("Unsupported mediaType " + mediaType)
 	}
 	return body, nil
 }

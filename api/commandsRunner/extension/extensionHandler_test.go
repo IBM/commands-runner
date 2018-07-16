@@ -103,13 +103,13 @@ func createFileUploadRequest(pathToFile, extensionName string, t *testing.T) *ht
 		zipit("../../test/resource/extensions/custom-extension", pathToFile)
 		body, _ := os.Open(pathToFile)
 		writer := multipart.NewWriter(body)
-		req, _ = http.NewRequest("POST", "/cr/v1/extension/action=register", body)
+		req, _ = http.NewRequest("POST", "/cr/v1/extension?extension-name="+extensionName, body)
 		req.Header.Set("Content-Type", writer.FormDataContentType())
 		req.Header.Set("Content-Disposition", "upload; filename="+filepath.Base(pathToFile))
 	} else {
-		req, _ = http.NewRequest("POST", "/cr/v1/extension/action=register", nil)
+		req, _ = http.NewRequest("POST", "/cr/v1/extension?extension-name="+extensionName, nil)
 	}
-	req.Header.Set("Extension-Name", extensionName)
+	//	req.Header.Set("Extension-Name", extensionName)
 	return req
 }
 
@@ -294,7 +294,7 @@ func TestDeletionEndpointExists(t *testing.T) {
 	_ = os.Mkdir(GetExtensionPathCustom(), 0777)
 	_ = os.Mkdir(filepath.Join(GetExtensionPathCustom(), extensionName), 0777)
 
-	req, err := http.NewRequest("DELETE", "/cr/v1/extension/action=unregister?name="+extensionName, nil)
+	req, err := http.NewRequest("DELETE", "/cr/v1/extension?extension-name="+extensionName, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -318,7 +318,7 @@ func TestDeletionExtensionExists(t *testing.T) {
 	_ = os.Mkdir(GetExtensionPathCustom(), 0777)
 	_ = os.Mkdir(GetExtensionPathCustom()+"/dummy-extension", 0777)
 
-	req, err := http.NewRequest("DELETE", "/cr/v1/extension/action=unregister?name="+extensionName, nil)
+	req, err := http.NewRequest("DELETE", "/cr/v1/extension?extension-name="+extensionName, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -355,7 +355,7 @@ func TestDeletionFromFileSystem(t *testing.T) {
 	os.Create(GetExtensionPathCustom() + dontDeleteFile)
 	os.Create(GetExtensionPathCustom() + "/dummy-extension/" + deleteFile)
 
-	req, err := http.NewRequest("DELETE", "/cr/v1/extension/action=unregister?name="+extensionName, nil)
+	req, err := http.NewRequest("DELETE", "/cr/v1/extension?extension-name="+extensionName, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
