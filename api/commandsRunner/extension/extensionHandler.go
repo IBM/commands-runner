@@ -133,7 +133,6 @@ func registerExtension(w http.ResponseWriter, req *http.Request) {
 		mediaType, params, _ := mime.ParseMediaType(contentDisposition)
 		log.Debug("mediaType:" + mediaType)
 		filename = params["filename"]
-		log.Debug("filename:" + filename)
 	} else {
 		reader, err := req.MultipartReader()
 		if err == nil {
@@ -146,6 +145,7 @@ func registerExtension(w http.ResponseWriter, req *http.Request) {
 			filename = part.FileName()
 		}
 	}
+	log.Debug("filename:" + filename)
 	// extensionName := req.Header.Get("Extension-Name")
 	if extensionName == "" {
 		extension = filepath.Ext(filename)
@@ -233,7 +233,8 @@ func readBody(req *http.Request, part *multipart.Part) ([]byte, error) {
 		body, err := ioutil.ReadAll(req.Body)
 		return body, err
 	} else {
-		_, err := part.Read(body)
+		n, err := part.Read(body)
+		log.Debugf("Number of bytes read:%v", n)
 		if err != nil {
 			logger.AddCallerField().Error(err.Error())
 			return body, err
