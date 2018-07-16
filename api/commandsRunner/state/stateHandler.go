@@ -385,11 +385,11 @@ func PutInsertStateStatesEndpoint(w http.ResponseWriter, req *http.Request) {
 				return
 			}
 			stateCfg, err := cfg.Get("call_state")
-			pathName := "name"
 			if err != nil {
-				pathName = "call_state." + pathName
+				err = cfg.Set("call_state.name", insertExtensionName)
+			} else {
+				err = stateCfg.Set("name", insertExtensionName)
 			}
-			err = stateCfg.Set("name", insertExtensionName)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
