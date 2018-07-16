@@ -134,7 +134,8 @@ func registerExtension(w http.ResponseWriter, req *http.Request) {
 		log.Debug("mediaType:" + mediaType)
 		filename = params["filename"]
 	} else {
-		mReader, err := req.MultipartReader()
+		var err error
+		mReader, err = req.MultipartReader()
 		if err == nil {
 			part, err := mReader.NextPart()
 			if err != nil {
