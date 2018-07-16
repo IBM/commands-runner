@@ -120,13 +120,20 @@ func registerExtension(w http.ResponseWriter, req *http.Request) {
 	log.Debug("Entering in... registerExtension")
 	extensionName := ""
 	m, _ := url.ParseQuery(req.URL.RawQuery)
-	if extensionNameFound, okENamextension := m["extension-name"]; okENamextension {
+	if extensionNameFound, okExtensionName := m["extension-name"]; okExtensionName {
 		log.Debug("extensions name :%s", extensionNameFound)
 		extensionName = extensionNameFound[0]
 	}
 	//Get filename from zip
 	log.Debug("Content-Disposition:" + req.Header.Get("Content-Disposition"))
-	mediaType, params, _ := mime.ParseMediaType(req.Header.Get("Content-Disposition"))
+	contentDisposition := req.Header.Get("Content-Disposition")
+	if contentDisposition == "" {
+		if contentDispositionFound, okContentDisposition := m["Content-Disposition"]; okContentDisposition {
+			log.Debug("Content-Disposition:%s", contentDispositionFound)
+			contentDisposition = contentDispositionFound[0]
+		}
+	}
+	mediaType, params, _ := mime.ParseMediaType(contentDisposition)
 	log.Debug("mediaType:" + mediaType)
 	filename := params["filename"]
 	log.Debug("filename:" + filename)
