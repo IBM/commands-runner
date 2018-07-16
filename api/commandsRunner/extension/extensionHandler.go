@@ -127,16 +127,16 @@ func registerExtension(w http.ResponseWriter, req *http.Request) {
 	//Get filename from zip
 	log.Debug("Content-Disposition:" + req.Header.Get("Content-Disposition"))
 	var filename, extension string
-	var part *multipart.Part
+	var mReader *multipart.Reader
 	contentDisposition := req.Header.Get("Content-Disposition")
 	if contentDisposition != "" {
 		mediaType, params, _ := mime.ParseMediaType(contentDisposition)
 		log.Debug("mediaType:" + mediaType)
 		filename = params["filename"]
 	} else {
-		reader, err := req.MultipartReader()
+		mReader, err := req.MultipartReader()
 		if err == nil {
-			part, err = reader.NextPart()
+			part, err := mReader.NextPart()
 			if err != nil {
 				logger.AddCallerField().Error(err)
 				http.Error(w, err.Error(), http.StatusBadGateway)
@@ -174,7 +174,7 @@ func registerExtension(w http.ResponseWriter, req *http.Request) {
 		}
 		defer file.Close()
 
-		body, err := readBody(req, filename)
+		body, err := readBody(req, filename, mReader)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -225,7 +225,7 @@ func registerExtension(w http.ResponseWriter, req *http.Request) {
 	w.Write([]byte("Extension registration complete"))
 }
 
-func readBody(req *http.Request, fileName string) ([]byte, error) {
+func readBody(req *http.Request, fileName string, mReader *multipart.Reader) ([]byte, error) {
 	var body []byte
 	mediaType, _, _ := mime.ParseMediaType(req.Header.Get("Content-Disposition"))
 	if mediaType == "upload" {
@@ -239,7 +239,6 @@ func readBody(req *http.Request, fileName string) ([]byte, error) {
 		// 	logger.AddCallerField().Error(err.Error())
 		// 	return body, err
 		// }
-		mReader, _ := req.MultipartReader()
 		form, err := mReader.ReadForm(100000)
 		if err != nil {
 			logger.AddCallerField().Error(err.Error())
