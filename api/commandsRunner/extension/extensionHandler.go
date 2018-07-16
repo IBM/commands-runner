@@ -13,10 +13,10 @@ package extension
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"io"
 	"io/ioutil"
 	"mime"
+	"mime/multipart"
 	"net/http"
 	"net/url"
 	"os"
@@ -126,21 +126,30 @@ func registerExtension(w http.ResponseWriter, req *http.Request) {
 	}
 	//Get filename from zip
 	log.Debug("Content-Disposition:" + req.Header.Get("Content-Disposition"))
+	var filename, extension string
+	var part *multipart.Part
 	contentDisposition := req.Header.Get("Content-Disposition")
-	if contentDisposition == "" {
-		if contentDispositionFound, okContentDisposition := m["Content-Disposition"]; okContentDisposition {
-			log.Debug("Content-Disposition:%s", contentDispositionFound)
-			contentDisposition = contentDispositionFound[0]
+	if contentDisposition != "" {
+		mediaType, params, _ := mime.ParseMediaType(contentDisposition)
+		log.Debug("mediaType:" + mediaType)
+		filename = params["filename"]
+		log.Debug("filename:" + filename)
+	} else {
+		reader, err := req.MultipartReader()
+		if err == nil {
+			part, err = reader.NextPart()
+			if err != nil {
+				logger.AddCallerField().Error(err)
+				http.Error(w, err.Error(), http.StatusBadGateway)
+				return
+			}
+			filename = part.FileName()
 		}
 	}
-	mediaType, params, _ := mime.ParseMediaType(contentDisposition)
-	log.Debug("mediaType:" + mediaType)
-	filename := params["filename"]
-	log.Debug("filename:" + filename)
-	extension := filepath.Ext(filename)
-	log.Debug("extension:" + extension)
 	// extensionName := req.Header.Get("Extension-Name")
 	if extensionName == "" {
+		extension = filepath.Ext(filename)
+		log.Debug("extension:" + extension)
 		extensionName = filename[0 : len(filename)-len(extension)]
 	}
 	log.Debug("extensionName:" + extensionName)
@@ -165,7 +174,7 @@ func registerExtension(w http.ResponseWriter, req *http.Request) {
 		}
 		defer file.Close()
 
-		body, err := readBody(req, "extension")
+		body, err := readBody(req, part)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -216,37 +225,34 @@ func registerExtension(w http.ResponseWriter, req *http.Request) {
 	w.Write([]byte("Extension registration complete"))
 }
 
-func readBody(req *http.Request, fileName string) ([]byte, error) {
+func readBody(req *http.Request, part *multipart.Part) ([]byte, error) {
 	var body []byte
 	mediaType, _, _ := mime.ParseMediaType(req.Header.Get("Content-Disposition"))
 	if mediaType == "upload" {
 		log.Debug("Not a multipart")
 		body, err := ioutil.ReadAll(req.Body)
 		return body, err
-	} else if mediaType == "form-data" {
-		mReader, _ := req.MultipartReader()
-		form, err := mReader.ReadForm(100000)
+	} else {
+		_, err := part.Read(body)
 		if err != nil {
 			logger.AddCallerField().Error(err.Error())
 			return body, err
 		}
-		if fileHeaders, ok := form.File[fileName]; ok {
-			log.Debug("Found part named " + fileName)
-			for index, fileHeader := range fileHeaders {
-				log.Debug(fileHeader.Filename + " part " + strconv.Itoa(index))
-				file, err := fileHeader.Open()
-				if err != nil {
-					logger.AddCallerField().Error(err.Error())
-					return body, err
-				}
-				content := make([]byte, fileHeader.Size)
-				file.Read(content)
-				body = append(body, content...)
-				file.Close()
-			}
-		}
-	} else {
-		return body, errors.New("Unsupported mediaType " + mediaType)
+		// if fileHeaders, ok := form.File[fileName]; ok {
+		// 	log.Debug("Found part named " + fileName)
+		// 	for index, fileHeader := range fileHeaders {
+		// 		log.Debug(fileHeader.Filename + " part " + strconv.Itoa(index))
+		// 		file, err := fileHeader.Open()
+		// 		if err != nil {
+		// 			logger.AddCallerField().Error(err.Error())
+		// 			return body, err
+		// 		}
+		// 		content := make([]byte, fileHeader.Size)
+		// 		file.Read(content)
+		// 		body = append(body, content...)
+		// 		file.Close()
+		// 	}
+		// }
 	}
 	return body, nil
 }
