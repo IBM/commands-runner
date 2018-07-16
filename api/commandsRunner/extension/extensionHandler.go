@@ -233,8 +233,7 @@ func readBody(req *http.Request, part *multipart.Part) ([]byte, error) {
 		body, err := ioutil.ReadAll(req.Body)
 		return body, err
 	} else {
-		n, err := part.Read(body)
-		log.Debugf("Number of bytes read:%v", n)
+		body, err := ioutil.ReadAll(part)
 		if err != nil {
 			logger.AddCallerField().Error(err.Error())
 			return body, err
