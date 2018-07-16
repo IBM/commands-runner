@@ -385,9 +385,9 @@ func PutInsertStateStatesEndpoint(w http.ResponseWriter, req *http.Request) {
 				return
 			}
 			stateCfg, err := cfg.Get("call_state")
+			pathName := "name"
 			if err != nil {
-				http.Error(w, "extension-manifest.yml: "+err.Error(), http.StatusBadRequest)
-				return
+				pathName = "call_state." + pathName
 			}
 			err = stateCfg.Set("name", insertExtensionName)
 			if err != nil {
