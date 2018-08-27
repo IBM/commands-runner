@@ -84,8 +84,6 @@ func validateToken(configDir string, protectedHandler http.HandlerFunc) http.Han
 
 		//Check if correct token
 		if receivedToken != tokenS {
-			log.Info(receivedToken)
-			log.Info(tokenS)
 			http.Error(w, "Invalid token", http.StatusForbidden)
 			return
 		}
