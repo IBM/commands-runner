@@ -23,12 +23,12 @@ import (
 )
 
 func (crc *CommandsRunnerClient) getLogsByChars(extensionName string, stateName string, firstChar int64, nbChar int64) (string, error) {
-	//build the url
-	url := "state/" + stateName + "/log?first-char=" + strconv.FormatInt(firstChar, 10)
-	url += "&length=" + strconv.FormatInt(nbChar, 10)
-	if extensionName != "" {
-		url += "&extension-name=" + extensionName
+	if extensionName == "" {
+		extensionName = crc.DefaultExtensionName
 	}
+	//build the url
+	url := "state/" + stateName + "/log?extension-name=" + extensionName + "&first-char=" + strconv.FormatInt(firstChar, 10)
+	url += "&length=" + strconv.FormatInt(nbChar, 10)
 	//Call the rest API
 	data, _, err := crc.RestCall(http.MethodGet, global.BaseURL, url, nil, nil)
 	return data, err

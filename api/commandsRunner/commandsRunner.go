@@ -17,6 +17,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -24,12 +25,11 @@ import (
 
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/commandsRunner"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/config"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/extension"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/logger"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/state"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/status"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/uiConfig"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/uiMetadata"
 )
 
 const COPYRIGHT string = `###############################################################################
@@ -98,6 +98,7 @@ func AddHandler(pattern string, handler http.HandlerFunc, requireAuth bool) {
 	log.Debug("Entering... AddHandler")
 	log.Debug("pattern:" + pattern)
 	log.Debug("serverConfigDir:" + serverConfigDir)
+	log.Debug("requireAuth:" + strconv.FormatBool(requireAuth))
 	if requireAuth {
 		http.HandleFunc(pattern, validateToken(serverConfigDir, handler))
 	} else {
@@ -107,58 +108,59 @@ func AddHandler(pattern string, handler http.HandlerFunc, requireAuth bool) {
 
 func start() {
 	go func() {
+		log.Info("http://localhost:" + serverPort)
 		if err := http.ListenAndServe(":"+serverPort, nil); err != nil {
 			log.Errorf("ListenAndServe error: %v", err)
 		}
 	}()
-	go func() {
-		if err := http.ListenAndServeTLS(":"+serverPortSSL, serverCertificatePath, serverKeyPath, nil); err != nil {
-			log.Errorf("ListenAndServeTLS error: %v", err)
-		}
-	}()
+	_, errCertPath := os.Stat(serverCertificatePath)
+	_, errKeyPath := os.Stat(serverKeyPath)
+	if errCertPath == nil && errKeyPath == nil {
+		log.Info("https://localhost:" + serverPortSSL)
+		go func() {
+			if err := http.ListenAndServeTLS(":"+serverPortSSL, serverCertificatePath, serverKeyPath, nil); err != nil {
+				log.Errorf("ListenAndServeTLS error: %v", err)
+			}
+		}()
+	} else {
+		log.Info("SSL not enabled as " + serverCertificatePath + " or " + serverKeyPath + " is not present.")
+	}
 	status.SetStatus(status.CMStatus, "Up")
-	// if _, err := os.Stat(serverCertificatePath); err == nil {
-	// 	if _, err := os.Stat(serverKeyPath); err == nil {
-
-	// 		log.Fatal(http.ListenAndServeTLS(":"+serverPortSSL, serverCertificatePath, serverKeyPath, nil))
-	// 	}
-	// }
-	blockForever()
 }
 
 func blockForever() {
 	select {}
 }
 
-type InitFunc func(port string, portSSL string, configDir string, certificatePath string, keyPath string, stateFilePath string)
+type InitFunc func(port string, portSSL string, configDir string, certificatePath string, keyPath string)
 
-func Init(port string, portSSL string, configDir string, certificatePath string, keyPath string, stateFilePath string) {
+type PostStartFunc func(configDir string)
+
+func Init(port string, portSSL string, configDir string, certificatePath string, keyPath string) {
 	serverPort = port
 	serverPortSSL = portSSL
 	serverConfigDir = configDir
 	serverCertificatePath = certificatePath
 	serverKeyPath = keyPath
 	config.SetConfigPath(configDir)
-	state.SetStatePath(stateFilePath)
 	AddHandler("/cr/v1/state", state.HandleState, true)
 	AddHandler("/cr/v1/state/", state.HandleState, true)
 	AddHandler("/cr/v1/states", state.HandleStates, true)
 	AddHandler("/cr/v1/engine", state.HandleEngine, true)
 	AddHandler("/cr/v1/pcm/", commandsRunner.HandleCR, true)
 	AddHandler("/cr/v1/status", status.HandleStatus, true)
-	AddHandler("/cr/v1/extension", extension.HandleExtension, true)
-	AddHandler("/cr/v1/extensions", extension.HandleExtensions, true)
-	AddHandler("/cr/v1/extensions/", extension.HandleExtensions, true)
-	AddHandler("/cr/v1/uiconfig/", uiConfig.HandleUIConfig, true)
+	AddHandler("/cr/v1/extension", state.HandleExtension, true)
+	AddHandler("/cr/v1/extensions", state.HandleExtensions, true)
+	AddHandler("/cr/v1/extensions/", state.HandleExtensions, true)
+	AddHandler("/cr/v1/uimetadata/", uiMetadata.HandleUIMetadata, true)
 	AddHandler("/cr/v1/config", config.HandleConfig, true)
 	AddHandler("/cr/v1/config/", config.HandleConfig, true)
 }
 
-func ServerStart(preInitFunc InitFunc, postInitFunc InitFunc, preStartFunc InitFunc) {
+func ServerStart(preInit InitFunc, postInit InitFunc, preStart InitFunc, postStart PostStartFunc) {
 	var configDir string
 	var port string
 	var portSSL string
-	var statesPath string
 
 	//	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
@@ -175,11 +177,6 @@ func ServerStart(preInitFunc InitFunc, postInitFunc InitFunc, preStartFunc InitF
 					Name:        "configDir, c",
 					Usage:       "Config Directory",
 					Destination: &configDir,
-				},
-				cli.StringFlag{
-					Name:        "statePath, s",
-					Usage:       "Path of the state file",
-					Destination: &statesPath,
 				},
 				cli.StringFlag{
 					Name:        "port, p",
@@ -199,8 +196,8 @@ func ServerStart(preInitFunc InitFunc, postInitFunc InitFunc, preStartFunc InitF
 				file, _ := os.Create(commandsRunner.LogPath)
 				out := io.MultiWriter(file, os.Stderr)
 				log.SetOutput(out)
-				logLevel := os.Getenv("CM_TRACE")
-				log.Printf("CM_TRACE: %s", logLevel)
+				logLevel := os.Getenv("CR_TRACE")
+				log.Printf("CR_TRACE: %s", logLevel)
 				if logLevel == "" {
 					logLevel = logger.DefaultLogLevel
 				}
@@ -219,18 +216,21 @@ func ServerStart(preInitFunc InitFunc, postInitFunc InitFunc, preStartFunc InitF
 				if !filepath.IsAbs(configDir) {
 					log.Fatal("The path of config must be absolute: " + configDir)
 				}
-
-				if preInitFunc != nil {
-					preInitFunc(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName, statesPath)
+				if preInit != nil {
+					preInit(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName)
 				}
-				Init(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName, statesPath)
-				if postInitFunc != nil {
-					postInitFunc(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName, statesPath)
+				Init(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName)
+				if postInit != nil {
+					postInit(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName)
 				}
-				if preStartFunc != nil {
-					preStartFunc(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName, statesPath)
+				if preStart != nil {
+					preStart(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName)
 				}
 				start()
+				if postStart != nil {
+					postStart(configDir)
+				}
+				blockForever()
 				return nil
 			},
 		},

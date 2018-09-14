@@ -26,10 +26,12 @@ import (
 	"sync"
 	"time"
 
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
+
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/commandsRunner"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/extension"
 	"gonum.org/v1/gonum/graph"
 
+	"github.com/olebedev/config"
 	log "github.com/sirupsen/logrus"
 
 	"gonum.org/v1/gonum/graph/simple"
@@ -101,8 +103,81 @@ type States struct {
 
 var pcmLogTempFile *os.File
 
+var stateManagers map[string]States
+
+//initialize the map of stateManagers
+func init() {
+	stateManagers = make(map[string]States)
+}
+
+//get the statesFile path
+func getStatePath(extensionName string) (string, error) {
+	if extensionName == "" {
+		return "", errors.New("extensionName is empty")
+	}
+	var statesPathAux string
+	statesPathAux = GetRootExtensionPath(GetExtensionPath(), extensionName)
+	statesPathAux = filepath.Join(statesPathAux, "states-file.yml")
+	return statesPathAux, nil
+}
+
+//Add a state manager to the map, directly used only for test method.
+func addStateManagerToMap(extensionName string, statesPath string) error {
+	log.Debug("Entering in addStateManagerToMap")
+	log.Debug("Extension name: " + extensionName)
+	sm, err := newStateManager(statesPath)
+	if err != nil {
+		return err
+	}
+	stateManagers[extensionName] = *sm
+	log.Debug("State Manager added for " + extensionName)
+	return nil
+}
+
+//Add a stateManager for a given extension
+func addStateManager(extensionName string) error {
+	log.Debug("Entering in addStateManager")
+	log.Debug("Extension name:" + extensionName)
+	statesPath, err := getStatePath(extensionName)
+	if err != nil {
+		return err
+	}
+	return addStateManagerToMap(extensionName, statesPath)
+}
+
+//Remove a stateManager
+func removeStateManager(extensionName string) error {
+	delete(stateManagers, extensionName)
+	return nil
+}
+
+//Find a stateManager based on the extensionNAme
+func getStateManager(extensionName string) (*States, error) {
+	if val, ok := stateManagers[extensionName]; ok {
+		return &val, nil
+	}
+	return nil, errors.New("stateManager not found for " + extensionName)
+}
+
+//Search for a stateManager and if not found create it
+func GetStatesManager(extensionName string) (*States, error) {
+	log.Debug("Entering in getAddStateManagersss")
+	log.Debug("Search for manager: " + extensionName)
+	if val, ok := stateManagers[extensionName]; ok {
+		log.Debug("Manager already exists, returning it")
+		return &val, nil
+	}
+	log.Debug("Manager already doesn't exist, creating")
+	err := addStateManager(extensionName)
+	if err != nil {
+		return nil, err
+	}
+	log.Debug("returning creatd manager")
+	return getStateManager(extensionName)
+}
+
 //NewClient creates a new client
-func NewStateManager(statesPath string) (*States, error) {
+func newStateManager(statesPath string) (*States, error) {
 	log.Debug("Entering... NewStateManager")
 	log.Debug("statesPath :" + statesPath)
 	if statesPath == "" {
@@ -156,6 +231,7 @@ func (sm *States) readStates() error {
 		return err
 	}
 	sm.setDefaultValues()
+	log.Debug("States:\n" + string(statesData))
 	log.Debug("Exiting... readStates")
 	return nil
 }
@@ -178,16 +254,18 @@ func (sm *States) setDefaultValues() {
 		//		log.Debug("Check LogPath/Script")
 
 		if sm.StateArray[index].LogPath == "" {
-			dir := extension.GetExtensionLogsPathEmbedded()
+			dir := GetExtensionLogsPathEmbedded()
 			if sm.isCustomStatePath() {
-				dir = extension.GetExtensionLogsPathCustom()
+				dir = GetExtensionLogsPathCustom()
 			}
-			sm.StateArray[index].LogPath = filepath.Join(dir, sm.StateArray[index].Name, sm.StateArray[index].Name+".log")
-			//			log.Debug("Set state.LogPath to " + sm.StateArray[index].LogPath)
+			log.Debug("ExtensionLogPath:" + dir)
+			logDir := filepath.Join(dir, sm.StateArray[index].Name+".log")
+			sm.StateArray[index].LogPath = logDir
+			log.Debug("Set state.LogPath to " + sm.StateArray[index].LogPath)
 		}
 		if sm.StateArray[index].Script == "" {
 			//			log.Debug("Set state.Script")
-			sm.StateArray[index].Script = "cm extension -e " + sm.StateArray[index].Name + " deploy -w"
+			sm.StateArray[index].Script = global.ClientPath + " extension -e " + sm.StateArray[index].Name + " deploy -w"
 			//			log.Debug("Set state.Script to " + sm.StateArray[index].Script)
 		}
 		//		log.Debug("Check ScriptTimeout")
@@ -321,10 +399,10 @@ func (sm *States) GetStates(status string, extensionsOnly bool, recursive bool) 
 		mux:        &sync.Mutex{},
 	}
 	for i := 0; i < len(sm.StateArray); i++ {
-		if strings.HasPrefix(sm.StateArray[i].Script, "cm extension") {
+		if strings.HasPrefix(sm.StateArray[i].Script, global.ClientPath+" extension") {
 			states.StateArray = append(states.StateArray, sm.StateArray[i])
 			if recursive {
-				smp, err := getAddStateManager(sm.StateArray[i].Name)
+				smp, err := GetStatesManager(sm.StateArray[i].Name)
 				if err != nil {
 					return nil, err
 				}
@@ -835,16 +913,16 @@ func (sm *States) setStateStatus(state State, status string, recursively bool) e
 	sm.StateArray[index].EndTime = ""
 	sm.StateArray[index].Reason = ""
 	if recursively {
-		isExtension, err := extension.IsExtension(state.Name)
+		isExtension, err := IsExtension(state.Name)
 		if err != nil {
 			return err
 		}
 		if isExtension {
-			extensionPath, err := extension.GetRegisteredExtensionPath(state.Name)
+			extensionPath, err := GetRegisteredExtensionPath(state.Name)
 			if err != nil {
 				return err
 			}
-			extensionStateManager, err := NewStateManager(extensionPath + string(filepath.Separator) + "statesFile-" + state.Name + ".yml")
+			extensionStateManager, err := newStateManager(extensionPath + string(filepath.Separator) + "states-file.yml")
 			if err != nil {
 				return err
 			}
@@ -1005,6 +1083,56 @@ func (sm *States) setStateStatusWithTimeStamp(isStart bool, state string, status
 	return nil
 }
 
+func (sm *States) InsertStateFromExtensionName(extensionName string, pos int, stateName string, before bool) error {
+	manifestPath, err := GetRegisteredExtensionPath(extensionName)
+	if err != nil {
+		return err
+	}
+	manifestPath = filepath.Join(manifestPath, "extension-manifest.yml")
+	log.Debug("manifestPath: " + manifestPath)
+	manifestBytes, err := ioutil.ReadFile(manifestPath)
+	if err != nil {
+		return err
+	}
+	cfg, err := config.ParseYaml(string(manifestBytes))
+	if err != nil {
+		return err
+	}
+	stateCfg, err := cfg.Get("call_state")
+	if err != nil {
+		err = cfg.Set("call_state.name", extensionName)
+		if err != nil {
+			return err
+		}
+		stateCfg, _ = cfg.Get("call_state")
+	} else {
+		err = stateCfg.Set("name", extensionName)
+	}
+	if err != nil {
+		return err
+	}
+	stateString, err := config.RenderYaml(stateCfg.Root)
+	if err != nil {
+		return err
+	}
+	log.Debug("call_state: " + stateString)
+	return sm.InsertStateFromString(stateString, pos, stateName, before)
+
+}
+
+//InsertStateFromString Insert state at a given position, before or after a given state.
+//The state Def is provided as a string
+//If the position is 0 and the stateName is not provided then the state will be inserted taking into account the PreviousStates and NextStates of the inserted state.
+//Array start in Go at 0 but here the pos 1 is the elem 0
+func (sm *States) InsertStateFromString(stateDef string, pos int, stateName string, before bool) error {
+	var stateAux State
+	err := yaml.Unmarshal([]byte(stateDef), &stateAux)
+	if err != nil {
+		return err
+	}
+	return sm.InsertState(stateAux, pos, stateName, before)
+}
+
 //InsertState Insert state at a given position, before or after a given state.
 //If the position is 0 and the stateName is not provided then the state will be inserted taking into account the PreviousStates and NextStates of the inserted state.
 //Array start in Go at 0 but here the pos 1 is the elem 0
@@ -1021,16 +1149,17 @@ func (sm *States) InsertState(state State, pos int, stateName string, before boo
 	if err == nil {
 		return errors.New("State name " + state.Name + " already exists")
 	}
-	valid, err := extension.IsExtension(state.Name)
+	valid, err := IsExtension(state.Name)
 	if err != nil {
-		return nil
+		log.Debug(err.Error())
+		return err
 	}
 	if !valid {
 		err = errors.New("The state name " + state.Name + " is not a valid extension")
 		log.Debug(err.Error())
 		return errors.New(err.Error())
 	}
-	registered := extension.IsExtensionRegistered(state.Name)
+	registered := IsExtensionRegistered(state.Name)
 	if !registered {
 		return errors.New("The state name " + state.Name + " is not registered")
 	}
@@ -1208,7 +1337,7 @@ func (sm *States) GetLog(state string, position int64, length int64, bychar bool
 	case "cr":
 		var err error
 		if position == 0 {
-			pcmLogTempFile, err = ioutil.TempFile("/tmp/", "/cfp-commands-runner-log")
+			pcmLogTempFile, err = ioutil.TempFile("/tmp/", "/commands-runner-log")
 			if err != nil {
 				return nil, err
 			}
@@ -1234,7 +1363,12 @@ func (sm *States) GetLog(state string, position int64, length int64, bychar bool
 		if errPath != nil {
 			return nil, errPath
 		}
-		logPath = logPathFound
+		dir := filepath.Dir(logPathFound)
+		if !filepath.IsAbs(dir) {
+			dir = filepath.Join(filepath.Dir(sm.StatesPath), dir)
+		}
+		//Check if log exists and rename it for backup
+		logPath = filepath.Join(dir, filepath.Base(logPathFound))
 	}
 	//Open the log file.
 	var errFile error
@@ -1335,16 +1469,6 @@ func (sm *States) Execute(fromState string, toState string) error {
 //Execute states
 func (sm *States) executeStates(fromState string, toState string) error {
 	toExecute := false || fromState == FirstState
-	//Relative statesPath is used in unit-test and so in that case
-	//we must not change to another directory.
-	if filepath.IsAbs(sm.StatesPath) {
-		//Search the home dir and change to that directory
-		statesFileDir := filepath.Dir(sm.StatesPath)
-		err := os.Chdir(statesFileDir)
-		if err != nil {
-			return err
-		}
-	}
 	for i := 0; i < len(sm.StateArray); i++ {
 		state := sm.StateArray[i]
 		//Executed in panic case
@@ -1418,18 +1542,27 @@ func (sm *States) executeState(state State) error {
 	} else {
 		cmd = exec.Command(parts[0])
 	}
+	cmd.Dir = filepath.Dir(sm.StatesPath)
 	//Create the log directory if not exists
 	dir := filepath.Dir(state.LogPath)
+	if !filepath.IsAbs(dir) {
+		dir = filepath.Join(cmd.Dir, dir)
+	}
 	errMkDir := os.MkdirAll(dir, 0777)
 	if errMkDir != nil {
 		panic(errMkDir)
 	}
 	//Check if log exists and rename it for backup
-	if _, errLogExists := os.Stat(state.LogPath); !os.IsNotExist(errLogExists) {
-		os.Rename(state.LogPath, state.LogPath+"-"+time.Now().Format("2006-01-02T150405.999999-07:00"))
+	outfilePath := filepath.Join(dir, filepath.Base(state.LogPath))
+	if _, errLogExists := os.Stat(outfilePath); !os.IsNotExist(errLogExists) {
+		newOutfilePath := filepath.Join(dir, filepath.Base(state.LogPath)+"-"+time.Now().Format("2006-01-02T150405.999999-07:00"))
+		err := os.Rename(outfilePath, newOutfilePath)
+		if err != nil {
+			panic(err)
+		}
 	}
 	//Create the log file.
-	outfile, err := os.Create(state.LogPath)
+	outfile, err := os.OpenFile(outfilePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		panic(err)
 	}
@@ -1475,7 +1608,7 @@ func (sm *States) executeState(state State) error {
 	outfile.Sync()
 	outfile.Close()
 	if errExec != nil {
-		f, err := os.Open(state.LogPath)
+		f, err := os.Open(outfilePath)
 		if err != nil {
 			log.Debug(err.Error())
 		}

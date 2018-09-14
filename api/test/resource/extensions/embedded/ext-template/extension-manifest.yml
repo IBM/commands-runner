@@ -1,0 +1,48 @@
+
+extension:
+  name: ext-template
+  version: 1.0.1
+ui-metadata:
+  test-ui:
+    groups:
+    - name: ext_parameters
+      properties:
+      - description: Port to access service broker
+        hidden: false
+        label: Service broker port
+        mandatory: true
+        name: servicebroker_port
+        sample-value: E.g. 35880
+        type: text
+        validation-regex: ^(?:[0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$
+      - default: admin
+        description: User name for the service broker
+        label: Service broker username
+        mandatory: true
+        name: servicebroker_username
+        sample-value: E.g. admin
+      - default: admin
+        label: Service broker password
+        mandatory: true
+        name: servicebroker_password
+        sample-value: E.g. mypassword
+        type: password
+      - description: Port for api
+        hidden: false
+        label: API Port
+        mandatory: true
+        name: api-port
+        sample-value: E.g. 35880
+        type: text
+        validation-regex: ^(?:[0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$
+      title: Properties for external template sample
+states:
+- name: task1
+  phase: ""
+  script: scripts/success.sh task1
+- name: task2
+  phase: ""
+  script: scripts/success.sh task2
+- name: task3
+  phase: ""
+  script: scripts/success.sh task3

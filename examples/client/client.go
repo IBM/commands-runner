@@ -32,7 +32,7 @@ const COPYRIGHT string = `######################################################
 func main() {
 	//Define a dummy function
 	helloWorld := func(c *cli.Context) error {
-		client, errClient := helloWorld.NewClient(commandsRunnerCLI.URL, commandsRunnerCLI.OutputFormat, commandsRunnerCLI.Timeout, commandsRunnerCLI.CACertPath, commandsRunnerCLI.InsecureSSL, commandsRunnerCLI.Token)
+		client, errClient := helloWorld.NewClient(commandsRunnerCLI.URL, commandsRunnerCLI.OutputFormat, commandsRunnerCLI.Timeout, commandsRunnerCLI.CACertPath, commandsRunnerCLI.InsecureSSL, commandsRunnerCLI.Token, commandsRunnerCLI.DefaultExtensionName)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient

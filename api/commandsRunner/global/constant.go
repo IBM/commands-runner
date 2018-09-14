@@ -55,5 +55,5 @@ const SSLKeyFileName = "cr-key.pem"
 //TokenFileName token file name
 const TokenFileName = "cr-token"
 
-//CommandsRunnerStatesName default internal state file name
-const CommandsRunnerStatesName = "crs-name"
+//DefaultUIMetaDataName default ui metadata attribute
+const DefaultUIMetaDataName = "default"

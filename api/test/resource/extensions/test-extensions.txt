@@ -1,2 +1,0 @@
-cfp-ext-template
-cfp-ext-template-auto-location

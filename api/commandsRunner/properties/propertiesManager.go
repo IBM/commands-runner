@@ -21,8 +21,8 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/olebedev/config"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/extension"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/state"
 )
 
 //Properties map of interfaces
@@ -30,13 +30,7 @@ type Properties map[string]interface{}
 
 //GetConfigPath gets the statesFile path
 func GetConfigPath(extensionName string) string {
-	var configPath string
-	if extensionName == global.CommandsRunnerStatesName || extensionName == "" {
-		configPath = extension.GetRootExtensionPath(global.ConfigDirectory, extensionName)
-	} else {
-		configPath = extension.GetRootExtensionPath(extension.GetExtensionPath(), extensionName)
-	}
-	return configPath
+	return state.GetRootExtensionPath(state.GetExtensionPath(), extensionName)
 }
 
 func logProperties(ps Properties) {

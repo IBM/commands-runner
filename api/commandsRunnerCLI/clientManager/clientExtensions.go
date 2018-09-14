@@ -17,15 +17,15 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/extension"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/state"
 )
 
 func (crc *CommandsRunnerClient) getExtensions(extensionsToList string, catalog bool) (string, error) {
 	url := "/extensions?filter=" + extensionsToList + "&catalog=" + strconv.FormatBool(catalog)
 	data, errCode, err := crc.RestCall(http.MethodGet, global.BaseURL, url, nil, nil)
 	if errCode != http.StatusOK {
-		return "", errors.New("Unable to get extensions, please check logs")
+		return "", errors.New("Unable to get extensions: " + data + ", please check log for more information")
 	}
 	return data, err
 }
@@ -37,14 +37,14 @@ func (crc *CommandsRunnerClient) GetExtensions(extensionToList string, catalog b
 	}
 	out := ""
 	if crc.OutputFormat == "text" {
-		var extensions extension.Extensions
+		var extensions state.Extensions
 		jsonErr := json.Unmarshal([]byte(data), &extensions)
 		if jsonErr != nil {
 			return "", jsonErr
 		}
-		for _, v := range extensions.Extensions {
+		for key, v := range extensions.Extensions {
 			out += fmt.Sprintf("=>\n")
-			out += fmt.Sprintf("name : %s\n", v.Name)
+			out += fmt.Sprintf("name : %s\n", key)
 			out += fmt.Sprintf("type : %s\n", v.Type)
 		}
 		return out, nil

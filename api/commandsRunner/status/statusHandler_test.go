@@ -15,12 +15,10 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-
-	log "github.com/sirupsen/logrus"
 )
 
 func TestGetStatusesEndpoint(t *testing.T) {
-	log.SetLevel(log.InfoLevel)
+	//log.SetLevel(log.InfoLevel)
 	t.Log("Entering................. TestGetStatusesEndpoint")
 	req, err := http.NewRequest("GET", "/cr/v1/status", nil)
 	if err != nil {
@@ -41,7 +39,7 @@ func TestGetStatusesEndpoint(t *testing.T) {
 			status, rr.Body, http.StatusOK)
 	}
 	// Check the response body is what we expect.
-	expected := "{\"cm_status\":{\"name\":\"cm_status\",\"value\":\"Initialization\"},\"log_level\":{\"name\":\"log_level\",\"value\":\"info\"}}"
+	expected := "{\"cr_status\":{\"name\":\"cr_status\",\"value\":\"Initialization\"},\"log_level\":{\"name\":\"log_level\",\"value\":\"info\"}}"
 	got := strings.TrimRight(rr.Body.String(), "\n")
 	t.Log(string(expected))
 	t.Log(got)
@@ -53,7 +51,7 @@ func TestGetStatusesEndpoint(t *testing.T) {
 }
 
 func TestSetStatusesEndpoint(t *testing.T) {
-	log.SetLevel(log.InfoLevel)
+	//log.SetLevel(log.InfoLevel)
 	t.Log("Entering................. TestSetStatusesEndpoint")
 	req, err := http.NewRequest("PUT", "/cr/v1/status?name="+CMStatus+"&status=newStatus", nil)
 	if err != nil {
@@ -81,7 +79,7 @@ func TestSetStatusesEndpoint(t *testing.T) {
 			status, rr.Body, http.StatusOK)
 	}
 	// Check the response body is what we expect.
-	expected := "{\"cm_status\":{\"name\":\"" + CMStatus + "\",\"value\":\"newStatus\"},\"log_level\":{\"name\":\"log_level\",\"value\":\"info\"}}"
+	expected := "{\"cr_status\":{\"name\":\"" + CMStatus + "\",\"value\":\"newStatus\"},\"log_level\":{\"name\":\"log_level\",\"value\":\"info\"}}"
 	got := strings.TrimRight(rr.Body.String(), "\n")
 	t.Log(string(expected))
 	t.Log(got)

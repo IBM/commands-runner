@@ -16,10 +16,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/extension"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/properties"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/state"
 )
 
 const COPYRIGHT_TEST string = `###############################################################################
@@ -38,16 +37,6 @@ var configString string = global.ConfigRootKey + ":\n  env_name: \"itdove\"\n  h
 //var global.ConfigDirectory string = "../../test/resource"
 //var properties properties.Properties
 
-func TestSetConfigPathNotDone(t *testing.T) {
-	log.SetLevel(log.DebugLevel)
-	t.Log("Entering... TestSetConfigPathNotDone")
-	SetConfigPath("")
-	_, err := GetProperties(global.CommandsRunnerStatesName)
-	if err == nil {
-		t.Error("An error should be raised as the SetConfigPath is not yet set")
-	}
-}
-
 func TestSetConfigPath(t *testing.T) {
 	t.Log("Entering... TestSetConfigPath")
 	global.ConfigDirectory = "../../test/resource"
@@ -59,13 +48,13 @@ func TestSetProperties(t *testing.T) {
 	t.Log("Entering... TestSetproperties.Properties")
 	props = make(properties.Properties)
 	global.ConfigDirectory = "../../test/resource"
-	SetConfigPath(global.ConfigDirectory)
+	state.SetExtensionPath("../../test/resource/extensions")
 	//	t.Error(global.ConfigDirectory)
 	os.MkdirAll(global.ConfigDirectory, 0744)
 	props["Prop3"] = "Val3"
 	props["Prop4"] = "Val4"
 	props["subnet"] = "192.168.100.0/24"
-	err := SetProperties(global.CommandsRunnerStatesName, props)
+	err := SetProperties("config-manager-test", props)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -75,7 +64,8 @@ func TestGetProperties(t *testing.T) {
 	t.Log("Entering... TestGetproperties.Properties")
 	t.Logf("%s\n", configString)
 	global.ConfigDirectory = "../../test/resource"
-	dataDirectory := extension.GetRootExtensionPath(global.ConfigDirectory, global.CommandsRunnerStatesName)
+	state.SetExtensionPath("../../test/resource/extensions")
+	dataDirectory := state.GetRootExtensionPath("../../test/resource/extensions", "config-manager-test")
 	t.Log("dataDirectory:" + dataDirectory)
 	err := ioutil.WriteFile(filepath.Join(dataDirectory, global.ConfigYamlFileName), []byte(configString), 0644)
 	if err != nil {
@@ -83,7 +73,7 @@ func TestGetProperties(t *testing.T) {
 	}
 	SetConfigPath(global.ConfigDirectory)
 	//t.Log(properties)
-	propertiesAux, err := GetProperties(global.CommandsRunnerStatesName)
+	propertiesAux, err := GetProperties("config-manager-test")
 	t.Logf("%s\n", propertiesAux)
 	if err != nil {
 		t.Error(err.Error())
@@ -103,13 +93,14 @@ func TestFindProperty(t *testing.T) {
 	t.Log("Entering... TestFindProperty")
 	t.Logf("%s\n", configString)
 	global.ConfigDirectory = "../../test/resource"
-	dataDirectory := extension.GetRootExtensionPath(global.ConfigDirectory, global.CommandsRunnerStatesName)
+	state.SetExtensionPath("../../test/resource/extensions")
+	dataDirectory := state.GetRootExtensionPath("../../test/resource/extensions", "config-manager-test")
 	err := ioutil.WriteFile(filepath.Join(dataDirectory, global.ConfigYamlFileName), []byte(configString), 0644)
 	if err != nil {
 		t.Error("Can not create temp file")
 	}
 	SetConfigPath(global.ConfigDirectory)
-	p, err := FindProperty(global.CommandsRunnerStatesName, "env_name")
+	p, err := FindProperty("config-manager-test", "env_name")
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -123,7 +114,7 @@ func TestFindProperty(t *testing.T) {
 	} else {
 		t.Error("Not a string")
 	}
-	p, err = FindProperty(global.CommandsRunnerStatesName, "Prop3")
+	p, err = FindProperty("config-manager-test", "Prop3")
 	if err == nil {
 		t.Error("Expected not found and found")
 	}
@@ -133,17 +124,18 @@ func TestRemoveProperty(t *testing.T) {
 	t.Log("Entering... TestRemoveProperty")
 	t.Logf("%s\n", configString)
 	global.ConfigDirectory = "../../test/resource"
-	dataDirectory := extension.GetRootExtensionPath(global.ConfigDirectory, global.CommandsRunnerStatesName)
+	state.SetExtensionPath("../../test/resource/extensions")
+	dataDirectory := state.GetRootExtensionPath("../../test/resource/extensions", "config-manager-test")
 	err := ioutil.WriteFile(filepath.Join(dataDirectory, global.ConfigYamlFileName), []byte(configString), 0644)
 	if err != nil {
 		t.Error("Can not create temp file")
 	}
 	SetConfigPath(global.ConfigDirectory)
-	err = RemoveProperty(global.CommandsRunnerStatesName, "Prop1")
+	err = RemoveProperty("config-manager-test", "Prop1")
 	if err != nil {
 		t.Error(err.Error())
 	}
-	p, err := FindProperty(global.CommandsRunnerStatesName, "Prop1")
+	p, err := FindProperty("config-manager-test", "Prop1")
 	if p != nil {
 		t.Error("Expected not found and found")
 	}

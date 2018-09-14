@@ -16,20 +16,21 @@ import (
 	"os"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/state"
 )
 
 //Commenting because there is a concurrence issue when we use 2 different states file
 func TestSaveConfig(t *testing.T) {
 	t.Log("Entering................. TestSaveConfig")
-	SetConfigPath("../../test/resource/CloudFoundry")
+	SetConfigPath("../../test/resource/ConfigDir")
+	state.SetExtensionPath("../../test/resource/extensions")
 	body, err := os.Open("../../test/resource/config-test-save.yml")
 	defer body.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
-	req, err := http.NewRequest("POST", "/cr/v1/config", body)
+	req, err := http.NewRequest("POST", "/cr/v1/config?extension-name=config-handler-test", body)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -54,12 +55,13 @@ func TestSaveConfig(t *testing.T) {
 
 func TestGetConfig(t *testing.T) {
 	t.Log("Entering................. TestSaveConfig")
-	log.SetLevel(log.DebugLevel)
+	//log.SetLevel(log.DebugLevel)
 	SetConfigPath("../../test/resource")
+	state.SetExtensionPath("../../test/resource/extensions")
 	bckConfigFileName := global.ConfigYamlFileName
 	SetConfigFileName("config-test-save.yml")
 
-	req, err := http.NewRequest("GET", "/cr/v1/config", nil)
+	req, err := http.NewRequest("GET", "/cr/v1/config?extension-name=config-handler-test", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -76,15 +78,16 @@ func TestGetConfig(t *testing.T) {
 }
 
 func TestGetConfigCustomized(t *testing.T) {
-	t.Log("Entering................. TestSaveConfig")
-	log.SetLevel(log.DebugLevel)
+	t.Log("Entering................. TestGetConfigCustomized")
+	//log.SetLevel(log.DebugLevel)
 	SetConfigPath("../../test/resource")
+	state.SetExtensionPath("../../test/resource/extensions")
 	bckConfigFileName := global.ConfigYamlFileName
 	SetConfigFileName("uiconfig-test-save.yml")
 	bckConfigRootKey := global.ConfigRootKey
 	SetConfigRootKey("uiconfig")
 
-	req, err := http.NewRequest("GET", "/cr/v1/config", nil)
+	req, err := http.NewRequest("GET", "/cr/v1/config?extension-name=config-handler-test", nil)
 	if err != nil {
 		t.Fatal(err)
 	}

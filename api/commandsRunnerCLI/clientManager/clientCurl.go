@@ -37,7 +37,7 @@ func (crc *CommandsRunnerClient) Curl(method string, url string, dataPath string
 		return data, err
 	}
 	if errCode != http.StatusOK {
-		return data, errors.New("Unable to get bom, please check logs")
+		return data, errors.New("Unable to get bom: " + data + ", please check log for more information")
 	}
 	return crc.convertJSONOrYAML(data)
 }

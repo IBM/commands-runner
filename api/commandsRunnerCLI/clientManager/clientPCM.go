@@ -27,7 +27,7 @@ func (crc *CommandsRunnerClient) GetPCMLogLevel() (string, error) {
 		return data, err
 	}
 	if errCode != http.StatusOK {
-		return data, errors.New("Unable to get pcm log-level, please check logs")
+		return data, errors.New("Unable to get pcm log-level: " + data + ", please check log for more information")
 	}
 	//Generate the text format otherwize return the json
 	if crc.OutputFormat == "text" {
@@ -52,7 +52,7 @@ func (crc *CommandsRunnerClient) SetPCMLogLevel(level string) (string, error) {
 		return data, err
 	}
 	if errCode != http.StatusOK {
-		return data, errors.New("Unable to set pcm log level, please check logs")
+		return data, errors.New("Unable to set pcm log level: " + data + ", please check log for more information")
 	}
 	return data, nil
 }

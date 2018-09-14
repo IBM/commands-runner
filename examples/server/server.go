@@ -11,8 +11,10 @@
 package main
 
 import (
+	log "github.com/sirupsen/logrus"
+
 	commandsRunner "github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/extension"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/state"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/examples/server/handlers"
 )
 
@@ -25,19 +27,41 @@ const COPYRIGHT string = `######################################################
 #  IBM Corporation - initial API and implementation
 ###############################################################################`
 
+func preInitServer() commandsRunner.InitFunc {
+	log.Info("preInitServer")
+	return commandsRunner.InitFunc(func(port string, portSSL string, configDir string, certificatePath string, keyPath string) {
+	})
+}
+
 //
 func postInitServer() commandsRunner.InitFunc {
-	return commandsRunner.InitFunc(func(port string, portSSL string, configDir string, certificatePath string, keyPath string, stateFilePath string) {
+	log.Info("postInitServer")
+	return commandsRunner.InitFunc(func(port string, portSSL string, configDir string, certificatePath string, keyPath string) {
 		//You can add here new handler to enrich the server with new API.
 		commandsRunner.AddHandler("/myurl", handlers.HelloWorldHander, false)
 		//Specify here parameters for the extensionManager
-		extension.Init("examples/data/test-extensions.yml", "examples/extensions", "examples/data/extensions/", "examples/data/logs/extensions")
-		//You can overwrite here default value for the configurationManager
-		//		configManager.SetConfigFileName("myconfig.yml")
-		//		configManager.SetConfigRootKey("myconfig")
+		state.InitExtensions("examples/data/test-extensions.yml", "examples/extensions", "examples/data/extensions/", "examples/data/logs/extensions")
+		//You can overwrite here default value for the config package
+		//		config.SetConfigFileName("myconfig.yml")
+		//		config.SetConfigRootKey("myconfig")
+		//The provided value is used when an extension is inserted in the state file
+		//in order to call the commands-runner to execute that extension.
+		//      config.SetClientPath("./cr-cli")
+	})
+}
+
+func preStartServer() commandsRunner.InitFunc {
+	log.Info("preStartServer")
+	return commandsRunner.InitFunc(func(port string, portSSL string, configDir string, certificatePath string, keyPath string) {
+	})
+}
+
+func postStartServer() commandsRunner.PostStartFunc {
+	log.Info("postStartServer")
+	return commandsRunner.PostStartFunc(func(configDir string) {
 	})
 }
 
 func main() {
-	commandsRunner.ServerStart(nil, postInitServer(), nil)
+	commandsRunner.ServerStart(preInitServer(), postInitServer(), preStartServer(), postStartServer())
 }

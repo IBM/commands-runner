@@ -1,0 +1,9 @@
+extensions:
+  ext-template:
+  ext-template-2:
+  ext-template-v:
+    version: 1.0.0
+  ext-template-auto-location:
+  ext-insert-delete:
+  ext-insert-delete-by-name:
+  

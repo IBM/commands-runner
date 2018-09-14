@@ -33,8 +33,9 @@ var URL string
 var OutputFormat string
 var Timeout string
 var CACertPath string
-var InsecureSSL bool
+var InsecureSSL string
 var Token string
+var DefaultExtensionName string
 
 func Client() *cli.App {
 	var state string
@@ -61,8 +62,10 @@ func Client() *cli.App {
 	var statusName string
 	var status string
 
+	var uiMetadataName string
+
 	getStatus := func(c *cli.Context) error {
-		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -77,7 +80,7 @@ func Client() *cli.App {
 	}
 
 	setStatus := func(c *cli.Context) error {
-		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -92,7 +95,7 @@ func Client() *cli.App {
 	}
 
 	getAPI := func(c *cli.Context) error {
-		data, errClient := clientManager.GetAPISetup(OutputFormat)
+		data, errClient := clientManager.GetClientSetup(OutputFormat)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -101,8 +104,8 @@ func Client() *cli.App {
 		return nil
 	}
 
-	setAPI := func(c *cli.Context) error {
-		errClient := clientManager.SetAPISetup(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+	setClientSetup := func(c *cli.Context) error {
+		errClient := clientManager.SetClientSetup(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -129,7 +132,7 @@ func Client() *cli.App {
 	}
 
 	getLogs := func(c *cli.Context) error {
-		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -143,7 +146,7 @@ func Client() *cli.App {
 	}
 
 	getConfig := func(c *cli.Context) error {
-		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -158,7 +161,7 @@ func Client() *cli.App {
 	}
 
 	setConfig := func(c *cli.Context) error {
-		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -172,23 +175,8 @@ func Client() *cli.App {
 		return nil
 	}
 
-	getUIConfig := func(c *cli.Context) error {
-		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
-		if errClient != nil {
-			fmt.Println(errClient.Error())
-			return errClient
-		}
-		data, errClient := client.GetUIConfig(extensionName)
-		if errClient != nil {
-			fmt.Println(errClient.Error())
-			return errClient
-		}
-		fmt.Println(data)
-		return nil
-	}
-
 	deploy := func(c *cli.Context) error {
-		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -210,7 +198,7 @@ func Client() *cli.App {
 	}
 
 	isRunning := func(c *cli.Context) error {
-		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -225,7 +213,7 @@ func Client() *cli.App {
 	}
 
 	reset := func(c *cli.Context) error {
-		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -238,11 +226,23 @@ func Client() *cli.App {
 		return nil
 	}
 
-	setState := func(c *cli.Context) error {
-		if extensionName == "" {
-			extensionName = global.CommandsRunnerStatesName
+	getUIMetaData := func(c *cli.Context) error {
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
+		if errClient != nil {
+			fmt.Println(errClient.Error())
+			return errClient
 		}
-		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		data, errClient := client.GetUIMetadata(extensionName, uiMetadataName)
+		if errClient != nil {
+			fmt.Println(errClient.Error())
+			return errClient
+		}
+		fmt.Println(data)
+		return nil
+	}
+
+	setState := func(c *cli.Context) error {
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -256,7 +256,7 @@ func Client() *cli.App {
 	}
 
 	getState := func(c *cli.Context) error {
-		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -271,10 +271,7 @@ func Client() *cli.App {
 	}
 
 	getStates := func(c *cli.Context) error {
-		if extensionName == "" {
-			extensionName = global.CommandsRunnerStatesName
-		}
-		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -289,10 +286,7 @@ func Client() *cli.App {
 	}
 
 	setStates := func(c *cli.Context) error {
-		if extensionName == "" {
-			extensionName = global.CommandsRunnerStatesName
-		}
-		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -307,10 +301,7 @@ func Client() *cli.App {
 	}
 
 	setStatesStatuses := func(c *cli.Context) error {
-		if extensionName == "" {
-			extensionName = global.CommandsRunnerStatesName
-		}
-		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -325,10 +316,7 @@ func Client() *cli.App {
 	}
 
 	mergeStates := func(c *cli.Context) error {
-		if extensionName == "" {
-			extensionName = global.CommandsRunnerStatesName
-		}
-		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -343,10 +331,7 @@ func Client() *cli.App {
 	}
 
 	insertStateStates := func(c *cli.Context) error {
-		if extensionName == "" {
-			extensionName = global.CommandsRunnerStatesName
-		}
-		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -361,10 +346,7 @@ func Client() *cli.App {
 	}
 
 	deleteStateStates := func(c *cli.Context) error {
-		if extensionName == "" {
-			extensionName = global.CommandsRunnerStatesName
-		}
-		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -379,12 +361,7 @@ func Client() *cli.App {
 	}
 
 	findStates := func(c *cli.Context) error {
-		// if searchStatus == "" {
-		// 	err := errors.New("--status, -s missing")
-		// 	fmt.Println(err.Error())
-		// 	return err
-		// }
-		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -399,7 +376,7 @@ func Client() *cli.App {
 	}
 
 	register := func(c *cli.Context) error {
-		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -414,7 +391,7 @@ func Client() *cli.App {
 	}
 
 	unregister := func(c *cli.Context) error {
-		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -429,7 +406,7 @@ func Client() *cli.App {
 	}
 
 	getExtensions := func(c *cli.Context) error {
-		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -444,7 +421,7 @@ func Client() *cli.App {
 	}
 
 	curl := func(c *cli.Context) error {
-		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -458,7 +435,7 @@ func Client() *cli.App {
 	}
 
 	getPCMLogLevel := func(c *cli.Context) error {
-		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -469,7 +446,7 @@ func Client() *cli.App {
 	}
 
 	setPCMLogLevel := func(c *cli.Context) error {
-		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token)
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -504,15 +481,20 @@ func Client() *cli.App {
 			Usage:       "CA Cert path",
 			Destination: &CACertPath,
 		},
-		cli.BoolFlag{
-			Name:        "insecure, k",
-			Usage:       "Turn off verification",
+		cli.StringFlag{
+			Name:        "insecure, s",
+			Usage:       "true/false, false turn off SSL verification",
 			Destination: &InsecureSSL,
 		},
 		cli.StringFlag{
 			Name:        "token",
 			Usage:       "Token",
 			Destination: &Token,
+		},
+		cli.StringFlag{
+			Name:        "default-extension-name, e",
+			Usage:       "Default extension name",
+			Destination: &DefaultExtensionName,
 		},
 	}
 
@@ -527,7 +509,7 @@ func Client() *cli.App {
 					Name:    "save",
 					Aliases: []string{"s"},
 					Usage:   "Save API setup",
-					Action:  setAPI,
+					Action:  setClientSetup,
 				},
 				{
 					Name:    "remove",
@@ -588,9 +570,16 @@ func Client() *cli.App {
 			Action: getConfig,
 			Subcommands: []cli.Command{
 				{
-					Name:   "uiconfig",
-					Usage:  "Get the uiconfig for extension",
-					Action: getUIConfig,
+					Name:  "uimetadata",
+					Usage: "Get the ui metadata for extension",
+					Flags: []cli.Flag{
+						cli.StringFlag{
+							Name:        "config, c",
+							Usage:       "Configuration name",
+							Destination: &uiMetadataName,
+						},
+					},
+					Action: getUIMetaData,
 				},
 				{
 					Name:  "register",
@@ -679,19 +668,6 @@ func Client() *cli.App {
 				},
 			},
 		},
-		/*            UICONFIG                  */
-		{
-			Name:  "uiconfig",
-			Usage: "UIConfig management",
-			Flags: []cli.Flag{
-				cli.StringFlag{
-					Name:        "config, c",
-					Usage:       "Configuration name",
-					Destination: &extensionName,
-				},
-			},
-			Action: getUIConfig,
-		},
 		/*            PCM                  */
 		{
 			Name:  "cr",
@@ -736,8 +712,15 @@ func Client() *cli.App {
 		},
 		/*            config                  */
 		{
-			Name:   "config",
-			Usage:  "Manage configuration (get, save)",
+			Name:  "config",
+			Usage: "Manage configuration (get, save)",
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:        "extension, e",
+					Usage:       "Extension name",
+					Destination: &extensionName,
+				},
+			},
 			Action: getConfig,
 			Subcommands: []cli.Command{
 				{
@@ -853,7 +836,7 @@ func Client() *cli.App {
 		{
 			Name:      "state",
 			Usage:     "Manage a given state (get, set)",
-			UsageText: "cm state [-e <extension_name>] -s <state> set --status <new_status>",
+			UsageText: global.ClientPath + " state [-e <extension_name>] -s <state> set --status <new_status>",
 			Flags: []cli.Flag{
 				cli.StringFlag{
 					Name:        "extension, e",
@@ -887,6 +870,19 @@ func Client() *cli.App {
 					Action: setState,
 				},
 			},
+		},
+		/*            UIMETADATA                  */
+		{
+			Name:  "uimetadata",
+			Usage: "UI Metadata management",
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:        "config, c",
+					Usage:       "Configuration name",
+					Destination: &uiMetadataName,
+				},
+			},
+			Action: getUIMetaData,
 		},
 		/*            STATES                  */
 		{

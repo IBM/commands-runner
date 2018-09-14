@@ -14,15 +14,14 @@ package config
 import (
 	"encoding/base64"
 	"errors"
-	"path/filepath"
 	"strconv"
 
 	log "github.com/sirupsen/logrus"
 
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/extension"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/properties"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/uiConfig"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/state"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/uiMetadata"
 
 	"github.com/olebedev/config"
 )
@@ -49,15 +48,15 @@ func init() {
 
 /* Search a property in a ui config object, return an error if not found
  */
-func SearchUIConfigProperty(extensionName, name string) (*config.Config, error) {
+func SearchUIConfigProperty(extensionName, uiMetaDataName string, name string) (*config.Config, error) {
 	log.Debug("Entering... searchUIConfigProperty:" + name)
-	b, err := uiConfig.GetUIConfig(extensionName)
+	b, err := uiMetadata.GetUIMetaData(extensionName, uiMetaDataName)
 	if err != nil {
 		return nil, err
 	}
-	uiCFDeploy, err := config.ParseJson(string(b))
+	uiConfigDeploy, err := config.ParseJson(string(b))
 	//Search list of groups
-	groups, err := uiCFDeploy.List("groups")
+	groups, err := uiConfigDeploy.List("groups")
 	log.Debug("Group size:" + strconv.Itoa(len(groups)))
 	if err != nil {
 		log.Debug("Search groups error:" + err.Error())
@@ -66,7 +65,7 @@ func SearchUIConfigProperty(extensionName, name string) (*config.Config, error) 
 	//Loop on all groups
 	for groupIndex, _ := range groups {
 		//Retrieve the properties attribute from the group
-		properties, errProps := uiCFDeploy.List("groups." + strconv.Itoa(groupIndex) + ".properties")
+		properties, errProps := uiConfigDeploy.List("groups." + strconv.Itoa(groupIndex) + ".properties")
 		log.Debug("properties size:" + strconv.Itoa(len(properties)))
 		if errProps != nil {
 			log.Debug("Search properties error:" + errProps.Error())
@@ -75,7 +74,7 @@ func SearchUIConfigProperty(extensionName, name string) (*config.Config, error) 
 		//Loop on all properties
 		for propertiesIndex, _ := range properties {
 			//Retrieve the property
-			property, errProp := uiCFDeploy.Get("groups." + strconv.Itoa(groupIndex) + ".properties." + strconv.Itoa(propertiesIndex))
+			property, errProp := uiConfigDeploy.Get("groups." + strconv.Itoa(groupIndex) + ".properties." + strconv.Itoa(propertiesIndex))
 			if errProp != nil {
 				log.Debug("Search property error:" + errProp.Error())
 				return nil, errProp
@@ -105,10 +104,6 @@ The Listener stops if the file can not be created
 func SetConfigPath(configDirectoryP string) {
 	//Build the uiconfig path
 	global.ConfigDirectory = configDirectoryP
-	configPathYaml := configDirectoryP + string(filepath.Separator) + global.ConfigYamlFileName
-	log.Debugf("configPathYaml:%s", configPathYaml)
-	//Read the current properties
-	properties.ReadProperties(global.CommandsRunnerStatesName)
 }
 
 /*
@@ -126,12 +121,19 @@ func SetConfigRootKey(rootKey string) {
 }
 
 /*
+Set the client path
+*/
+func SetClientPath(clientPath string) {
+	global.ClientPath = clientPath
+}
+
+/*
 Save the property map in the property file
 Reread the file afterward
 */
 func SetProperties(extensionName string, ps properties.Properties) error {
 	log.Debug("Entering... SetProperties")
-	registered := extension.IsExtensionRegistered(extensionName)
+	registered := state.IsExtensionRegistered(extensionName)
 	if !registered {
 		err := errors.New("Extension " + extensionName + "not registered yet")
 		log.Debug(err.Error())
@@ -151,11 +153,11 @@ func SetProperties(extensionName string, ps properties.Properties) error {
 /*
 Encode decode properties
 */
-func PropertiesEncodeDecode(extensionName string, ps properties.Properties, encode bool) (properties.Properties, error) {
+func PropertiesEncodeDecode(extensionName string, uiMetadataName string, ps properties.Properties, encode bool) (properties.Properties, error) {
 	log.Debug("Entering in... PropertiesEncodeDecode")
 	pss := make(properties.Properties)
 	for key, val := range ps {
-		uiProperty, err := SearchUIConfigProperty(extensionName, key)
+		uiProperty, err := SearchUIConfigProperty(extensionName, uiMetadataName, key)
 		if err == nil {
 			s, _ := config.RenderYaml(uiProperty)
 			log.Debug("uiProperty:" + s)

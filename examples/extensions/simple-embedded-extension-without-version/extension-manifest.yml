@@ -1,7 +1,6 @@
 extension:
-  name: app-autoscaler-release
+  name: app-test-release
   version: 1.0
-  type: bosh-release
 states:
 - name: ext-task1
   phase: ""

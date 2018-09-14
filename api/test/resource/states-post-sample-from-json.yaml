@@ -1,7 +1,7 @@
 states:
-- name: director
+- name: state1
   phase: ""
-  label: Director
+  label: State 1
   log_path: ""
   status: READY
   start_time: ""
@@ -9,9 +9,9 @@ states:
   reason: ""
   script: ""
   script_timeout: 0
-- name: cf
+- name: state2
   phase: ""
-  label: CloudFoundry
+  label: State 2
   log_path: ""
   status: READY
   start_time: ""

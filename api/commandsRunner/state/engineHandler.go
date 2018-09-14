@@ -107,7 +107,6 @@ func PutStartEngineEndpoint(w http.ResponseWriter, req *http.Request) {
 		log.Debugf("To State:%s", toFound)
 		toState = toFound[0]
 	}
-	//errChannelExecute := make(chan error, 1)
 	go sm.Execute(fromState, toState)
 }
 

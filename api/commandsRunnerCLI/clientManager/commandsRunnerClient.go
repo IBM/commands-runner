@@ -43,15 +43,16 @@ var configFilePath string
 var homeDir string
 
 type CommandsRunnerClient struct {
-	URL          string `json:"url"`
-	OutputFormat string `json:"output_format"`
-	Timeout      int    `json:"timeout"`
-	CACertPath   string `json:"ca_cert_path"`
-	Token        string `json:"token"`
-	InsecureSSL  bool
-	rootCertPEM  []byte
-	protocol     string
-	client       http.Client
+	URL                  string `json:"url"`
+	OutputFormat         string `json:"output_format"`
+	Timeout              int    `json:"timeout"`
+	CACertPath           string `json:"ca_cert_path"`
+	Token                string `json:"token"`
+	InsecureSSL          bool
+	rootCertPEM          []byte
+	protocol             string
+	client               http.Client
+	DefaultExtensionName string `json:"default_extension_name"`
 }
 
 func init() {
@@ -62,16 +63,17 @@ func init() {
 }
 
 //NewClient creates a new client
-func NewClient(urlIn string, outputFormat string, timeout string, caCertPath string, insecureSSL bool, token string) (*CommandsRunnerClient, error) {
+func NewClient(urlIn string, outputFormat string, timeout string, caCertPath string, insecureSSL string, token string, defaultExtensionName string) (*CommandsRunnerClient, error) {
 	var c *CommandsRunnerClient
 	//Set the default values
 	cd := &CommandsRunnerClient{
-		URL:          global.DefaultUrl,
-		OutputFormat: global.DefaultOutputFormat,
-		Timeout:      global.DefaultTimeout,
-		InsecureSSL:  global.DefaultInsecureSSL,
-		Token:        "",
-		CACertPath:   "",
+		URL:                  global.DefaultUrl,
+		OutputFormat:         global.DefaultOutputFormat,
+		Timeout:              global.DefaultTimeout,
+		InsecureSSL:          global.DefaultInsecureSSL,
+		Token:                "",
+		CACertPath:           "",
+		DefaultExtensionName: "",
 	}
 	//Search for config file
 	data, errFile := ioutil.ReadFile(configFilePath)
@@ -99,13 +101,23 @@ func NewClient(urlIn string, outputFormat string, timeout string, caCertPath str
 	if token != "" {
 		c.Token = token
 	}
+	if defaultExtensionName != "" {
+		c.DefaultExtensionName = defaultExtensionName
+	}
 	//Parse the url to find the protocol
 	u, err := url.Parse(c.URL)
 	if err != nil {
 		return nil, err
 	}
 	c.protocol = u.Scheme
-	c.InsecureSSL = insecureSSL
+	var insecureSSLBool bool
+	if insecureSSL != "" {
+		insecureSSLBool, err = strconv.ParseBool(insecureSSL)
+		if err != nil {
+			return nil, err
+		}
+	}
+	c.InsecureSSL = insecureSSLBool
 	//Read the certs if https and not insecure
 	caCertPathAux := c.CACertPath
 	if caCertPath != "" {

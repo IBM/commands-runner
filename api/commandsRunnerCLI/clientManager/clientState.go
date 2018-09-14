@@ -29,7 +29,7 @@ func (crc *CommandsRunnerClient) getState(extensionName string, stateName string
 	//Call the rest api
 	data, errCode, err := crc.RestCall(http.MethodGet, global.BaseURL, url, nil, nil)
 	if errCode != http.StatusOK {
-		return "", errors.New("Unable to get states, please check logs")
+		return "", errors.New("Unable to get states: " + data + ", please check log for more information")
 	}
 	return data, err
 }
@@ -78,6 +78,9 @@ func (crc *CommandsRunnerClient) GetState(extensionName string, stateName string
 
 //SetState
 func (crc *CommandsRunnerClient) SetState(extensionName string, stateName string, newStatus string, scriptTimeout string) error {
+	if extensionName == "" {
+		extensionName = crc.DefaultExtensionName
+	}
 	//Check is state name is provided
 	if stateName == "" {
 		err := errors.New("--state|-s is required")

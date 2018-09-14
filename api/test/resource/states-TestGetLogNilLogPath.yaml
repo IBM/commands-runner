@@ -1,8 +1,8 @@
 states:
-- name: director
+- name: state1
   phase: ""
-  label: Director
-  log_path: /tmp/sample-director.log
+  label: State 1
+  log_path: /tmp/sample-state1.log
   status: READY
   start_time: ""
   end_time: ""
@@ -15,7 +15,7 @@ states:
 - name: repeat
   phase: ""
   label: Repeat
-  log_path: /tmp/sample-director.log
+  log_path: /tmp/sample-state1.log
   status: READY
   start_time: ""
   end_time: ""
@@ -25,10 +25,10 @@ states:
   protected: false
   deleted: false
   states_to_rerun: []
-- name: cf
+- name: state2
   phase: ""
-  label: CloudFoundry
-  log_path: /tmp/sample-cf.log
+  label: State 2
+  log_path: /tmp/sample-state2.log
   status: READY
   start_time: ""
   end_time: ""

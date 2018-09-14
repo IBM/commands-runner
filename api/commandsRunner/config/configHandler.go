@@ -87,24 +87,28 @@ URL: /cr/v1/config/
 Method: GET
 */
 func GetPropertiesEndpoint(w http.ResponseWriter, req *http.Request) {
-	extensionName, _, err := global.GetExtensionNameFromRequest(req)
+	extensionName, m, err := global.GetExtensionNameFromRequest(req)
 	if err != nil {
 		logger.AddCallerField().Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
+	uiMetaDataName := global.DefaultUIMetaDataName
+	uiMetaDataNameFound, okuiMetaDataName := m["ui-metadata-name"]
+	if okuiMetaDataName {
+		log.Debugf("uiMetaDataName:%s", uiMetaDataNameFound)
+		uiMetaDataName = uiMetaDataNameFound[0]
+	}
+
 	//Retrieve properties
 	properties, err := GetProperties(extensionName)
-	// bmxConfig := &Config{
-	// 	Properties: properties,
-	// }
 
 	if err != nil {
 		logger.AddCallerField().Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	properties, err = PropertiesEncodeDecode(extensionName, properties, true)
+	properties, err = PropertiesEncodeDecode(extensionName, uiMetaDataName, properties, true)
 	if err != nil {
 		logger.AddCallerField().Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -176,13 +180,18 @@ func SetPropertiesEndpoint(w http.ResponseWriter, req *http.Request) {
 			}
 		}
 	}
-	extensionName, _, errExtName := global.GetExtensionNameFromRequest(req)
+	extensionName, m, errExtName := global.GetExtensionNameFromRequest(req)
 	if errExtName != nil {
 		logger.AddCallerField().Error(errExtName.Error())
 		http.Error(w, errExtName.Error(), 500)
 		return
 	}
-	//	var bmxConfig Config
+	uiMetaDataName := global.DefaultUIMetaDataName
+	uiMetaDataNameFound, okuiMetaDataName := m["ui-metadata-name"]
+	if okuiMetaDataName {
+		log.Debugf("uiMetaDataName:%s", uiMetaDataNameFound)
+		uiMetaDataName = uiMetaDataNameFound[0]
+	}
 	var cfg *config.Config
 	cfg, err = config.ParseJson(string(body))
 	if err != nil {
@@ -195,17 +204,8 @@ func SetPropertiesEndpoint(w http.ResponseWriter, req *http.Request) {
 		ps, err = cfg.Map(global.ConfigRootKey)
 	} else {
 		ps, err = cfg.Map(global.ConfigRootKey)
-		ps, _ = PropertiesEncodeDecode(extensionName, ps, false)
+		ps, _ = PropertiesEncodeDecode(extensionName, uiMetaDataName, ps, false)
 	}
-	// err = json.Unmarshal(body, &bmxConfig)
-	// //log.Debug("Body:\n" + string(body))
-	// if err != nil {
-	// 	log.Debug("It is a yaml")
-	// 	err = yaml.Unmarshal(body, &bmxConfig)
-	// 	ps = bmxConfig.Properties
-	// } else {
-	// 	ps, _ = PropertiesEncodeDecode(extensionName, bmxConfig.Properties, false)
-	// }
 	log.Debug("PS decoded")
 	if err == nil {
 		log.Debug("Set Properties")

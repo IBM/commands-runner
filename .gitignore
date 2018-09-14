@@ -1,12 +1,12 @@
 /api/commandsRunner/resourceManager
 /api/test/resource/extensions/custom-extension
-/api/test/resource/extensions/cfp-ext-template-2
 /api/test/resource/out-test*
+/api/test/resource/extensions/custom/out*/*
 /api/test/resource/test*
 /api/test/resource/config.*
 /api/test/resource/dummy-extension.zip
 api/commandsRunner/cm
-examples/data/extensions
+examples/data/*
 examples/_build
 .idea
 vendor
@@ -14,3 +14,5 @@ _vendor*
 .DS_Store
 simple-custom-extension.zip
 .vscode
+cr-server
+cr-cli

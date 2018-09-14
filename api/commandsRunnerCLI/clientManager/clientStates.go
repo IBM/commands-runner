@@ -37,13 +37,16 @@ func (crc *CommandsRunnerClient) getRestStates(extensionName string, status stri
 	//Call rest api
 	data, errCode, err := crc.RestCall(http.MethodGet, global.BaseURL, url, nil, nil)
 	if errCode != http.StatusOK {
-		return "", errors.New("Unable to get states, please check logs")
+		return "", errors.New("Unable to get states: " + data + ", please check log for more information")
 	}
 	return data, err
 }
 
 //GetStates returns the states having a specific status
 func (crc *CommandsRunnerClient) GetStates(extensionName string, status string, extensionOnly bool, recursive bool) (string, error) {
+	if extensionName == "" {
+		extensionName = crc.DefaultExtensionName
+	}
 	data, err := crc.getRestStates(extensionName, status, extensionOnly, recursive)
 	if err != nil {
 		return "", err
@@ -83,6 +86,9 @@ func (crc *CommandsRunnerClient) GetStates(extensionName string, status string, 
 
 //Set a state file
 func (crc *CommandsRunnerClient) SetStates(extensionName string, statesPath string, overwrite bool) (string, error) {
+	if extensionName == "" {
+		extensionName = crc.DefaultExtensionName
+	}
 	if statesPath == "" {
 		err := errors.New("states file missing")
 		return "", err
@@ -98,18 +104,21 @@ func (crc *CommandsRunnerClient) SetStates(extensionName string, statesPath stri
 	}
 	file = fileOS
 	//Call the rest API
-	_, errCode, err := crc.RestCall(http.MethodPut, global.BaseURL, url, file, nil)
+	data, errCode, err := crc.RestCall(http.MethodPut, global.BaseURL, url, file, nil)
 	if err != nil {
 		return "", err
 	}
 	if errCode != http.StatusOK {
-		return "", errors.New("Unable to save the states file, please check the format")
+		return "", errors.New("Unable to save the states file: " + data + ", please check log for more information")
 	}
 	return "", nil
 }
 
 //Set a state file
 func (crc *CommandsRunnerClient) SetStatesStatuses(extensionName string, newStatus string, fromState string, fromInclude bool, toState string, toInclude bool) (string, error) {
+	if extensionName == "" {
+		extensionName = crc.DefaultExtensionName
+	}
 	if newStatus == "" {
 		err := errors.New("new status is missing")
 		return "", err
@@ -130,7 +139,7 @@ func (crc *CommandsRunnerClient) SetStatesStatuses(extensionName string, newStat
 		return "", err
 	}
 	if errCode != http.StatusOK {
-		return "", errors.New("Unable to set States statuses:" + data)
+		return "", errors.New("Unable to set States statuses: " + data + ", please check log for more information")
 	}
 	data, err = crc.GetStates(extensionName, "", false, false)
 	if err != nil {
@@ -140,6 +149,9 @@ func (crc *CommandsRunnerClient) SetStatesStatuses(extensionName string, newStat
 }
 
 func (crc *CommandsRunnerClient) InsertStateStates(extensionName string, pos int, stateName string, before bool, statePath string, insertExtensionName string) (string, error) {
+	if extensionName == "" {
+		extensionName = crc.DefaultExtensionName
+	}
 	if statePath == "" && insertExtensionName == "" {
 		err := errors.New("A state file or extension name missing")
 		return "", err
@@ -180,6 +192,9 @@ func (crc *CommandsRunnerClient) InsertStateStates(extensionName string, pos int
 }
 
 func (crc *CommandsRunnerClient) DeleteStateStates(extensionName string, pos int, stateName string) (string, error) {
+	if extensionName == "" {
+		extensionName = crc.DefaultExtensionName
+	}
 	url := "states?action=delete&pos=" + strconv.Itoa(pos)
 	if extensionName != "" {
 		url += "&extension-name=" + extensionName
@@ -193,7 +208,7 @@ func (crc *CommandsRunnerClient) DeleteStateStates(extensionName string, pos int
 		return "", err
 	}
 	if errCode != http.StatusOK {
-		return "", errors.New("Unable to delete state at position" + strconv.Itoa(pos) + " in states file\n" + data)
+		return "", errors.New("Unable to delete state at position: " + strconv.Itoa(pos) + " in states file\n" + data)
 	}
 	data, err = crc.GetStates(extensionName, "", false, false)
 	if err != nil {

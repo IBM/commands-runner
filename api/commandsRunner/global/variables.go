@@ -10,12 +10,12 @@
 */
 package global
 
-var UIExtensionResourcePath = "api/resource/extensions/"
+// var UIExtensionResourcePath = "api/resource/extensions/"
 
-//SetExtensionResourcePath the extensionPath
-func SetExtensionResourcePath(extensionResourcePathIn string) {
-	UIExtensionResourcePath = extensionResourcePathIn
-}
+// //SetExtensionResourcePath the extensionPath
+// func SetExtensionResourcePath(extensionResourcePathIn string) {
+// 	UIExtensionResourcePath = extensionResourcePathIn
+// }
 
 //ConfigDirectory directory where the config file can be found
 var ConfigDirectory string
@@ -25,3 +25,6 @@ var ConfigYamlFileName = "config.yml"
 
 //ConfigRootKey default root key for the yaml config file.
 var ConfigRootKey = "config"
+
+//Client Path, used when generate the scripts to run an extension
+var ClientPath = "./cr-cli"

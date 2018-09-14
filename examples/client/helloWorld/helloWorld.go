@@ -10,8 +10,8 @@ type MyCommandsRunnerClient struct {
 	CMC *clientManager.CommandsRunnerClient
 }
 
-func NewClient(urlIn string, outputFormat string, timeout string, caCertPath string, insecureSSL bool, token string) (*MyCommandsRunnerClient, error) {
-	client, errClient := clientManager.NewClient(urlIn, outputFormat, timeout, caCertPath, insecureSSL, token)
+func NewClient(urlIn string, outputFormat string, timeout string, caCertPath string, insecureSSL string, token string, defaultExtensionName string) (*MyCommandsRunnerClient, error) {
+	client, errClient := clientManager.NewClient(urlIn, outputFormat, timeout, caCertPath, insecureSSL, token, defaultExtensionName)
 	if errClient != nil {
 		return nil, errClient
 	}

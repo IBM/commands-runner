@@ -11,12 +11,16 @@
 package global
 
 import (
+	"errors"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
 	"os/user"
 	"path/filepath"
+
+	yaml "gopkg.in/yaml.v2"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -84,11 +88,35 @@ func GetExtensionNameFromRequest(req *http.Request) (string, url.Values, error) 
 	if errRQ != nil {
 		return "", m, errRQ
 	}
-	extensionName := CommandsRunnerStatesName
+	var extensionName string
 	extensionNameFound, okExtensionName := m["extension-name"]
 	if okExtensionName {
 		log.Debugf("ExtensionName:%s", extensionNameFound)
 		extensionName = extensionNameFound[0]
+	} else {
+		return "", m, errors.New("extension-name not found in request")
 	}
 	return extensionName, m, nil
+}
+
+func ExtractKey(inputFilePath string, key string) ([]byte, error) {
+	log.Debug("Entering in... ExtractKey")
+	input, err := ioutil.ReadFile(inputFilePath)
+	if err != nil {
+		return nil, err
+	}
+	var inYaml map[string]interface{}
+	inYaml = make(map[string]interface{}, 0)
+	err = yaml.Unmarshal(input, &inYaml)
+	if err != nil {
+		return nil, err
+	}
+	var outYaml map[string]interface{}
+	outYaml = make(map[string]interface{}, 0)
+	outYaml[key] = inYaml[key]
+	output, err := yaml.Marshal(outYaml)
+	if err != nil {
+		return nil, err
+	}
+	return output, err
 }

@@ -1,8 +1,8 @@
 states-malformed
-  - name: director
-    log_path: "/tmp/sample-director.log"
-  - name: CloudFoundry
-    log_path: "/tmp/sample-cf.log"
+  - name: state1
+    log_path: "/tmp/sample-state1.log"
+  - name: state2
+    log_path: "/tmp/sample-state2.log"
   - name: nologpath
   - nome: emptylogpath
     log_path: ""

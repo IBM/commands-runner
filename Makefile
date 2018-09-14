@@ -17,6 +17,8 @@
 # BLUEMIX_ORG, and BLUEMIX_SPACE
 ###############################################################################
 
+TAG_VERSION ?= `cat VERSION`+$(GIT_COMMIT)
+
 .DEFAULT_GOAL := all
 
 .PHONY: dep-install
@@ -41,6 +43,11 @@ go-test::
 copyright-check:
 	./build-tools/copyright-check.sh
 
+.PHONY: tag
+tag::
+	$(eval GIT_COMMIT := $(shell git rev-parse --short HEAD))
+	@echo "TAG_VERSION:$(TAG_VERSION)"
+
 .PHONY: all
 all:: pre-req copyright-check go-test server client
 
@@ -59,9 +66,9 @@ dependency-graph: dependency-graph-text
 .PHONY: server
 server:
 	mkdir -p examples/_build
-	go build -o examples/_build/server  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/examples/server
+	go build -o examples/_build/cr-server  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/examples/server
 
 .PHONY: client
 client:
 	mkdir -p examples/_build
-	go build -o examples/_build/client  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/examples/client
+	go build -o examples/_build/cr-cli  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/examples/client

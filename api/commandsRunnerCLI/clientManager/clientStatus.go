@@ -29,7 +29,7 @@ func (crc *CommandsRunnerClient) GetCMStatus() (string, error) {
 		return "", err
 	}
 	if errCode != http.StatusOK {
-		return "", errors.New("Unable to get status, please check logs")
+		return "", errors.New("Unable to get status: " + data + ", please check log for more information")
 	}
 	//Convert the config to object
 	var statuses status.Statuses
@@ -52,12 +52,12 @@ func (crc *CommandsRunnerClient) GetCMStatus() (string, error) {
 //SetCMStatus set a status
 func (crc *CommandsRunnerClient) SetCMStatus(name string, status string) (string, error) {
 	url := "status?name=" + url.QueryEscape(name) + "&status=" + url.QueryEscape(status)
-	_, errCode, err := crc.RestCall(http.MethodPut, global.BaseURL, url, nil, nil)
+	data, errCode, err := crc.RestCall(http.MethodPut, global.BaseURL, url, nil, nil)
 	if err != nil {
 		return "", err
 	}
 	if errCode != http.StatusOK {
-		return "", errors.New("Unable to set status, please check logs")
+		return "", errors.New("Unable to set status: " + data + ", please check log for more information")
 	}
 	//Convert the config to object
 	return crc.GetCMStatus()

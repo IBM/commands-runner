@@ -33,7 +33,7 @@ func (crc *CommandsRunnerClient) GetConfig(extensionName string) (string, error)
 		return "", err
 	}
 	if errCode != http.StatusOK {
-		return "", errors.New("Unable to get config:" + data + ",please check logs")
+		return "", errors.New("Unable to get config: " + data + ",please check logs")
 	}
 	//Convert to text otherwize return the json
 	if crc.OutputFormat == "text" {
@@ -80,7 +80,7 @@ func (crc *CommandsRunnerClient) SetConfig(extensionName string, configPath stri
 		return "", err
 	}
 	if errCode != http.StatusOK {
-		return "", errors.New("Unable to save the configuration:" + data + ", please check log for more information")
+		return "", errors.New("Unable to save the configuration: " + data + ", please check log for more information")
 	}
 	return "", nil
 }

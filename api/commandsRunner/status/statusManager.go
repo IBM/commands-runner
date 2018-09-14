@@ -30,7 +30,7 @@ type Status struct {
 
 type Statuses map[string]Status
 
-const CMStatus = "cm_status"
+const CMStatus = "cr_status"
 
 var statuses Statuses
 

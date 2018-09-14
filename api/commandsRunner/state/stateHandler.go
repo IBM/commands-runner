@@ -15,105 +15,21 @@ import (
 	"encoding/json"
 	"errors"
 	"html"
-	"io/ioutil"
 	"math"
 	"net/http"
 	"net/url"
 	"os"
-	"path/filepath"
 	"regexp"
 	"strconv"
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/olebedev/config"
-
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/extension"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/logger"
 	yaml "gopkg.in/yaml.v2"
 )
 
 //This need to be removed once extensionHandler done
-
-var statesPath string
-
-var stateManagers map[string]States
-
-//initialize the map of stateManagers
-func init() {
-	stateManagers = make(map[string]States)
-}
-
-//Set the path of the statesFile
-func SetStatePath(_statesPath string) {
-	statesPath = _statesPath
-}
-
-//get the statesFile path
-func getStatePath(extensionName string) string {
-	var statesPathAux string
-	if extensionName == global.CommandsRunnerStatesName || extensionName == "" {
-		statesPathAux = statesPath
-	} else {
-		statesPathAux = extension.GetRootExtensionPath(extension.GetExtensionPath(), extensionName)
-		statesPathAux = filepath.Join(statesPathAux, "statesFile-"+extensionName+".yml")
-	}
-	return statesPathAux
-}
-
-//Add a state manager to the map, directly used only for test method.
-func addStateManagerToMap(extensionName string, statesPath string) error {
-	log.Debug("Entering in addStateManagerToMap")
-	log.Debug("Extension name: " + extensionName)
-	sm, err := NewStateManager(statesPath)
-	if err != nil {
-		return err
-	}
-	stateManagers[extensionName] = *sm
-	log.Debug("State Manager added for " + extensionName)
-	return nil
-}
-
-//Add a stateManager for a given extension
-func addStateManager(extensionName string) error {
-	log.Debug("Entering in addStateManager")
-	log.Debug("Extension name:" + extensionName)
-	statesPath := getStatePath(extensionName)
-	err := addStateManagerToMap(extensionName, statesPath)
-	return err
-}
-
-//Remove a stateManager
-func removeStateManager(extensionName string) error {
-	delete(stateManagers, extensionName)
-	return nil
-}
-
-//Find a stateManager based on the extensionNAme
-func getStateManager(extensionName string) (*States, error) {
-	if val, ok := stateManagers[extensionName]; ok {
-		return &val, nil
-	}
-	return nil, errors.New("stateManager not found for " + extensionName)
-}
-
-//Search for a stateManager and if not found create it
-func getAddStateManager(extensionName string) (*States, error) {
-	log.Debug("Entering in getAddStateManagersss")
-	log.Debug("Search for manager: " + extensionName)
-	if val, ok := stateManagers[extensionName]; ok {
-		log.Debug("Manager already exists, returning it")
-		return &val, nil
-	}
-	log.Debug("Manager already doesn't exist, creating")
-	err := addStateManager(extensionName)
-	if err != nil {
-		return nil, err
-	}
-	log.Debug("returning creatd manager")
-	return getStateManager(extensionName)
-}
 
 //Search the stateManager based on the extension-name parameter's request.
 func getStateManagerFromRequest(req *http.Request) (*States, url.Values, error) {
@@ -124,7 +40,7 @@ func getStateManagerFromRequest(req *http.Request) (*States, url.Values, error) 
 		return nil, nil, err
 	}
 	log.Debug("ExtensionName:" + extensionName)
-	sm, errSM := getAddStateManager(extensionName)
+	sm, errSM := GetStatesManager(extensionName)
 	if errSM != nil {
 		return nil, nil, errSM
 	}
@@ -343,7 +259,6 @@ func PutInsertStateStatesEndpoint(w http.ResponseWriter, req *http.Request) {
 	if stateNameFound, okStateName := m["state-name"]; okStateName {
 		stateName = stateNameFound[0]
 	}
-	var stateAux State
 	//log.Debugf("ReqBody:\n%s", req.Body)
 	buf := new(bytes.Buffer)
 	var nbBytes int64
@@ -357,6 +272,7 @@ func PutInsertStateStatesEndpoint(w http.ResponseWriter, req *http.Request) {
 	//err := json.NewDecoder(req.Body).Decode(&states)
 	//log.Debugf(err.Error())
 	if errBody == nil {
+		var err error
 		log.Debug("Number of bytes in body: " + strconv.FormatInt(nbBytes, 10))
 		if nbBytes == 0 {
 			var insertExtensionName string
@@ -367,59 +283,15 @@ func PutInsertStateStatesEndpoint(w http.ResponseWriter, req *http.Request) {
 				return
 			}
 			log.Debug("Extension to insert: " + insertExtensionName)
-			manifestPath, err := extension.GetRegisteredExtensionPath(insertExtensionName)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-			manifestPath = filepath.Join(manifestPath, "extension-manifest.yml")
-			log.Debug("manifestPath: " + manifestPath)
-			manifestBytes, err := ioutil.ReadFile(manifestPath)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-			cfg, err := config.ParseYaml(string(manifestBytes))
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-			stateCfg, err := cfg.Get("call_state")
-			if err != nil {
-				err = cfg.Set("call_state.name", insertExtensionName)
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusBadRequest)
-					return
-				}
-				stateCfg, _ = cfg.Get("call_state")
-			} else {
-				err = stateCfg.Set("name", insertExtensionName)
-			}
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-			stateString, err := config.RenderYaml(stateCfg.Root)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-			log.Debug("call_state: " + stateString)
-			err = yaml.Unmarshal([]byte(stateString), &stateAux)
+			err = sm.InsertStateFromExtensionName(insertExtensionName, pos, stateName, before)
 		} else {
 			bodyRaw := buf.String()
 			body := html.UnescapeString(bodyRaw)
-			errBody = yaml.Unmarshal([]byte(body), &stateAux)
+			err = sm.InsertStateFromString(body, pos, stateName, before)
 		}
-		if errBody == nil {
-			err := sm.InsertState(stateAux, pos, stateName, before)
-			if err != nil {
-				logger.AddCallerField().Error(err.Error())
-				http.Error(w, err.Error(), 500)
-			}
-		} else {
-			logger.AddCallerField().Error(errBody.Error())
-			http.Error(w, errBody.Error(), 500)
+		if err != nil {
+			logger.AddCallerField().Error(err.Error())
+			http.Error(w, err.Error(), 500)
 		}
 	} else {
 		logger.AddCallerField().Error(errBody.Error())

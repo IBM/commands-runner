@@ -19,34 +19,35 @@ This project uses `dep` to manage dependencies.<br>
 
 ### Create a commands-runner server
 1. Create server: There a server example at [examples/server](./examples/server). In that example the server is enriched with a `helloWorld` API.
-2. Build server: Once you created the server, you can build it with for example: `go build -o server  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/examples/server`.
+2. Build server: Once you created the server, you can build it with for example: `go build -o cr-server  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/examples/server`.
 3. Create certificates (optional): You can secure the communication between the client and the server using SSL.
   1. `openssl req -x509 -newkey rsa:4096 -keyout <your_data_directory>/cr-key.pem -out  <your_data_directory>/cr-cert.crt  -days 365 -subj "/C=YourContry/ST=YourState/L=YourLocation/O=YourOrg/OU=YourOrgUnit/CN=localhost" -nodes`
   2. Install the certificate on the machine which will run the server.
   For example on Ubuntu or MaxOS:
     1. `cp <your_data_directory>/cr-cert.crt /usr/local/share/ca-certificates/`
     2. `update-ca-certificates`
-4. Launch the server: run the command `./server listen -c <your_data_dir> -s <your_states_file` (see below for details on states_file).<br>
+4. Launch the server: run the command `./cr-server listen -c <your_data_dir>`. The data directory must be an absolute path. (see below for details on states_file). You can specify the log level by setting the global varialbe `CR_TRACE` to debug, info,... (default is `info`)<br>
 
 A state file example is provided in the [examples/data](./examples/data).
 
 ### Create a commands-runner client
 1. Create the client: There a client example at [examples/client](./examples/client). In that example the client is enriched with a command `hello` which call the `helloWorld` API on the server side.
-2. Build the client:  Once you created the client, you can build it with for example: `go build -o client  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/examples/client`.
-3. Create token: The server uses a token for authentication, run the command: `./client token create > <your_data_directory>/cr-token`, this will create a file `cr-token` in `<your_data_directory>`.
-4. Setup the client: `./client --url <server_url> --token <token> --cacert <cert_path> api save` and finally use it.
-5. launch `./client` for more information on all available commands.
+2. Build the client:  Once you created the client, you can build it with for example: `go build -o cr-cli  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/examples/client`.
+3. Create token: The server uses a token for authentication, run the command: `./cr-cli token create > <your_data_directory>/cr-token`, this will create a file `cr-token` in `<your_data_directory>`.
+4. Setup the client: `./cr-cli --url <https_server_url> --token <token> --cacert <cert_path> api save` or simply `./cr-cli --url <http_server_url> --token <token> api save` if you don't want to use SSL. This setup is stored in `$HOME/.commandsRunner.conf` The `<token>` is the content of your `cr-token` file.
+5. launch `./cr-cli` for more information on all available commands.
 
 ### Use commands-runner in a program.
 There is code examples at [examples/code](./examples/code)
 
 ## Sever Overview
-A states file is a yaml file which describes the states to execute. You can find an [examples/data/states.yml](./examples/code/states.yml). 
+The server is in charge of running extensions. An extension contains a file `extension-manifest.yml` which contains the states the extension must execute. You can find an [examples/extensions/simple-custom-extension.yml](./examples/extensions/simple-custom-extension.yml).<br>
+When a extension is registered, the states attribute of the `extension-manifest.yml` is extracted into a file called `states-file.yml`
 The states are executed sequentially but you can alter the sequence by adding for each state what should be the next state, 
 in that case a preprocessing will be done to re-order the states in a topological order. At the first run all states are marked either READY or SKIP, after the first execution the states can be marked as "SUCCEEDED" (if the execution SUCCEEDED), "FAILED" (if the execution failed), 
 "SKIP" (if the state must be skipped) or "READY" (if the state is not executed and probably because a previous state failed). When the command runner starts the execution of the states file and it runs each state marked READY or FAILED, if the state execution failed then the state will be marked FAILED and the execution stops otherwise the state is marked "SUCCEEDED" and the execution continues. If a state is marked as SUCCEEDED or "SKIP" it will be not executed and the command runner will start the execution a the next READY or FAILED state.<br>
 
-### States file format:
+### States attribute format:
 
 ```
 states: An array of state
@@ -70,7 +71,7 @@ states: An array of state
 ```
 ### Send config file to the server
 You can send a config file to the server before starting the processing of the state engine and this using the client command:
-```./client config  save -c <config_file_path>```
+```./cr-cli config -e <extension-name> save -c <config_file_path>```
 
 <a name="configFileFormat"></a>
 The config file is a yaml file in the form of:
@@ -85,10 +86,10 @@ The root attribute `config` is configurable using `config.SetConfigRootKey("myco
 
 ### Launch the commands-runner
 Once the server is up and running with your states file, you can launch the commands-runner using the command:
-```./client engine start```
+```./cr-cli engine -e <extension-name> start```
 
 You can check the progress using command: 
-```./client logs -f```
+```./cr-cli -e <extension-name> logs -f```
 
 The command runner works as follow:<br>
 
@@ -102,7 +103,7 @@ The command runner works as follow:<br>
 
 ### Extensions
 
-You can insert extension in a states file using the client CLI or API. An extension is an artificat which contains a manifest describing (sub-)states to execute and where to insert this execution in the states file. Inserting an extension will create a new state in the states file and this new state will call the extension process and run it using the commands-runner.<br>
+You can insert extension in a states file using the client CLI or API. An extension is an artificat which contains a manifest describing (sub-)states to execute and where to insert this execution in the states file. Inserting an extension will create a new state in the states file and this new state will call the extension process and run it using the commands-runner client command `cr-cli extension -e <extension_name> deploy` and so it is important that the client is in the directory from which the server is launched or in the PATH.<br>
 
 The extension can be either "embedded" or "customer", "embeded" means that the artifact is already provided in the environement (ie: part of the product distribution) and should not be register and can not be deleted. A "embeded" extension is defined in a extensions yaml file as in [examples/data/test-extensions.yml](./examples/data/test-extensions.yml). A "custom" extension must be registered using the client CLI and for that it must be embobined in a zip file.<br>
 
@@ -135,14 +136,14 @@ For example by executing:
 ```zip simple-custom-extension.zip simple-custom-extension/*```
 
 and then use the client CLI: 
-```./client extension -e <extension_name> register -p <archive_path>```
+```./cr-cli extension -e <extension_name> register -p <archive_path>```
 
 #### Send extension's configuration in the environment
 
 
 Like for the main state file, You can send a file (configuration) to the environemnt using:
 
-```./client extension -e <extension_name> save -c <config_file>```
+```./cr-cli extension -e <extension_name> save -c <config_file>```
 
 The config will be saved in the extension directory.
 
@@ -152,6 +153,8 @@ Format see: [config file format](#configFileFormat)
 
 As the previous state and next state are defined in the `call_state` attribute of the `extension_manifest.yml`, to insert the extension in the states file, you have to execute.
 
-```./client states insert -i <extension_name>```
+```./cr-cli states insert -i <extension_name>```
 
+### Concurency
 
+When calling the `engine start` command, in fact behind the scene the same code runs as though the command `extension -e crs-name deploy` was launched. Each time a extension is deployed, a state manager is created for that extension name and runs in its own thread. So the commands-runner support concurrency if each concurrent deployment have a different extension name. If a deployment with the same extension name is launched, the commands-runner will stop mentioning that the deployment is already running.

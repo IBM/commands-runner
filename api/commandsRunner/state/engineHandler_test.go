@@ -15,17 +15,13 @@ import (
 	"net/http/httptest"
 	"testing"
 	"time"
-
-	log "github.com/sirupsen/logrus"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/extension"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 )
 
 func TestEngineStartPUT(t *testing.T) {
 	t.Log("Entering................. TestEngineStartPUT")
 	addStateManagerToMap("TestEngineStartPUT", "../../test/resource/engine-run-success.yaml")
-	extension.SetExtensionPath("../../test/data/extensions/")
-	extension.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
+	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
 	req, err := http.NewRequest("PUT", "/cr/v1/engine?action=start&extension-name=TestEngineStartPUT", nil)
@@ -84,12 +80,12 @@ func TestEngineStartPUT(t *testing.T) {
 }
 
 func TestEngineStartExtensonPUT(t *testing.T) {
-	log.SetLevel(log.DebugLevel)
+	//log.SetLevel(log.DebugLevel)
 	t.Log("Entering................. TestEngineStartExtensonPUT")
-	extension.SetExtensionPath("../../test/data/extensions/")
-	global.SetExtensionResourcePath("api/test/resource/extensions/")
-	extension.SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.txt")
-	extension := "cfp-ext-template"
+	SetExtensionPath("../../test/data/extensions/")
+	//	global.SetExtensionResourcePath("api/test/resource/extensions/")
+	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	extension := "ext-template"
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
 	req, err := http.NewRequest("PUT", "/cr/v1/engine?action=start&extension-name="+extension, nil)
@@ -144,7 +140,6 @@ func TestEngineStartExtensonPUT(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusOK)
 	}
-
 }
 
 func TestEnginePUTRunning(t *testing.T) {

@@ -11,5 +11,8 @@
 
 echo "Start Step1: $1"
 sleep 1
+if [ -f config.yml ]; then
+  cat config.yml
+fi
 echo "End: $1"
 exit 0
