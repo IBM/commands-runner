@@ -8,15 +8,14 @@
 #  IBM Corporation - initial API and implementation
 ###############################################################################
 */
-package uiMetadata
+package state
 
 import (
 	"net/http"
-	"regexp"
-	"strconv"
 
 	log "github.com/sirupsen/logrus"
 
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/logger"
 )
 
@@ -36,28 +35,24 @@ Method: GET
 */
 func getUIMetadataEndpoint(w http.ResponseWriter, req *http.Request) {
 	log.Debug("Entering in getUIMetadataEndpoint")
-	//Check format
-	validatePath := regexp.MustCompile("/cr/v1/(uimetadata)/([a-z,A-Z,0-9,-]*)/([a-z,A-Z,0-9,-]*)$")
-	params := validatePath.FindStringSubmatch(req.URL.Path)
-	log.Debugf("params=%s", params)
-	log.Debug("params size:" + strconv.Itoa(len(params)))
-	// if len(params) < 4 {
-	// 	logger.AddCallerField().Error("Configuration name not found")
-	// 	http.Error(w, "Configuration name not found", http.StatusBadRequest)
-	// 	return
-	// }
-	extensionName := ""
-	if len(params) > 2 {
-		extensionName = params[2]
+	extensionName, m, err := global.GetExtensionNameFromRequest(req)
+	if err != nil {
+		logger.AddCallerField().Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
 	}
-	uiMetadataName := ""
-	if len(params) > 2 {
-		uiMetadataName = params[3]
+	log.Debug("ExtensionName:" + extensionName)
+	uiMetaDataName := global.DefaultUIMetaDataName
+	uiMetaDataNameFound, okuiMetaDataName := m["ui-metadata-name"]
+	if okuiMetaDataName {
+		log.Debugf("uiMetaDataName:%s", uiMetaDataNameFound)
+		uiMetaDataName = uiMetaDataNameFound[0]
 	}
 	//Retrieve the property name
-	config, err := GetUIMetaData(extensionName, uiMetadataName)
+	uiconfig, err := GetUIMetaDataConfig(extensionName, uiMetaDataName)
 	if err == nil {
-		w.Write(config)
+		//		log.Debug(string(uiconfig))
+		w.Write([]byte(uiconfig))
 	} else {
 		logger.AddCallerField().Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)

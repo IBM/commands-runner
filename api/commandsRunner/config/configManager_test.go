@@ -107,7 +107,8 @@ func TestFindProperty(t *testing.T) {
 	if p == nil {
 		t.Error("Can not retreive properties")
 	}
-	if val, ok := p.(string); ok {
+	t.Log(p)
+	if val, ok := p["value"].(string); ok {
 		if val != "itdove" {
 			t.Error("Expected value Val1 and get" + val)
 		}

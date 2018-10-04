@@ -63,7 +63,11 @@ func getPropertyEndpoint(w http.ResponseWriter, req *http.Request) {
 	//Retrieve the property name
 	property, err := FindProperty(extensionName, params[2])
 	if err == nil {
-		json.NewEncoder(w).Encode(property)
+		err = json.NewEncoder(w).Encode(property)
+		if err != nil {
+			logger.AddCallerField().Error(err.Error())
+			http.Error(w, err.Error(), http.StatusNotFound)
+		}
 	} else {
 		logger.AddCallerField().Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)

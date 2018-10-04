@@ -667,11 +667,13 @@ func RegisterExtension(extensionName, zipPath string, force bool) error {
 		}
 		extensionPath = filepath.Join(GetExtensionPathCustom(), extensionName)
 	}
-	var errGen error
+	var errGenStatesFile error
 	if errInstall == nil {
-		errGen = GenerateStatesFile(extensionName, extensionPath)
+		errGenStatesFile = GenerateStatesFile(extensionName, extensionPath)
+		//Failure to generate the template files must not stop the installation.
+		GenerateTemplateFiles(extensionName, extensionPath)
 	}
-	if errInstall != nil || errGen != nil {
+	if errInstall != nil || errGenStatesFile != nil {
 		if backupTaken {
 			restoreExtension(extensionName)
 		} else {
@@ -679,8 +681,8 @@ func RegisterExtension(extensionName, zipPath string, force bool) error {
 			os.Remove(extensionPath)
 		}
 	}
-	if errGen != nil {
-		return errors.New("Error Generate States file:" + errGen.Error() + "\nRegistration rolled back")
+	if errGenStatesFile != nil {
+		return errors.New("Error Generate States file:" + errGenStatesFile.Error() + "\nRegistration rolled back")
 	}
 	if errInstall != nil {
 		return errors.New("Error Install:" + errInstall.Error() + "\nRegistration rolled back")
@@ -689,7 +691,7 @@ func RegisterExtension(extensionName, zipPath string, force bool) error {
 }
 
 func GenerateStatesFile(extensionName string, extensionPath string) error {
-	log.Debug("Entering in... ExtractKey")
+	log.Debug("Entering in... GenerateStatesFile")
 	manifestPath := filepath.Join(extensionPath, "extension-manifest.yml")
 	input, err := ioutil.ReadFile(manifestPath)
 	if err != nil {
@@ -732,6 +734,37 @@ func GenerateStatesFile(extensionName string, extensionPath string) error {
 		}
 	case "new":
 		err = ioutil.WriteFile(filepath.Join(extensionPath, "states-file-new.yml"), newStatesB, 0644)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func GenerateTemplateFiles(extensionName string, extensionPath string) error {
+	log.Debug("Entering in... GenerateTemplateFiles")
+	manifestPath := filepath.Join(extensionPath, "extension-manifest.yml")
+	input, err := ioutil.ReadFile(manifestPath)
+	if err != nil {
+		return err
+	}
+	var inYaml map[string]interface{}
+	inYaml = make(map[string]interface{}, 0)
+	err = yaml.Unmarshal(input, &inYaml)
+	if err != nil {
+		return err
+	}
+	var uiMetaData map[interface{}]interface{}
+	if val, ok := inYaml["ui_metadata"]; ok {
+		uiMetaData = val.(map[interface{}]interface{})
+	}
+	//loop on configurations
+	for uiMetadataName := range uiMetaData {
+		data, err := GenerateUIMetaDataTemplate(extensionName, uiMetadataName.(string))
+		if err != nil {
+			return err
+		}
+		err = ioutil.WriteFile(filepath.Join(extensionPath, global.ConfigRootKey+"_"+uiMetadataName.(string)+"_template.yml"), data, 0644)
 		if err != nil {
 			return err
 		}

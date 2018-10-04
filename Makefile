@@ -55,8 +55,8 @@ all:: pre-req copyright-check go-test server client
 .PHONY: dependency-graph-text
 dependency-graph-text:
 	go get github.com/kisielk/godepgraph
-	godepgraph  -p github.com,gonum.org,gopkg.in -s github.ibm.com/IBMPrivateCloud/commands-runner/api/crcli | sed 's/github.ibm.com\/IBMPrivateCloud\/commands-runner\/api\///' > crcli-dependency-graph.txt
-	godepgraph  -p github.com,gonum.org,gopkg.in -s github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner | sed 's/github.ibm.com\/IBMPrivateCloud\//cfp-commands-runner\/api\///' > cm-dependency-graph.txt
+	godepgraph  -p github.com,gonum.org,gopkg.in -s github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunnerCLI | sed 's/github.ibm.com\/IBMPrivateCloud\/cfp-commands-runner\/api\///' > crcli-dependency-graph.txt
+	godepgraph  -p github.com,gonum.org,gopkg.in -s github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner | sed 's/github.ibm.com\/IBMPrivateCloud\/cfp-commands-runner\/api\///' > cm-dependency-graph.txt
 
 .PHONY: dependency-graph
 dependency-graph: dependency-graph-text

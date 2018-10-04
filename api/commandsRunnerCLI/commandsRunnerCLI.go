@@ -64,6 +64,8 @@ func Client() *cli.App {
 
 	var uiMetadataName string
 
+	var propertyName string
+
 	getStatus := func(c *cli.Context) error {
 		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
 		if errClient != nil {
@@ -151,7 +153,13 @@ func Client() *cli.App {
 			fmt.Println(errClient.Error())
 			return errClient
 		}
-		data, err := client.GetConfig(extensionName)
+		data := ""
+		var err error
+		if propertyName == "" {
+			data, err = client.GetConfig(extensionName)
+		} else {
+			data, err = client.GetProperty(extensionName, propertyName)
+		}
 		if err != nil {
 			fmt.Println(err.Error())
 			return err
@@ -232,7 +240,27 @@ func Client() *cli.App {
 			fmt.Println(errClient.Error())
 			return errClient
 		}
-		data, errClient := client.GetUIMetadata(extensionName, uiMetadataName)
+		var data string
+		if c.Bool("all") {
+			data, errClient = client.GetUIMetadatas(extensionName, c.Bool("names-only"))
+		} else {
+			data, errClient = client.GetUIMetadata(extensionName, uiMetadataName)
+		}
+		if errClient != nil {
+			fmt.Println(errClient.Error())
+			return errClient
+		}
+		fmt.Println(data)
+		return nil
+	}
+
+	getTemplate := func(c *cli.Context) error {
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
+		if errClient != nil {
+			fmt.Println(errClient.Error())
+			return errClient
+		}
+		data, errClient := client.GetTemplate(extensionName, uiMetadataName)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
@@ -571,15 +599,45 @@ func Client() *cli.App {
 			Subcommands: []cli.Command{
 				{
 					Name:  "uimetadata",
-					Usage: "Get the ui metadata for extension",
+					Usage: "Get the ui metadata for extension and configuration name",
 					Flags: []cli.Flag{
 						cli.StringFlag{
+							Name:        "extension, e",
+							Usage:       "Extension name",
+							Destination: &extensionName,
+						},
+						cli.StringFlag{
 							Name:        "config, c",
-							Usage:       "Configuration name",
+							Usage:       "Configuration name (default is 'default'",
 							Destination: &uiMetadataName,
+						},
+						cli.BoolFlag{
+							Name:  "all, a",
+							Usage: "Get all ui metadata configuration of a given extension or all extensions if none specified",
+						},
+						cli.BoolFlag{
+							Name:  "names-only, n",
+							Usage: "Get only the configuration names",
 						},
 					},
 					Action: getUIMetaData,
+				},
+				{
+					Name:  "template",
+					Usage: "Get the template for extension and configuration name",
+					Flags: []cli.Flag{
+						cli.StringFlag{
+							Name:        "extension, e",
+							Usage:       "Extension name",
+							Destination: &extensionName,
+						},
+						cli.StringFlag{
+							Name:        "config, c",
+							Usage:       "Configuration name (default is 'default'",
+							Destination: &uiMetadataName,
+						},
+					},
+					Action: getTemplate,
 				},
 				{
 					Name:  "register",
@@ -719,6 +777,11 @@ func Client() *cli.App {
 					Name:        "extension, e",
 					Usage:       "Extension name",
 					Destination: &extensionName,
+				},
+				cli.StringFlag{
+					Name:        "property-name, p",
+					Usage:       "Property name",
+					Destination: &propertyName,
 				},
 			},
 			Action: getConfig,
@@ -877,12 +940,43 @@ func Client() *cli.App {
 			Usage: "UI Metadata management",
 			Flags: []cli.Flag{
 				cli.StringFlag{
+					Name:        "extension, e",
+					Usage:       "Extension name",
+					Destination: &extensionName,
+				},
+				cli.StringFlag{
+					Name:        "config, c",
+					Usage:       "Configuration name",
+					Destination: &uiMetadataName,
+				},
+				cli.BoolFlag{
+					Name:  "all, a",
+					Usage: "Get all ui metadata configuration of a given extension or all extensions if none specified",
+				},
+				cli.BoolFlag{
+					Name:  "names-only, n",
+					Usage: "Get only the configuration names",
+				},
+			},
+			Action: getUIMetaData,
+		},
+		/*            TEMPLATE                  */
+		{
+			Name:  "template",
+			Usage: "Template management",
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:        "extension, e",
+					Usage:       "Extension name",
+					Destination: &extensionName,
+				},
+				cli.StringFlag{
 					Name:        "config, c",
 					Usage:       "Configuration name",
 					Destination: &uiMetadataName,
 				},
 			},
-			Action: getUIMetaData,
+			Action: getTemplate,
 		},
 		/*            STATES                  */
 		{

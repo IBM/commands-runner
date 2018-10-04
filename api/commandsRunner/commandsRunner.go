@@ -29,7 +29,6 @@ import (
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/logger"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/state"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/status"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/uiMetadata"
 )
 
 const COPYRIGHT string = `###############################################################################
@@ -152,9 +151,11 @@ func Init(port string, portSSL string, configDir string, certificatePath string,
 	AddHandler("/cr/v1/extension", state.HandleExtension, true)
 	AddHandler("/cr/v1/extensions", state.HandleExtensions, true)
 	AddHandler("/cr/v1/extensions/", state.HandleExtensions, true)
-	AddHandler("/cr/v1/uimetadata/", uiMetadata.HandleUIMetadata, true)
+	AddHandler("/cr/v1/uimetadata", state.HandleUIMetadata, true)
+	AddHandler("/cr/v1/uimetadatas", state.HandleUIMetadatas, true)
 	AddHandler("/cr/v1/config", config.HandleConfig, true)
 	AddHandler("/cr/v1/config/", config.HandleConfig, true)
+	AddHandler("/cr/v1/template", state.HandleTemplate, true)
 }
 
 func ServerStart(preInit InitFunc, postInit InitFunc, preStart InitFunc, postStart PostStartFunc) {

@@ -11,10 +11,14 @@
 package config
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
+
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/properties"
 
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/state"
@@ -73,6 +77,40 @@ func TestGetConfig(t *testing.T) {
 	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v: %v",
 			status, http.StatusOK, rr.Body)
+	}
+	SetConfigFileName(bckConfigFileName)
+}
+
+func TestGetConfigProperty(t *testing.T) {
+	t.Log("Entering................. TestSaveConfig")
+	//log.SetLevel(log.DebugLevel)
+	SetConfigPath("../../test/resource")
+	state.SetExtensionPath("../../test/resource/extensions")
+	bckConfigFileName := global.ConfigYamlFileName
+	SetConfigFileName("config-test-save.yml")
+
+	req, err := http.NewRequest("GET", "/cr/v1/config/propperty1?extension-name=config-handler-test", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(HandleConfig)
+
+	handler.ServeHTTP(rr, req)
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v: %v",
+			status, http.StatusOK, rr.Body)
+	}
+	t.Log(rr.Body)
+	var p properties.Properties
+	body, err := ioutil.ReadAll(rr.Body)
+	err = json.Unmarshal(body, &p)
+	if err != nil {
+		t.Error(err)
+	}
+	if p["value"].(string) != "value1" {
+		t.Error("Expecting value1 but got " + p["value"].(string))
 	}
 	SetConfigFileName(bckConfigFileName)
 }

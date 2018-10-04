@@ -1227,6 +1227,7 @@ func (sm *States) InsertState(state State, pos int, stateName string, before boo
 		sm.StateArray = append(sm.StateArray, bckStateArray...)
 		return errors.New(err.Error())
 	} else {
+		sm.setDefaultValues()
 		return sm.writeStates()
 	}
 }

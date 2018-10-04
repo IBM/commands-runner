@@ -21,7 +21,6 @@ import (
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/properties"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/state"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/uiMetadata"
 
 	"github.com/olebedev/config"
 )
@@ -50,7 +49,7 @@ func init() {
  */
 func SearchUIConfigProperty(extensionName, uiMetaDataName string, name string) (*config.Config, error) {
 	log.Debug("Entering... searchUIConfigProperty:" + name)
-	b, err := uiMetadata.GetUIMetaData(extensionName, uiMetaDataName)
+	b, err := state.GetUIMetaDataConfig(extensionName, uiMetaDataName)
 	if err != nil {
 		return nil, err
 	}
@@ -125,6 +124,19 @@ Set the client path
 */
 func SetClientPath(clientPath string) {
 	global.ClientPath = clientPath
+}
+
+/*
+Search the configuration_name property
+*/
+func GetConfigurationName(extensionName string) (string, error) {
+	log.Debug("Entering... GetConfigurationName")
+	props, err := properties.ReadProperties(extensionName)
+	if err != nil {
+		return "", err
+	}
+	return properties.GetValueAsString(props, "configuration_name")
+
 }
 
 /*
@@ -232,13 +244,17 @@ func RemoveProperty(extensionName string, key string) error {
 /*
 Search for a given property
 */
-func FindProperty(extensionName string, key string) (interface{}, error) {
+func FindProperty(extensionName string, key string) (properties.Properties, error) {
+	var pss properties.Properties
+	pss = make(properties.Properties)
 	properties, err := properties.ReadProperties(extensionName)
 	if err != nil {
 		return nil, err
 	}
 	if p, ok := properties[key]; ok {
-		return p, nil
+		pss["name"] = key
+		pss["value"] = p
+		return pss, nil
 	}
 	err = errors.New("Property " + key + " not found")
 	return nil, err

@@ -16,3 +16,5 @@ simple-custom-extension.zip
 .vscode
 cr-server
 cr-cli
+cm-dependency*
+crcli-dependency*
