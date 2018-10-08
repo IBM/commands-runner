@@ -756,7 +756,10 @@ func GenerateTemplateFiles(extensionName string, extensionPath string) error {
 	}
 	var uiMetaData map[interface{}]interface{}
 	if val, ok := inYaml["ui_metadata"]; ok {
-		uiMetaData = val.(map[interface{}]interface{})
+		uiMetaData, ok = val.(map[interface{}]interface{})
+		if !ok {
+			return errors.New("ui_metadata is not a map[interface{}]interface{}")
+		}
 	}
 	//loop on configurations
 	for uiMetadataName := range uiMetaData {
