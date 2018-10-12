@@ -122,7 +122,7 @@ func getStatePath(extensionName string) (string, error) {
 }
 
 //Add a state manager to the map, directly used only for test method.
-func addStateManagerToMap(extensionName string) error {
+func addStateManager(extensionName string) error {
 	log.Debug("Entering in addStateManagerToMap")
 	log.Debug("Extension name: " + extensionName)
 	sm, err := newStateManager()
@@ -132,17 +132,6 @@ func addStateManagerToMap(extensionName string) error {
 	stateManagers[extensionName] = *sm
 	log.Debug("State Manager added for " + extensionName)
 	return nil
-}
-
-//Add a stateManager for a given extension
-func addStateManager(extensionName string) error {
-	log.Debug("Entering in addStateManager")
-	log.Debug("Extension name:" + extensionName)
-	// statesPath, err := getStatePath(extensionName)
-	// if err != nil {
-	// 	return err
-	// }
-	return addStateManagerToMap(extensionName)
 }
 
 //Remove a stateManager
