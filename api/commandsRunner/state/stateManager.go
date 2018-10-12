@@ -117,7 +117,7 @@ func getStatePath(extensionName string) (string, error) {
 	}
 	var statesPathAux string
 	statesPathAux = GetRootExtensionPath(GetExtensionPath(), extensionName)
-	statesPathAux = filepath.Join(statesPathAux, "states-file.yml")
+	statesPathAux = filepath.Join(statesPathAux, global.StatesFileName)
 	return statesPathAux, nil
 }
 
@@ -193,6 +193,8 @@ func newStateManager(statesPath string) (*States, error) {
 }
 
 func (sm *States) isCustomStatePath() bool {
+	log.Debug("Entering... isCustomStatePath")
+	log.Debug("StatePath:" + sm.StatesPath)
 	if strings.Contains(sm.StatesPath, "/custom/") {
 		return true
 	}
@@ -239,6 +241,7 @@ func (sm *States) readStates() error {
 //Set default value for states
 func (sm *States) setDefaultValues() {
 	log.Debug("Entering... setDefaultValues")
+	log.Debug("StatePath:" + sm.StatesPath)
 	isNextStateMigrationDone := false
 	for index := range sm.StateArray {
 		//		log.Debug("Check state:" + sm.StateArray[index].Name)
@@ -256,7 +259,10 @@ func (sm *States) setDefaultValues() {
 		if sm.StateArray[index].LogPath == "" {
 			dir := GetExtensionLogsPathEmbedded()
 			if sm.isCustomStatePath() {
+				log.Debug("Customer extension")
 				dir = GetExtensionLogsPathCustom()
+			} else {
+				log.Debug("Embbeded extension")
 			}
 			log.Debug("ExtensionLogPath:" + dir)
 			logDir := filepath.Join(dir, sm.StateArray[index].Name+".log")
@@ -434,6 +440,7 @@ func (sm *States) GetStates(status string, extensionsOnly bool, recursive bool) 
 //States marked deleted in the new states will be removed for the current states.
 func (sm *States) SetStates(states States, overwrite bool) error {
 	log.Debug("Entering... SetStates")
+	log.Debug("ExtensionPath:" + sm.StatesPath)
 	sm.lock()
 	defer sm.unlock()
 	states.setDefaultValues()
@@ -922,7 +929,7 @@ func (sm *States) setStateStatus(state State, status string, recursively bool) e
 			if err != nil {
 				return err
 			}
-			extensionStateManager, err := newStateManager(extensionPath + string(filepath.Separator) + "states-file.yml")
+			extensionStateManager, err := newStateManager(filepath.Join(extensionPath, global.StatesFileName))
 			if err != nil {
 				return err
 			}

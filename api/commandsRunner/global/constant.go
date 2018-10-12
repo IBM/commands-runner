@@ -57,3 +57,6 @@ const TokenFileName = "cr-token"
 
 //DefaultUIMetaDataName default ui metadata attribute
 const DefaultUIMetaDataName = "default"
+
+//StatesFileName the states file name to use accross the different packages
+const StatesFileName = "states-file.yml"

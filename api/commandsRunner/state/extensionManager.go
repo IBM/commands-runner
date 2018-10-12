@@ -692,6 +692,7 @@ func RegisterExtension(extensionName, zipPath string, force bool) error {
 
 func GenerateStatesFile(extensionName string, extensionPath string) error {
 	log.Debug("Entering in... GenerateStatesFile")
+	log.Debug("Extension:" + extensionName)
 	manifestPath := filepath.Join(extensionPath, "extension-manifest.yml")
 	input, err := ioutil.ReadFile(manifestPath)
 	if err != nil {
@@ -728,12 +729,15 @@ func GenerateStatesFile(extensionName string, extensionPath string) error {
 			return err
 		}
 	case "replace":
-		err = ioutil.WriteFile(filepath.Join(extensionPath, "states-file.yml"), newStatesB, 0644)
+		err = ioutil.WriteFile(filepath.Join(extensionPath, global.StatesFileName), newStatesB, 0644)
 		if err != nil {
 			return err
 		}
 	case "new":
-		err = ioutil.WriteFile(filepath.Join(extensionPath, "states-file-new.yml"), newStatesB, 0644)
+		ext := filepath.Ext(global.StatesFileName)
+		pathWithoutExt := strings.TrimSuffix(global.StatesFileName, "."+ext)
+		newStatesFileName := pathWithoutExt + "-new." + ext
+		err = ioutil.WriteFile(filepath.Join(extensionPath, newStatesFileName), newStatesB, 0644)
 		if err != nil {
 			return err
 		}
