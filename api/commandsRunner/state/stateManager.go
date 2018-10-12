@@ -122,10 +122,10 @@ func getStatePath(extensionName string) (string, error) {
 }
 
 //Add a state manager to the map, directly used only for test method.
-func addStateManagerToMap(extensionName string, statesPath string) error {
+func addStateManagerToMap(extensionName string) error {
 	log.Debug("Entering in addStateManagerToMap")
 	log.Debug("Extension name: " + extensionName)
-	sm, err := newStateManager(statesPath)
+	sm, err := newStateManager()
 	if err != nil {
 		return err
 	}
@@ -138,11 +138,11 @@ func addStateManagerToMap(extensionName string, statesPath string) error {
 func addStateManager(extensionName string) error {
 	log.Debug("Entering in addStateManager")
 	log.Debug("Extension name:" + extensionName)
-	statesPath, err := getStatePath(extensionName)
-	if err != nil {
-		return err
-	}
-	return addStateManagerToMap(extensionName, statesPath)
+	// statesPath, err := getStatePath(extensionName)
+	// if err != nil {
+	// 	return err
+	// }
+	return addStateManagerToMap(extensionName)
 }
 
 //Remove a stateManager
@@ -153,7 +153,12 @@ func removeStateManager(extensionName string) error {
 
 //Find a stateManager based on the extensionNAme
 func getStateManager(extensionName string) (*States, error) {
+	log.Debug("Entering in getStateManager")
+	log.Debug("ExtensionName: " + extensionName)
 	if val, ok := stateManagers[extensionName]; ok {
+		statePath, _ := getStatePath(extensionName)
+		log.Debug("statePath:" + statePath)
+		val.StatesPath = statePath
 		return &val, nil
 	}
 	return nil, errors.New("stateManager not found for " + extensionName)
@@ -163,30 +168,27 @@ func getStateManager(extensionName string) (*States, error) {
 func GetStatesManager(extensionName string) (*States, error) {
 	log.Debug("Entering in getAddStateManagersss")
 	log.Debug("Search for manager: " + extensionName)
-	if val, ok := stateManagers[extensionName]; ok {
+	sm, err := getStateManager(extensionName)
+	if err == nil {
 		log.Debug("Manager already exists, returning it")
-		return &val, nil
+		return sm, nil
 	}
-	log.Debug("Manager already doesn't exist, creating")
-	err := addStateManager(extensionName)
+	log.Debug("Manager doesn't exist, creating")
+	err = addStateManager(extensionName)
 	if err != nil {
 		return nil, err
 	}
-	log.Debug("returning creatd manager")
+	log.Debug("returning created manager")
 	return getStateManager(extensionName)
 }
 
 //NewClient creates a new client
-func newStateManager(statesPath string) (*States, error) {
+func newStateManager() (*States, error) {
 	log.Debug("Entering... NewStateManager")
-	log.Debug("statesPath :" + statesPath)
-	if statesPath == "" {
-		return nil, errors.New("statesPath not set")
-	}
 	//Set the default values
 	states := &States{
 		StateArray: make([]State, 0),
-		StatesPath: statesPath,
+		StatesPath: "",
 		mux:        &sync.Mutex{},
 	}
 	return states, nil
@@ -242,7 +244,7 @@ func (sm *States) readStates() error {
 func (sm *States) setDefaultValues() {
 	log.Debug("Entering... setDefaultValues")
 	log.Debug("StatePath:" + sm.StatesPath)
-	isNextStateMigrationDone := false
+	//	isNextStateMigrationDone := false
 	for index := range sm.StateArray {
 		//		log.Debug("Check state:" + sm.StateArray[index].Name)
 		//		log.Debug("Check Label")
@@ -281,18 +283,18 @@ func (sm *States) setDefaultValues() {
 			//			log.Debug("Set state.ScriptTimeout to " + strconv.Itoa(sm.StateArray[index].ScriptTimeout))
 		}
 		// Remove state in the nextStates which doesn't exist in the state file.
-		for indexNext, nextState := range sm.StateArray[index].NextStates {
-			indexState, _ := indexState(sm.StateArray, nextState)
-			if indexState == -1 {
-				sm.StateArray[index].NextStates = append(sm.StateArray[index].NextStates[:indexNext], sm.StateArray[index].NextStates[indexNext+1:]...)
-			}
-		}
+		// for indexNext, nextState := range sm.StateArray[index].NextStates {
+		// 	indexState, _ := indexState(sm.StateArray, nextState)
+		// 	if indexState == -1 {
+		// 		sm.StateArray[index].NextStates = append(sm.StateArray[index].NextStates[:indexNext], sm.StateArray[index].NextStates[indexNext+1:]...)
+		// 	}
+		// }
 	}
 	//if not migrated then set the nextStates
-	if !isNextStateMigrationDone {
-		sm.setNextStates()
-		sm.copyStateToRerunToNextStates()
-	}
+	// if !isNextStateMigrationDone {
+	// 	sm.setNextStates()
+	// 	sm.copyStateToRerunToNextStates()
+	// }
 	log.Debug("Exiting... setDefaultValues")
 }
 
@@ -443,7 +445,7 @@ func (sm *States) SetStates(states States, overwrite bool) error {
 	log.Debug("ExtensionPath:" + sm.StatesPath)
 	sm.lock()
 	defer sm.unlock()
-	states.setDefaultValues()
+	//	states.setDefaultValues()
 	err := states.topoSort()
 	if err != nil {
 		return err
@@ -667,6 +669,23 @@ func (sm *States) generateStatesGraph() (*simple.DirectedGraph, map[int64]*State
 //topoSort Do a topological sort of the current states file.
 func (sm *States) topoSort() error {
 	log.Debug("Entering in... topoSort")
+	isNextStateMigrationDone := false
+	for index := range sm.StateArray {
+		// Remove state in the nextStates which doesn't exist in the state file.
+		for indexNext, nextState := range sm.StateArray[index].NextStates {
+			if !isNextStateMigrationDone {
+				isNextStateMigrationDone = true
+			}
+			indexState, _ := indexState(sm.StateArray, nextState)
+			if indexState == -1 {
+				sm.StateArray[index].NextStates = append(sm.StateArray[index].NextStates[:indexNext], sm.StateArray[index].NextStates[indexNext+1:]...)
+			}
+		}
+	}
+	if !isNextStateMigrationDone {
+		sm.setNextStates()
+		sm.copyStateToRerunToNextStates()
+	}
 	statesData, _ := sm.convert2String()
 	log.Debugf("%s", statesData)
 	newGraph, statesMap, err := sm.generateStatesGraph()
@@ -925,11 +944,12 @@ func (sm *States) setStateStatus(state State, status string, recursively bool) e
 			return err
 		}
 		if isExtension {
-			extensionPath, err := GetRegisteredExtensionPath(state.Name)
-			if err != nil {
-				return err
-			}
-			extensionStateManager, err := newStateManager(filepath.Join(extensionPath, global.StatesFileName))
+			// extensionPath, err := GetRegisteredExtensionPath(state.Name)
+			// if err != nil {
+			// 	return err
+			// }
+
+			extensionStateManager, err := getStateManager(state.Name)
 			if err != nil {
 				return err
 			}
