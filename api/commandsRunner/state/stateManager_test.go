@@ -363,7 +363,7 @@ func TestSetStatesWithDelete(t *testing.T) {
 }
 
 func TestSetStatesMerge(t *testing.T) {
-	log.SetLevel(log.DebugLevel)
+	// log.SetLevel(log.DebugLevel)
 	t.Log("Entering... TestSetStatesMerge")
 	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
 	SetExtensionPath("../../test/data/extensions/")
@@ -1265,7 +1265,7 @@ func TestSetStateStatusEmptyState(t *testing.T) {
 }
 
 func TestGetLogGoodState1(t *testing.T) {
-	log.SetLevel(log.DebugLevel)
+	// log.SetLevel(log.DebugLevel)
 	t.Log("Entering... TestGetLogGoodState1")
 	statesPath := "../../test/resource/states-TestGetLogGoodState1.yaml"
 	// sm, err := newStateManager(statesPath)

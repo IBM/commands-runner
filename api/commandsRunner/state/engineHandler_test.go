@@ -15,12 +15,10 @@ import (
 	"net/http/httptest"
 	"testing"
 	"time"
-
-	log "github.com/sirupsen/logrus"
 )
 
 func TestEngineStartPUT(t *testing.T) {
-	log.SetLevel(log.DebugLevel)
+	// log.SetLevel(log.DebugLevel)
 	t.Log("Entering................. TestEngineStartPUT")
 	// addStateManager("TestEngineStartPUT", "../../test/resource/engine-run-success.yaml")
 	addStateManager("TestEngineStartPUT")
