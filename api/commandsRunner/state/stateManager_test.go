@@ -55,11 +55,10 @@ func TestGetStatesOK(t *testing.T) {
 	statesPath := "../../test/resource/states-TestGetStatesOK.yaml"
 	SetExtensionPath("../../test/data/extensions/")
 	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	sm, err := newStateManager(statesPath)
-	if err != nil {
-		t.Error(err.Error())
-	}
-	err = sm.ResetEngine()
+	//	sm, err := newStateManager(statesPath)
+	sm := newStateManager()
+	sm.StatesPath = statesPath
+	err := sm.ResetEngine()
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -96,10 +95,10 @@ func TestGetStatesOK(t *testing.T) {
 
 func TestGetStatesWithStatus(t *testing.T) {
 	t.Log("Entering... TestGetStatesWithStatus")
-	sm, err := newStateManager("../../test/resource/states-run-running.yaml")
-	if err != nil {
-		t.Error(err.Error())
-	}
+	//	sm, err := newStateManager("../../test/resource/states-run-running.yaml")
+	statesPath := "../../test/resource/states-run-running.yaml"
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	states, err := sm.GetStates(StateRUNNING, false, false)
 	if err != nil {
 		t.Error(err.Error())
@@ -119,10 +118,10 @@ func TestSetStatesOK(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	sm, err := newStateManager("../../test/resource/out-test-states-post-sample-from-json.yaml")
-	if err != nil {
-		t.Error(err.Error())
-	}
+	//	sm, err := newStateManager("../../test/resource/out-test-states-post-sample-from-json.yaml")
+	statesPath := "../../test/resource/out-test-states-post-sample-from-json.yaml"
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	statesJSON := "{\"states\":[{\"name\":\"state1\",\"label\":\"state1\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cr\",\"label\":\"commands-runner\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
 	var states States
 	json.Unmarshal([]byte(statesJSON), &states)
@@ -141,11 +140,11 @@ func TestSetStatesStatusesOK(t *testing.T) {
 	t.Log("Entering... TestSetStatesStatusesOK")
 	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
 	SetExtensionPath("../../test/data/extensions/")
-	sm, err := newStateManager("../../test/resource/states-TestSetStatesStatusesOK.yaml")
-	if err != nil {
-		t.Error(err.Error())
-	}
-	err = sm.SetStatesStatuses("SKIP", "state1", true, "state1", true)
+	//	sm, err := newStateManager("../../test/resource/states-TestSetStatesStatusesOK.yaml")
+	statesPath := "../../test/resource/states-TestSetStatesStatusesOK.yaml"
+	sm := newStateManager()
+	sm.StatesPath = statesPath
+	err := sm.SetStatesStatuses("SKIP", "state1", true, "state1", true)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -174,12 +173,12 @@ func TestSetStatesStatusesFromTo(t *testing.T) {
 	t.Log("Entering... TestSetStatesStatusesFromTo")
 	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
 	SetExtensionPath("../../test/data/extensions/")
-	sm, err := newStateManager("../../test/resource/states-TestSetStatesStatusesFromTo.yaml")
-	if err != nil {
-		t.Error(err.Error())
-	}
+	// sm, err := newStateManager("../../test/resource/states-TestSetStatesStatusesFromTo.yaml")
+	statesPath := "../../test/resource/states-TestSetStatesStatusesFromTo.yaml"
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	//Test a range in the middle inclusive
-	err = sm.SetStatesStatuses("SKIP", "repeat", true, "nologpath", true)
+	err := sm.SetStatesStatuses("SKIP", "repeat", true, "nologpath", true)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -333,10 +332,10 @@ func TestSetStatesWithDelete(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	sm, err := newStateManager("../../test/resource/out-test-states-delete-json.yaml")
-	if err != nil {
-		t.Error(err.Error())
-	}
+	// sm, err := newStateManager("../../test/resource/out-test-states-delete-json.yaml")
+	statesPath := "../../test/resource/out-test-states-delete-json.yaml"
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	statesJSON := "{\"states\":[{\"name\":\"state1\",\"delete:\":true,\"label\":\"State 1\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cr\",\"label\":\"commands-runner\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
 	var states States
 	json.Unmarshal([]byte(statesJSON), &states)
@@ -364,17 +363,22 @@ func TestSetStatesWithDelete(t *testing.T) {
 }
 
 func TestSetStatesMerge(t *testing.T) {
+	log.SetLevel(log.DebugLevel)
 	t.Log("Entering... TestSetStatesMerge")
 	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
 	SetExtensionPath("../../test/data/extensions/")
-	_, err := os.Create("../../test/resource/out-test-states-merge-json.yaml")
+	statesPath := "../../test/resource/out-test-states-merge-json.yaml"
+	// err := os.Remove(statesPath)
+	// if err != nil {
+	// 	t.Error(err.Error())
+	// }
+	_, err := os.Create(statesPath)
 	if err != nil {
 		t.Error(err.Error())
 	}
-	sm, err := newStateManager("../../test/resource/out-test-states-merge-json.yaml")
-	if err != nil {
-		t.Error(err.Error())
-	}
+	// sm, err := newStateManager("../../test/resource/out-test-states-merge-json.yaml")
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	statesJSON := "{\"states\":[{\"name\":\"state1\",\"label\":\"State 1\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cr\",\"label\":\"commands-runner\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
 	var states States
 	json.Unmarshal([]byte(statesJSON), &states)
@@ -385,7 +389,9 @@ func TestSetStatesMerge(t *testing.T) {
 		t.Error(err.Error())
 	}
 	statesJSON = "{\"states\":[{\"name\":\"state1\",\"label\":\"State 1\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cr2\",\"label\":\"commands-runner2\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
+	//var states States
 	json.Unmarshal([]byte(statesJSON), &states)
+	t.Log(states)
 	err = sm.SetStates(states, false)
 	statesData, _ = sm.convert2String()
 	t.Log(statesData)
@@ -402,7 +408,7 @@ func TestSetStatesMerge(t *testing.T) {
 	}
 	if statesResult.StateArray[0].Name != "state1" &&
 		!(statesResult.StateArray[1].Name == "cr" || statesResult.StateArray[1].Name == "cr2") &&
-		!(statesResult.StateArray[1].Name == "cr2" || statesResult.StateArray[1].Name == "cr") {
+		!(statesResult.StateArray[2].Name == "cr2" || statesResult.StateArray[2].Name == "cr") {
 		t.Error("Wrong order")
 	}
 }
@@ -415,10 +421,10 @@ func TestSetStatesMergeWithDelete(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	sm, err := newStateManager("../../test/resource/out-test-states-merge-delete-json.yaml")
-	if err != nil {
-		t.Error(err.Error())
-	}
+	// sm, err := newStateManager("../../test/resource/out-test-states-merge-delete-json.yaml")
+	statesPath := "../../test/resource/out-test-states-merge-delete-json.yaml"
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	statesJSON := "{\"states\":[{\"name\":\"state1\",\"label\":\"State 1\",\"status\":\"SUCCEEDED\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cr2\",\"label\":\"commmands-runner\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
 	var states States
 	json.Unmarshal([]byte(statesJSON), &states)
@@ -460,10 +466,10 @@ func TestSetStatesMergeWithCycle(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	sm, err := newStateManager("../../test/resource/out-test-states-merge-cycle-json.yaml")
-	if err != nil {
-		t.Error(err.Error())
-	}
+	//	sm, err := newStateManager("../../test/resource/out-test-states-merge-cycle-json.yaml")
+	statesPath := "../../test/resource/out-test-states-merge-cycle-json.yaml"
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	statesJSON := "{\"states\":[{\"name\":\"state1\",\"label\":\"State 1\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cr\",\"label\":\"commands-runner\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
 	var states States
 	json.Unmarshal([]byte(statesJSON), &states)
@@ -497,10 +503,10 @@ func TestInsertStatesBeforeFirst(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	sm, err := newStateManager("../../test/resource/out-test-insert-before-first-state.yaml")
-	if err != nil {
-		t.Error(err.Error())
-	}
+	//	sm, err := newStateManager("../../test/resource/out-test-insert-before-first-state.yaml")
+	statesPath := "../../test/resource/out-test-insert-before-first-state.yaml"
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	states := &States{
 		StateArray: []State{
 			{
@@ -537,10 +543,10 @@ func TestInsertStatesAfterFirst(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	sm, err := newStateManager("../../test/resource/out-test-insert-after-first-state.yaml")
-	if err != nil {
-		t.Error(err.Error())
-	}
+	//	sm, err := newStateManager("../../test/resource/out-test-insert-after-first-state.yaml")
+	statesPath := "../../test/resource/out-test-insert-after-first-state.yaml"
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	states := &States{
 		StateArray: []State{
 			{
@@ -578,10 +584,10 @@ func TestInsertStatesBeforeLast(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	sm, err := newStateManager("../../test/resource/out-test-insert-before-last-state.yaml")
-	if err != nil {
-		t.Error(err.Error())
-	}
+	// sm, err := newStateManager("../../test/resource/out-test-insert-before-last-state.yaml")
+	statesPath := "../../test/resource/out-test-insert-before-last-state.yaml"
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	states := &States{
 		StateArray: []State{
 			{
@@ -623,10 +629,10 @@ func TestInsertStatesAfterLast(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	sm, err := newStateManager("../../test/resource/out-test-insert-after-last-state.yaml")
-	if err != nil {
-		t.Error(err.Error())
-	}
+	// sm, err := newStateManager("../../test/resource/out-test-insert-after-last-state.yaml")
+	statesPath := "../../test/resource/out-test-insert-after-last-state.yaml"
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	states := &States{
 		StateArray: []State{
 			{
@@ -665,10 +671,10 @@ func TestInsertStatesAfterLastByName(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	sm, err := newStateManager("../../test/resource/out-test-insert-after-last-state.yaml")
-	if err != nil {
-		t.Error(err.Error())
-	}
+	// sm, err := newStateManager("../../test/resource/out-test-insert-after-last-state.yaml")
+	statesPath := "../../test/resource/out-test-insert-after-last-state.yaml"
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	states := &States{
 		StateArray: []State{
 			{
@@ -711,10 +717,10 @@ func TestInsertStatesWithCycle(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	sm, err := newStateManager("../../test/resource/out-test-insert-cycle-state.yaml")
-	if err != nil {
-		t.Error(err.Error())
-	}
+	// sm, err := newStateManager("../../test/resource/out-test-insert-cycle-state.yaml")
+	statesPath := "../../test/resource/out-test-insert-cycle-state.yaml"
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	states := &States{
 		StateArray: []State{
 			{
@@ -756,10 +762,10 @@ func TestDeleteStatesFirst(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	sm, err := newStateManager("../../test/resource/out-test-delete-first-state.yaml")
-	if err != nil {
-		t.Error(err.Error())
-	}
+	// sm, err := newStateManager("../../test/resource/out-test-delete-first-state.yaml")
+	statesPath := "../../test/resource/out-test-delete-first-state.yaml"
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	states := &States{
 		StateArray: []State{
 			{
@@ -793,10 +799,10 @@ func TestDeleteStatesLast(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	sm, err := newStateManager("../../test/resource/out-test-delete-last-state.yaml")
-	if err != nil {
-		t.Error(err.Error())
-	}
+	// sm, err := newStateManager("../../test/resource/out-test-delete-last-state.yaml")
+	statesPath := "../../test/resource/out-test-delete-last-state.yaml"
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	states := &States{
 		StateArray: []State{
 			{
@@ -830,10 +836,10 @@ func TestDeleteStatesFirstByName(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	sm, err := newStateManager("../../test/resource/out-test-delete-first-state.yaml")
-	if err != nil {
-		t.Error(err.Error())
-	}
+	//	sm, err := newStateManager("../../test/resource/out-test-delete-first-state.yaml")
+	statesPath := "../../test/resource/out-test-delete-first-state.yaml"
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	states := &States{
 		StateArray: []State{
 			{
@@ -867,10 +873,10 @@ func TestDeleteStatesLastByName(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	sm, err := newStateManager("../../test/resource/out-test-delete-last-state.yaml")
-	if err != nil {
-		t.Error(err.Error())
-	}
+	// sm, err := newStateManager("../../test/resource/out-test-delete-last-state.yaml")
+	statesPath := "../../test/resource/out-test-delete-last-state.yaml"
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	states := &States{
 		StateArray: []State{
 			{
@@ -904,10 +910,10 @@ func TestDeleteStatesProtected(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	sm, err := newStateManager("../../test/resource/out-test-delete-last-state.yaml")
-	if err != nil {
-		t.Error(err.Error())
-	}
+	// sm, err := newStateManager("../../test/resource/out-test-delete-last-state.yaml")
+	statesPath := "../../test/resource/out-test-delete-last-state.yaml"
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	states := &States{
 		StateArray: []State{
 			{
@@ -936,10 +942,10 @@ func TestGetStateOK(t *testing.T) {
 	t.Log("Entering... TestGetStateOK")
 	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
 	SetExtensionPath("../../test/data/extensions/")
-	sm, err := newStateManager("../../test/resource/states-TestGetStateOK.yaml")
-	if err != nil {
-		t.Error(err.Error())
-	}
+	// sm, err := newStateManager("../../test/resource/states-TestGetStateOK.yaml")
+	statesPath := "../../test/resource/states-TestGetStateOK.yaml"
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	state, err := sm.GetState("state1")
 	if err != nil {
 		t.Error(err.Error())
@@ -953,10 +959,10 @@ func TestGetStateOK(t *testing.T) {
 
 func TestGetStateNOK(t *testing.T) {
 	t.Log("Entering... TestGetStateNOK")
-	sm, err := newStateManager("../../test/resource/states-TestGetStateNOK.yaml")
-	if err != nil {
-		t.Error(err.Error())
-	}
+	// sm, err := newStateManager("../../test/resource/states-TestGetStateNOK.yaml")
+	statesPath := "../../test/resource/states-TestGetStateNOK.yaml"
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	stateN, err := sm.GetState("not-exist")
 	if err == nil {
 		t.Error("Found a state but should'nt " + stateN.Status)
@@ -965,11 +971,11 @@ func TestGetStateNOK(t *testing.T) {
 
 func TestGetStateEmptyState(t *testing.T) {
 	t.Log("Entering... TestGetStateNOK")
-	sm, err := newStateManager("../../test/resource/states-TestGetStateEmptyState.yaml")
-	if err != nil {
-		t.Error(err.Error())
-	}
-	_, err = sm.GetState("")
+	// sm, err := newStateManager("../../test/resource/states-TestGetStateEmptyState.yaml")
+	statesPath := "../../test/resource/states-TestGetStateEmptyState.yaml"
+	sm := newStateManager()
+	sm.StatesPath = statesPath
+	_, err := sm.GetState("")
 	if err == nil {
 		t.Error("An error should be raised as the state is not specified")
 	}
@@ -984,11 +990,10 @@ func TestSetStateStatus(t *testing.T) {
 	scriptV := strconv.FormatInt(time.Now().UnixNano(), 7)
 	scriptTimeoutV := time.Now().Second()
 	statesPath := "../../test/resource/states-TestSetStateStatus.yaml"
-	sm, err := newStateManager(statesPath)
-	if err != nil {
-		t.Error(err.Error())
-	}
-	err = sm.ResetEngine()
+	// sm, err := newStateManager(statesPath)
+	sm := newStateManager()
+	sm.StatesPath = statesPath
+	err := sm.ResetEngine()
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -1042,12 +1047,11 @@ func TestEngineSuccess(t *testing.T) {
 	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
 	SetExtensionPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-run-success.yaml"
-	sm, err := newStateManager(statesPath)
-	if err != nil {
-		t.Error(err.Error())
-	}
+	// sm, err := newStateManager(statesPath)
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	t.Log("Reset States file")
-	err = sm.ResetEngine()
+	err := sm.ResetEngine()
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -1072,12 +1076,11 @@ func TestEngineWithRerunAfter(t *testing.T) {
 	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
 	SetExtensionPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-run-with-rerun-after.yaml"
-	sm, err := newStateManager(statesPath)
-	if err != nil {
-		t.Error(err.Error())
-	}
+	// sm, err := newStateManager(statesPath)
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	t.Log("Reset States file")
-	err = sm.ResetEngine()
+	err := sm.ResetEngine()
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -1102,12 +1105,11 @@ func TestEngineWithRerunBefore(t *testing.T) {
 	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
 	SetExtensionPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-run-with-rerun-before.yaml"
-	sm, err := newStateManager(statesPath)
-	if err != nil {
-		t.Error(err.Error())
-	}
+	// sm, err := newStateManager(statesPath)
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	t.Log("Reset States file")
-	err = sm.ResetEngine()
+	err := sm.ResetEngine()
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -1127,12 +1129,11 @@ func TestEngineCycleOnRerun(t *testing.T) {
 	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
 	SetExtensionPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-run-cycle-on-rerun.yaml"
-	sm, err := newStateManager(statesPath)
-	if err != nil {
-		t.Error(err.Error())
-	}
+	// sm, err := newStateManager(statesPath)
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	t.Log("Execute states file")
-	err = sm.Start()
+	err := sm.Start()
 	if err == nil {
 		t.Error("Expected error as it has a cyle task1->task2")
 	} else {
@@ -1145,12 +1146,11 @@ func TestEngineCycleOnNext(t *testing.T) {
 	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
 	SetExtensionPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-run-cycle-on-next.yaml"
-	sm, err := newStateManager(statesPath)
-	if err != nil {
-		t.Error(err.Error())
-	}
+	// sm, err := newStateManager(statesPath)
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	t.Log("Execute states file")
-	err = sm.Start()
+	err := sm.Start()
 	if err == nil {
 		t.Error("Expected error as it has a cyle task1->task2->task1")
 	} else {
@@ -1169,7 +1169,7 @@ func TestNextStatusSet(t *testing.T) {
 	sm := &States{
 		StateArray: stateArray,
 	}
-	sm.setDefaultValues()
+	sm.topoSort()
 	statesData, _ := sm.convert2String()
 	t.Log(statesData)
 	if len(sm.StateArray[0].NextStates) == 0 {
@@ -1182,12 +1182,11 @@ func TestStatusFailedDependency(t *testing.T) {
 	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
 	SetExtensionPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-run-failed-dependency.yaml"
-	sm, err := newStateManager(statesPath)
-	if err != nil {
-		t.Error(err.Error())
-	}
+	// sm, err := newStateManager(statesPath)
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	t.Log("Reset States file")
-	err = sm.ResetEngine()
+	err := sm.ResetEngine()
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -1215,12 +1214,11 @@ func TestEngineFailure(t *testing.T) {
 	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
 	SetExtensionPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-run-failure.yaml"
-	sm, err := newStateManager(statesPath)
-	if err != nil {
-		t.Error(err.Error())
-	}
+	// sm, err := newStateManager(statesPath)
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	t.Log("Reset States file")
-	err = sm.ResetEngine()
+	err := sm.ResetEngine()
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -1248,11 +1246,10 @@ func TestSetStateStatusEmptyState(t *testing.T) {
 	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
 	SetExtensionPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-TestSetStateStatusEmptyState.yaml"
-	sm, err := newStateManager(statesPath)
-	if err != nil {
-		t.Error(err.Error())
-	}
-	err = sm.ResetEngine()
+	// sm, err := newStateManager(statesPath)
+	sm := newStateManager()
+	sm.StatesPath = statesPath
+	err := sm.ResetEngine()
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -1271,10 +1268,9 @@ func TestGetLogGoodState1(t *testing.T) {
 	log.SetLevel(log.DebugLevel)
 	t.Log("Entering... TestGetLogGoodState1")
 	statesPath := "../../test/resource/states-TestGetLogGoodState1.yaml"
-	sm, err := newStateManager(statesPath)
-	if err != nil {
-		t.Error(err.Error())
-	}
+	// sm, err := newStateManager(statesPath)
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	raw, err := sm.GetLog("state1", 0, math.MaxInt64, false)
 	if err != nil {
 		t.Error(err.Error())
@@ -1289,10 +1285,9 @@ func TestGetLogGoodState1(t *testing.T) {
 func TestGetLogGoodState1ByChar(t *testing.T) {
 	t.Log("Entering... TestGetLogGoodState1ByChar")
 	statesPath := "../../test/resource/states-TestGetLogGoodState1ByChar.yaml"
-	sm, err := newStateManager(statesPath)
-	if err != nil {
-		t.Error(err.Error())
-	}
+	// sm, err := newStateManager(statesPath)
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	raw, err := sm.GetLog("state1", 0, math.MaxInt64, true)
 	if err != nil {
 		t.Error(err.Error())
@@ -1308,10 +1303,9 @@ func TestGetLogGoodCR(t *testing.T) {
 	t.Log("Entering... TestGetLogGoodCR")
 	//log.SetLevel(log.DebugLevel)
 	statesPath := "../../test/resource/states-TestGetLogGoodState2.yaml"
-	sm, err := newStateManager(statesPath)
-	if err != nil {
-		t.Error(err.Error())
-	}
+	// sm, err := newStateManager(statesPath)
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	raw, err := sm.GetLog("state2", 0, math.MaxInt64, false)
 	if err != nil {
 		t.Error(err.Error())
@@ -1326,10 +1320,9 @@ func TestGetLogGoodCR(t *testing.T) {
 func TestGetLogGoodMock(t *testing.T) {
 	t.Log("Entering... TestGetLogGoodMock")
 	statesPath := "../../test/resource/states-TestGetLogGoodMock.yaml"
-	sm, err := newStateManager(statesPath)
-	if err != nil {
-		t.Error(err.Error())
-	}
+	// sm, err := newStateManager(statesPath)
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	raw, err := sm.GetLog("mock", 0, math.MaxInt64, false)
 	if err != nil {
 		t.Error(err.Error())
@@ -1343,10 +1336,9 @@ func TestGetLogGoodMock(t *testing.T) {
 func TestGetLogGoodMockByChar(t *testing.T) {
 	t.Log("Entering... TestGetLogGoodMockByChar")
 	statesPath := "../../test/resource/states-TestGetLogGoodMockByChar.yaml"
-	sm, err := newStateManager(statesPath)
-	if err != nil {
-		t.Error(err.Error())
-	}
+	// sm, err := newStateManager(statesPath)
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	raw, err := sm.GetLog("mock", 0, math.MaxInt64, true)
 	if err != nil {
 		t.Error(err.Error())
@@ -1360,11 +1352,10 @@ func TestGetLogGoodMockByChar(t *testing.T) {
 func TestGetLogUnexistantState(t *testing.T) {
 	t.Log("Entering... TestGetLogUnexistantState")
 	statesPath := "../../test/resource/states-TestGetLogUnexistantState.yaml"
-	sm, err := newStateManager(statesPath)
-	if err != nil {
-		t.Error(err.Error())
-	}
-	_, err = sm.GetLog("UnexistantState", 0, math.MaxInt64, false)
+	// sm, err := newStateManager(statesPath)
+	sm := newStateManager()
+	sm.StatesPath = statesPath
+	_, err := sm.GetLog("UnexistantState", 0, math.MaxInt64, false)
 	if err == nil {
 		t.Error("Should throw an error as the state doesn't exist")
 	}
@@ -1374,11 +1365,10 @@ func TestGetLogUnexistantState(t *testing.T) {
 func TestGetLogEmptyState(t *testing.T) {
 	t.Log("Entering... TestGetLogUnexistantState")
 	statesPath := "../../test/resource/states-TestGetLogEmptyState.yaml"
-	sm, err := newStateManager(statesPath)
-	if err != nil {
-		t.Error(err.Error())
-	}
-	_, err = sm.GetLog("", 0, math.MaxInt64, false)
+	// sm, err := newStateManager(statesPath)
+	sm := newStateManager()
+	sm.StatesPath = statesPath
+	_, err := sm.GetLog("", 0, math.MaxInt64, false)
 	if err == nil {
 		t.Error("Should throw an error as the state is empty")
 	}
@@ -1388,10 +1378,9 @@ func TestGetLogEmptyState(t *testing.T) {
 func TestGetLogGoodFromToInRange(t *testing.T) {
 	t.Log("Entering... TestGetLogGoodFromToInRange")
 	statesPath := "../../test/resource/states-TestGetLogGoodFromToInRange.yaml"
-	sm, err := newStateManager(statesPath)
-	if err != nil {
-		t.Error(err.Error())
-	}
+	// sm, err := newStateManager(statesPath)
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	raw, err := sm.GetLog("state1", 2, 2, false)
 	if err != nil {
 		t.Error(err.Error())
@@ -1410,10 +1399,9 @@ func TestGetLogGoodFromToInRange(t *testing.T) {
 func TestGetLogGoodFromToInRangeByChar(t *testing.T) {
 	t.Log("Entering... TestGetLogGoodFromToInRangeByChar")
 	statesPath := "../../test/resource/states-TestGetLogGoodFromToInRangeByChar.yaml"
-	sm, err := newStateManager(statesPath)
-	if err != nil {
-		t.Error(err.Error())
-	}
+	// sm, err := newStateManager(statesPath)
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	raw, err := sm.GetLog("state1", 2, 2, true)
 	if err != nil {
 		t.Error(err.Error())
@@ -1428,10 +1416,9 @@ func TestGetLogGoodFromToInRangeByChar(t *testing.T) {
 func TestGetLogGoodFromToOutOfRange(t *testing.T) {
 	t.Log("Entering... TestGetLogGoodFromToOutOfRange")
 	statesPath := "../../test/resource/states-TestGetLogGoodFromToOutOfRange.yaml"
-	sm, err := newStateManager(statesPath)
-	if err != nil {
-		t.Error(err.Error())
-	}
+	// sm, err := newStateManager(statesPath)
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	raw, err := sm.GetLog("state1", 6, 7, false)
 	if err != nil {
 		t.Error(err.Error())
@@ -1446,10 +1433,9 @@ func TestGetLogGoodFromToOutOfRange(t *testing.T) {
 func TestGetLogGoodFromToOutOfRangeByChar(t *testing.T) {
 	t.Log("Entering... TestGetLogGoodFromToOutOfRangeByChar")
 	statesPath := "../../test/resource/states-TestGetLogGoodFromToOutOfRangeByChar.yaml"
-	sm, err := newStateManager(statesPath)
-	if err != nil {
-		t.Error(err.Error())
-	}
+	// sm, err := newStateManager(statesPath)
+	sm := newStateManager()
+	sm.StatesPath = statesPath
 	raw, err := sm.GetLog("state1", 6000, 7, false)
 	if err != nil {
 		t.Error(err.Error())
@@ -1464,11 +1450,10 @@ func TestGetLogGoodFromToOutOfRangeByChar(t *testing.T) {
 func TestGetLogStateNotExists(t *testing.T) {
 	t.Log("Entering... TestGetLogStateNotExists")
 	statesPath := "../../test/resource/states-TestGetLogStateNotExists.yaml"
-	sm, err := newStateManager(statesPath)
-	if err != nil {
-		t.Error(err.Error())
-	}
-	_, err = sm.GetLog("state1", 0, math.MaxInt64, false)
+	// sm, err := newStateManager(statesPath)
+	sm := newStateManager()
+	sm.StatesPath = statesPath
+	_, err := sm.GetLog("state1", 0, math.MaxInt64, false)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -1477,11 +1462,10 @@ func TestGetLogStateNotExists(t *testing.T) {
 func TestGetLogStateMalformed(t *testing.T) {
 	t.Log("Entering... TestGetLogStateMalformed")
 	statesPath := "../../test/resource/states-malformed.yaml"
-	sm, err := newStateManager(statesPath)
-	if err != nil {
-		t.Error(err.Error())
-	}
-	_, err = sm.GetLog("state1", 0, math.MaxInt64, false)
+	// sm, err := newStateManager(statesPath)
+	sm := newStateManager()
+	sm.StatesPath = statesPath
+	_, err := sm.GetLog("state1", 0, math.MaxInt64, false)
 	if err == nil {
 		t.Error("expecting error as the states file is malformed")
 	}
@@ -1491,11 +1475,10 @@ func TestGetLogStateMalformed(t *testing.T) {
 func TestGetLogNoLogPath(t *testing.T) {
 	t.Log("Entering... TestGetLogNoLogPath")
 	statesPath := "../../test/resource/states-TestGetLogNoLogPath.yaml"
-	sm, err := newStateManager(statesPath)
-	if err != nil {
-		t.Error(err.Error())
-	}
-	_, err = sm.GetLog("nologpath", 0, math.MaxInt64, false)
+	// sm, err := newStateManager(statesPath)
+	sm := newStateManager()
+	sm.StatesPath = statesPath
+	_, err := sm.GetLog("nologpath", 0, math.MaxInt64, false)
 	if err == nil {
 		t.Error("Expecting error as states files doesn't provide log path.")
 	}
@@ -1505,11 +1488,10 @@ func TestGetLogNoLogPath(t *testing.T) {
 func TestGetLogEmptyLogPath(t *testing.T) {
 	t.Log("Entering... TestGetLogEmptyLogPath")
 	statesPath := "../../test/resource/states-TestGetLogEmptyLogPath.yaml"
-	sm, err := newStateManager(statesPath)
-	if err != nil {
-		t.Error(err.Error())
-	}
-	_, err = sm.GetLog("emptylogpath", 0, math.MaxInt64, false)
+	// sm, err := newStateManager(statesPath)
+	sm := newStateManager()
+	sm.StatesPath = statesPath
+	_, err := sm.GetLog("emptylogpath", 0, math.MaxInt64, false)
 	if err == nil {
 		t.Error("Expecting error as the log path is empty")
 	}
@@ -1519,11 +1501,10 @@ func TestGetLogEmptyLogPath(t *testing.T) {
 func TestGetLogNilLogPath(t *testing.T) {
 	t.Log("Entering... TestGetLogNilLogPath")
 	statesPath := "../../test/resource/states-TestGetLogNilLogPath.yaml"
-	sm, err := newStateManager(statesPath)
-	if err != nil {
-		t.Error(err.Error())
-	}
-	_, err = sm.GetLog("nillogpath", 0, math.MaxInt64, false)
+	// sm, err := newStateManager(statesPath)
+	sm := newStateManager()
+	sm.StatesPath = statesPath
+	_, err := sm.GetLog("nillogpath", 0, math.MaxInt64, false)
 	if err == nil {
 		t.Error("Expecting error as the log path is nil")
 	}
@@ -1533,11 +1514,10 @@ func TestGetLogNilLogPath(t *testing.T) {
 func TestGetLogWrongLogPath(t *testing.T) {
 	t.Log("Entering... TestGetLogWrongLogPath")
 	statesPath := "../../test/resource/states-TestGetLogWrongLogPath.yaml"
-	sm, err := newStateManager(statesPath)
-	if err != nil {
-		t.Error(err.Error())
-	}
-	_, err = sm.GetLog("wronglogpath", 0, math.MaxInt64, false)
+	// sm, err := newStateManager(statesPath)
+	sm := newStateManager()
+	sm.StatesPath = statesPath
+	_, err := sm.GetLog("wronglogpath", 0, math.MaxInt64, false)
 	if err == nil {
 		t.Error("Expecting error as it has a wring log path")
 	}

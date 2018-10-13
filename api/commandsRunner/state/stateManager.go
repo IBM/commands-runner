@@ -122,16 +122,12 @@ func getStatePath(extensionName string) (string, error) {
 }
 
 //Add a state manager to the map, directly used only for test method.
-func addStateManager(extensionName string) error {
-	log.Debug("Entering in addStateManagerToMap")
+func addStateManager(extensionName string) {
+	log.Debug("Entering in addStateManager")
 	log.Debug("Extension name: " + extensionName)
-	sm, err := newStateManager()
-	if err != nil {
-		return err
-	}
+	sm := newStateManager()
 	stateManagers[extensionName] = *sm
 	log.Debug("State Manager added for " + extensionName)
-	return nil
 }
 
 //Remove a stateManager
@@ -163,16 +159,13 @@ func GetStatesManager(extensionName string) (*States, error) {
 		return sm, nil
 	}
 	log.Debug("Manager doesn't exist, creating")
-	err = addStateManager(extensionName)
-	if err != nil {
-		return nil, err
-	}
+	addStateManager(extensionName)
 	log.Debug("returning created manager")
 	return getStateManager(extensionName)
 }
 
 //NewClient creates a new client
-func newStateManager() (*States, error) {
+func newStateManager() *States {
 	log.Debug("Entering... NewStateManager")
 	//Set the default values
 	states := &States{
@@ -180,7 +173,7 @@ func newStateManager() (*States, error) {
 		StatesPath: "",
 		mux:        &sync.Mutex{},
 	}
-	return states, nil
+	return states
 }
 
 func (sm *States) isCustomStatePath() bool {
