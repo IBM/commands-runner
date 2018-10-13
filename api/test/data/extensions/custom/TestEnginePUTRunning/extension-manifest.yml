@@ -1,0 +1,50 @@
+states:
+- name: task1
+  phase: ""
+  label: Task 1
+  log_path: /tmp/mydir/task.log
+  status: FAILED
+  start_time: Sat Oct 13 00:02:34 UTC 2018
+  end_time: Sat Oct 13 00:02:34 UTC 2018
+  reason: 'Cmd failed:process done with error = exec: not started'
+  script: ../test/scripts/success.sh task1
+  script_timeout: 10
+  protected: false
+  deleted: false
+  states_to_rerun: []
+  previous_states: []
+  next_states:
+  - task2
+- name: task2
+  phase: ""
+  label: Task 2
+  log_path: /tmp/task.log
+  status: READY
+  start_time: Mon Aug 21 12:32:21 UTC 2017
+  end_time: Mon Aug 21 12:32:22 UTC 2017
+  reason: ""
+  script: ../test/scripts/success.sh task2
+  script_timeout: 10
+  protected: false
+  deleted: false
+  states_to_rerun: []
+  previous_states:
+  - task1
+  next_states:
+  - task3
+- name: task3
+  phase: ""
+  label: Task 3
+  log_path: /tmp/task.log
+  status: READY
+  start_time: Mon Aug 21 12:32:22 UTC 2017
+  end_time: Mon Aug 21 12:32:23 UTC 2017
+  reason: ""
+  script: ../test/scripts/success.sh task3
+  script_timeout: 10
+  protected: false
+  deleted: false
+  states_to_rerun: []
+  previous_states:
+  - task2
+  next_states: []

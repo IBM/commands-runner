@@ -37,7 +37,7 @@ func CopyRecursive(src, destDir string) error {
 		log.Debug(path)
 		relPath := path[len(src)-1:]
 		log.Debug("RelPath:" + relPath)
-		newPath := destDir + string(filepath.Separator) + relPath
+		newPath := filepath.Join(destDir, relPath)
 		log.Debug("NewPath:" + newPath)
 		if f.IsDir() {
 			os.Mkdir(newPath, f.Mode())

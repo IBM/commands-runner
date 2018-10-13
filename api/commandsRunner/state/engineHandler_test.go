@@ -18,8 +18,10 @@ import (
 )
 
 func TestEngineStartPUT(t *testing.T) {
+	// log.SetLevel(log.DebugLevel)
 	t.Log("Entering................. TestEngineStartPUT")
-	addStateManagerToMap("TestEngineStartPUT", "../../test/resource/engine-run-success.yaml")
+	// addStateManager("TestEngineStartPUT", "../../test/resource/engine-run-success.yaml")
+	addStateManager("TestEngineStartPUT")
 	SetExtensionPath("../../test/data/extensions/")
 	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
@@ -144,7 +146,10 @@ func TestEngineStartExtensonPUT(t *testing.T) {
 
 func TestEnginePUTRunning(t *testing.T) {
 	t.Log("Entering................. TestEnginePUTRunning")
-	addStateManagerToMap("TestEnginePUTRunning", "../../test/resource/engine-run-running.yaml")
+	// addStateManager("TestEnginePUTRunning", "../../test/resource/engine-run-running.yaml")
+	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	addStateManager("TestEnginePUTRunning")
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
 	req, err := http.NewRequest("PUT", "/cr/v1/engine?action=start&extension-name=TestEnginePUTRunning", nil)
@@ -190,7 +195,10 @@ func TestEnginePUTRunning(t *testing.T) {
 
 func TestEngineResetRunning(t *testing.T) {
 	t.Log("Entering................. TestEngineResetRunning")
-	addStateManagerToMap("TestEngineResetRunning", "../../test/resource/states-reset.yaml")
+	// addStateManager("TestEngineResetRunning", "../../test/resource/states-reset.yaml")
+	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	addStateManager("TestEngineResetRunning")
 
 	rr := httptest.NewRecorder()
 
@@ -228,7 +236,10 @@ func TestEngineResetRunning(t *testing.T) {
 
 func TestEngineReset(t *testing.T) {
 	t.Log("Entering................. TestEngineReset")
-	addStateManagerToMap("TestEngineReset", "../../test/resource/states-reset.yaml")
+	// addStateManager("TestEngineReset", "../../test/resource/states-reset.yaml")
+	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	addStateManager("TestEngineReset")
 
 	rr := httptest.NewRecorder()
 
