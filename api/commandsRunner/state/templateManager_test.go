@@ -63,6 +63,23 @@ func TestTraverseProperties(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
+	expectedOut := `# Description 1
+param1: "Eg: sample_value 1"
+# Description 
+# 2
+param2: "Eg: sample_value 2"
+# # Description 
+# 3
+# param3:
+#   # Description 31
+#   param31: "Eg: 
+# sample_value 31"
+# Description 4
+param4: "Eg: sample_value 4"
+`
+	if out.String() != expectedOut {
+		t.Errorf("expecting: \n%s \ngot \n%s", expectedOut, out.String())
+	}
 	t.Logf("\n%s", out.String())
 }
 

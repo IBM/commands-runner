@@ -89,9 +89,10 @@ func traverseProperties(properties []interface{}, first bool, mandatory bool, pa
 		log.Debug("path=" + path)
 		newMandatory := mandatory
 		if val, ok := p["mandatory"]; ok {
-			if !val.(bool) && mandatory {
-				newMandatory = false
-			}
+			// if !val.(bool) && mandatory {
+			// 	newMandatory = false
+			// }
+			newMandatory = val.(bool)
 		}
 		err := traversePropertiesCallBack(p, first, newMandatory, parentProperty, path, input)
 		first = false
