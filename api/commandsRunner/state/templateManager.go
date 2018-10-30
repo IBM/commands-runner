@@ -61,7 +61,11 @@ func getUIMetadataTemplate(extensionName string, uiMetadataName string) ([]byte,
 			if !ok {
 				return outTemplate.Bytes(), errors.New("Expect a []interface{} under properties")
 			}
-			err = traverseProperties(propertiesList, true, true, nil, printPropertyCallBack(), path, outTemplate)
+			mandatory := true
+			if val, ok := groupMap["mandatory"]; ok {
+				mandatory = val.(bool)
+			}
+			err = traverseProperties(propertiesList, true, mandatory, nil, printPropertyCallBack(), path, outTemplate)
 			if err != nil {
 				return outTemplate.Bytes(), err
 			}
