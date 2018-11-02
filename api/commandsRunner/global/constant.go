@@ -41,7 +41,7 @@ const BaseURL = "/cr/v1/"
 const DefaultOutputFormat = "text"
 
 //DefaultTimeout default timeout for http request
-const DefaultTimeout = 60
+const DefaultTimeout = 180
 
 //DefaultInsecureSSL by defualt the request are secured.
 const DefaultInsecureSSL = false

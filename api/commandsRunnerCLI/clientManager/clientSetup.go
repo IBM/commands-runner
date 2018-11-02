@@ -48,7 +48,7 @@ func SetClientSetup(urlIn string, outputFormat string, timeout string, caCertPat
 		c := &CommandsRunnerClient{
 			URL:                  urlIn,
 			OutputFormat:         outputFormat,
-			Timeout:              60,
+			Timeout:              global.DefaultTimeout,
 			CACertPath:           "",
 			InsecureSSL:          true,
 			Token:                "",
