@@ -1,0 +1,4 @@
+extensions:
+  simple-embedded-extension-without-version:
+  simple-embedded-extension-with-version:
+    version: 1.0.0

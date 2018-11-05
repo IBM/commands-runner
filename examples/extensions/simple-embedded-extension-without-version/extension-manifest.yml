@@ -4,13 +4,13 @@ extension:
 states:
 - name: ext-task1
   phase: ""
-  script: success.sh ext-task1
+  script: ./success.sh ext-task1
 - name: ext-task2
   phase: ""
-  script: success.sh ext-task2
+  script: ./success.sh ext-task2
 - name: ext-task3
   phase: ""
-  script: success.sh ext-task3
+  script: ./success.sh ext-task3
 call_state:
   states_to_rerun: [ "task1" ]
   previous_states: [ "task2" ]

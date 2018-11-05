@@ -34,8 +34,8 @@ A state file example is provided in the [examples/data](./examples/data).
 1. Create the client: There a client example at [examples/client](./examples/client). In that example the client is enriched with a command `hello` which call the `helloWorld` API on the server side.
 2. Build the client:  Once you created the client, you can build it with for example: `go build -o cr-cli  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/examples/client`.
 3. Create token: The server uses a token for authentication, run the command: `./cr-cli token create > <your_data_directory>/cr-token`, this will create a file `cr-token` in `<your_data_directory>`.
-4. Setup the client: `./cr-cli --url <https_server_url> --token <token> --cacert <cert_path> api save` or simply `./cr-cli --url <http_server_url> --token <token> api save` if you don't want to use SSL. This setup is stored in `$HOME/.commandsRunner.conf` The `<token>` is the content of your `cr-token` file.
-5. launch `./cr-cli` for more information on all available commands.
+4. Setup the client: `./cr-cli --url <https_server_url> --token <token> --cacert <cert_path> -e <your_main_extension_name> api save` or simply `./cr-cli --url <http_server_url> --token <token> api save` if you don't want to use SSL. This setup is stored in `$HOME/.commandsRunner.conf` The `<token>` is the content of your `cr-token` file.
+5. launch `./cr-cli` for more information on all available commands. (ie: `./cr-cli states` to check states, `./cr-cli extension deploy` to run the deployment)
 
 ### Use commands-runner in a program.
 There is code examples at [examples/code](./examples/code)

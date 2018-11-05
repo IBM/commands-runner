@@ -4,22 +4,29 @@ import (
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/state"
 	yaml "gopkg.in/yaml.v2"
-
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/stateManager"
 )
 
 //This program runs a state file provided in the first parameter.
-func ResetStateManager(statesPath string) {
+func ResetStateManager(extensionName string) {
+
+	log.SetLevel(log.DebugLevel)
+	log.Info("============== Init Extensions ========================")
+	//This initializes the stateManager and register all embedded extensions mentioned in the examples/extensions/test-extensions.yml
+
+	state.InitExtensions("examples/extensions/test-extensions.yml", "examples/extensions", "examples/data/extensions/", "")
 
 	//Create a new stateManagerInstance
-	stateManagerInstance, err := state.NewStateManager(statesPath)
+	log.Info("============== Create new StatesManager ========================")
+	stateManagerInstance, err := state.GetStatesManager(extensionName)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
 	//Print states
-	states, err := stateManagerInstance.GetStates("")
+	log.Info("============== Print states ========================")
+	states, err := stateManagerInstance.GetStates("", false, true)
 	statesOut, err := yaml.Marshal(states)
 	if err != nil {
 		log.Fatal(err.Error())
@@ -27,13 +34,15 @@ func ResetStateManager(statesPath string) {
 	fmt.Print(string(statesOut))
 
 	//Reset all states to READY to run it again
+	log.Info("============== Reset status ========================")
 	err = stateManagerInstance.ResetEngine()
 	if err != nil {
 		log.Error(err.Error())
 	}
 
 	//Print states
-	states, err = stateManagerInstance.GetStates("")
+	log.Info("============== Print states ========================")
+	states, err = stateManagerInstance.GetStates("", false, true)
 	statesOut, err = yaml.Marshal(states)
 	if err != nil {
 		log.Fatal(err.Error())
