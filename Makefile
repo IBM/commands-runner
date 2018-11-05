@@ -72,3 +72,8 @@ server:
 client:
 	mkdir -p examples/_build
 	go build -o examples/_build/cr-cli  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/examples/client
+
+.PHONY: code
+code:
+	mkdir -p examples/_build
+	go build -o examples/_build/cr-code  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/examples/code

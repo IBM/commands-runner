@@ -1543,6 +1543,7 @@ func (sm *States) executeState(state State) error {
 	if state.Script == "" {
 		return nil
 	}
+	log.Debug("script: " + state.Script)
 	//Build the command line
 	script := state.Script
 	parts := strings.Fields(script)
@@ -1553,6 +1554,7 @@ func (sm *States) executeState(state State) error {
 		cmd = exec.Command(parts[0])
 	}
 	cmd.Dir = filepath.Dir(sm.StatesPath)
+	log.Debug("Execution directory: " + cmd.Dir)
 	//Create the log directory if not exists
 	dir := filepath.Dir(state.LogPath)
 	if !filepath.IsAbs(dir) {
@@ -1618,9 +1620,10 @@ func (sm *States) executeState(state State) error {
 	outfile.Sync()
 	outfile.Close()
 	if errExec != nil {
-		f, err := os.Open(outfilePath)
+		f, err := os.OpenFile(outfilePath, os.O_WRONLY|os.O_APPEND, 0644)
 		if err != nil {
 			log.Debug(err.Error())
+			return errExec
 		}
 
 		defer f.Close()

@@ -6,7 +6,7 @@ import (
 	cli "gopkg.in/urfave/cli.v1"
 )
 
-var statesFilePath string
+var extensionName string
 
 func main() {
 	app := cli.NewApp()
@@ -19,13 +19,13 @@ func main() {
 			Usage: "Call the state manager on a given state file",
 			Flags: []cli.Flag{
 				cli.StringFlag{
-					Name:        "statesFilePath, s",
-					Usage:       "States file path",
-					Destination: &statesFilePath,
+					Name:        "extensionName, e",
+					Usage:       "Extension Name",
+					Destination: &extensionName,
 				},
 			},
 			Action: func(c *cli.Context) error {
-				CallStateManager(statesFilePath)
+				CallStateManager(extensionName)
 				return nil
 			},
 		},
@@ -34,13 +34,13 @@ func main() {
 			Usage: "Reset a state file",
 			Flags: []cli.Flag{
 				cli.StringFlag{
-					Name:        "statesFilePath, s",
-					Usage:       "States file path",
-					Destination: &statesFilePath,
+					Name:        "extensionName, e",
+					Usage:       "Extension Name",
+					Destination: &extensionName,
 				},
 			},
 			Action: func(c *cli.Context) error {
-				ResetStateManager(statesFilePath)
+				ResetStateManager(extensionName)
 				return nil
 			},
 		},
