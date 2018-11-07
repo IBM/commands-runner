@@ -93,12 +93,23 @@ type State struct {
 	//NextStates List of next states, this determines the order in which the states will get executed. A topological sort is used to determine the order.
 	//If this attribute is not defined in any state of the states file then the NextStates for each state will be set by default to the next state in the states file.
 	NextStates []string `yaml:"next_states" json:"next_states"`
+	//ExecutedByExtensionName contains the name of the extension which launch the current extension as this extension could be a
+	//extension inserted into another extension
+	ExecutedByExtensionName string `yaml:"executed_by_extension_name" json:"executed_by_extension_name"`
+	//The execution sequence id for that specific launch
+	ExecutionID int `yaml:"execution_id" json:"execution_id"`
 }
 
 type States struct {
-	StateArray []State `yaml:"states" json:"states"`
-	StatesPath string  `yaml:"-" json:"-"`
-	mux        *sync.Mutex
+	StateArray    []State `yaml:"states" json:"states"`
+	ExtensionName string  `yaml:"extension_name" json:"extension_name"`
+	//ExecutedByExtensionName contains the name of the extension which launch the current extension as this extension could be a
+	//extension inserted into another extension
+	ExecutedByExtensionName string `yaml:"executed_by_extension_name" json:"executed_by_extension_name"`
+	//The execution sequence id for that specific launch
+	ExecutionID int    `yaml:"execution_id" json:"execution_id"`
+	StatesPath  string `yaml:"-" json:"-"`
+	mux         *sync.Mutex
 }
 
 var pcmLogTempFile *os.File
@@ -125,7 +136,7 @@ func getStatePath(extensionName string) (string, error) {
 func addStateManager(extensionName string) {
 	log.Debug("Entering in addStateManager")
 	log.Debug("Extension name: " + extensionName)
-	sm := newStateManager()
+	sm := newStateManager(extensionName)
 	stateManagers[extensionName] = *sm
 	log.Debug("State Manager added for " + extensionName)
 }
@@ -165,13 +176,16 @@ func GetStatesManager(extensionName string) (*States, error) {
 }
 
 //NewClient creates a new client
-func newStateManager() *States {
+func newStateManager(extensionName string) *States {
 	log.Debug("Entering... NewStateManager")
 	//Set the default values
 	states := &States{
-		StateArray: make([]State, 0),
-		StatesPath: "",
-		mux:        &sync.Mutex{},
+		StateArray:              make([]State, 0),
+		ExtensionName:           extensionName,
+		ExecutedByExtensionName: "",
+		ExecutionID:             0,
+		StatesPath:              "",
+		mux:                     &sync.Mutex{},
 	}
 	return states
 }
@@ -384,9 +398,12 @@ func (sm *States) GetStates(status string, extensionsOnly bool, recursive bool) 
 		return nil, errStates
 	}
 	states := &States{
-		StateArray: make([]State, 0),
-		StatesPath: sm.StatesPath,
-		mux:        &sync.Mutex{},
+		StateArray:              make([]State, 0),
+		StatesPath:              sm.StatesPath,
+		ExtensionName:           sm.ExtensionName,
+		ExecutedByExtensionName: sm.ExecutedByExtensionName,
+		ExecutionID:             sm.ExecutionID,
+		mux:                     &sync.Mutex{},
 	}
 	for i := 0; i < len(sm.StateArray); i++ {
 		if strings.HasPrefix(sm.StateArray[i].Script, global.ClientPath+" extension") {
@@ -977,6 +994,33 @@ func (sm *States) ResetEngine() error {
 	return errStates
 }
 
+//ResetEngine Reset execution Info. This is not recursive yet.
+//No RUNNING state must be found.
+func (sm *States) ResetEngineExecutionInfo() error {
+	log.Debug("Entering... ResetEngineExecutionInfo")
+	sm.lock()
+	defer sm.unlock()
+	errStates := sm.readStates()
+	if errStates != nil {
+		return errStates
+	}
+	log.Debug("ResetEngine... states has been read")
+	//Check if states running
+	if sm.isRunning() {
+		err := errors.New("Deployment is running, can not proceed")
+		log.Debug(err.Error())
+		return err
+	}
+	sm.ExecutedByExtensionName = ""
+	sm.ExecutionID = 0
+	for i := 0; i < len(sm.StateArray); i++ {
+		sm.StateArray[i].ExecutedByExtensionName = ""
+		sm.StateArray[i].ExecutionID = 0
+	}
+	errStates = sm.writeStates()
+	return errStates
+}
+
 //GetState return a state providing its name
 func (sm *States) GetState(state string) (*State, error) {
 	log.Debug("Entering... GetState")
@@ -1077,6 +1121,10 @@ func (sm *States) setStateStatusWithTimeStamp(isStart bool, state string, status
 		}
 	} else {
 		stateFound.Reason = ""
+	}
+	if status == StateRUNNING {
+		stateFound.ExecutedByExtensionName = sm.ExecutedByExtensionName
+		stateFound.ExecutionID = sm.ExecutionID
 	}
 	timeNow := time.Now().UTC().Format(time.UnixDate)
 	if isStart {
@@ -1478,6 +1526,9 @@ func (sm *States) Execute(fromState string, toState string) error {
 
 //Execute states
 func (sm *States) executeStates(fromState string, toState string) error {
+	//Init executionBy and ID, for the time being it is set to the sm.ExecutionName but later it could be set to the calling extension name
+	sm.ExecutedByExtensionName = sm.ExtensionName
+	sm.ExecutionID = sm.ExecutionID + 1
 	toExecute := false || fromState == FirstState
 	for i := 0; i < len(sm.StateArray); i++ {
 		state := sm.StateArray[i]

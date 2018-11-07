@@ -111,6 +111,9 @@ func (crc *CommandsRunnerClient) follow(extensionName string, position int64, st
 // if follow = true the method will loop for new data in the log
 // if quiet = true then log are not displayed but the method will wait until the deploy is done.
 func (crc *CommandsRunnerClient) GetLogs(extensionName string, stateName string, follow bool, quiet bool) error {
+	if extensionName == "" {
+		extensionName = crc.DefaultExtensionName
+	}
 	if stateName == "cr" {
 		_, err := crc.getLogs(extensionName, 0, stateName)
 		return err
@@ -158,6 +161,13 @@ func (crc *CommandsRunnerClient) GetLogs(extensionName string, stateName string,
 				return err
 			}
 		}
+		//Check if this state is part of the current execution.
+		if stateAux.ExecutedByExtensionName == "" ||
+			stateAux.ExecutionID == 0 ||
+			stateAux.ExecutedByExtensionName != states.ExecutedByExtensionName ||
+			stateAux.ExecutionID != states.ExecutionID {
+			continue
+		}
 		// display logs for status succeed, running and failed
 		if status == state.StateSUCCEEDED ||
 			status == state.StateRUNNING ||
@@ -180,7 +190,7 @@ func (crc *CommandsRunnerClient) GetLogs(extensionName string, stateName string,
 	//if -f set follow up
 	if follow {
 		// manage the remaning logs
-		previousEndTime := time.Now()
+		//		previousEndTime := time.Now()
 		for _, stateAux := range states.StateArray[currentIndex:endStateIndex] {
 			//wait to make sure the status is up to date.
 			//Get last status
@@ -212,22 +222,29 @@ func (crc *CommandsRunnerClient) GetLogs(extensionName string, stateName string,
 				}
 			}
 			//Display RUNNING and failed status.
-			// if status == state.StateRUNNING ||
-			// 	status == state.StateFAILED {
-			startTime, errTimeComv := time.Parse(time.UnixDate, newState.EndTime)
-			if errTimeComv != nil ||
-				(newState.Status == state.StateSUCCEEDED && startTime.After(previousEndTime)) ||
-				newState.Status == state.StateRUNNING ||
-				newState.Status == state.StateFAILED {
+			// startTime, errTimeComv := time.Parse(time.UnixDate, newState.EndTime)
+			// if errTimeComv != nil ||
+			// 	(newState.Status == state.StateSUCCEEDED && startTime.After(previousEndTime)) ||
+			// 	newState.Status == state.StateRUNNING ||
+			// 	newState.Status == state.StateFAILED {
+			// 	err := crc.follow(extensionName, pos, stateAux.Name, quiet)
+			// 	if err != nil {
+			// 		return err
+			// 	}
+			// }
+
+			if newState.ExecutedByExtensionName != "" &&
+				newState.ExecutedByExtensionName == states.ExecutedByExtensionName &&
+				newState.ExecutionID != 0 &&
+				newState.ExecutionID == states.ExecutionID &&
+				(newState.Status == state.StateSUCCEEDED ||
+					newState.Status == state.StateRUNNING ||
+					newState.Status == state.StateFAILED) {
 				err := crc.follow(extensionName, pos, stateAux.Name, quiet)
 				if err != nil {
 					return err
 				}
 			}
-			//If status failed no more things to display
-			//			if status == state.StateFAILED {
-			//				break
-			//			}
 			pos = 0
 		}
 	}

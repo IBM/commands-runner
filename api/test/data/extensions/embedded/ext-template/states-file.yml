@@ -15,6 +15,8 @@ states:
   previous_states: []
   next_states:
   - task1
+  executed_by_extension_name: ""
+  execution_id: 0
 - name: task1
   phase: ""
   label: task1
@@ -32,6 +34,8 @@ states:
   - ext-template
   next_states:
   - task2
+  executed_by_extension_name: ""
+  execution_id: 0
 - name: task2
   phase: ""
   label: task2
@@ -49,6 +53,8 @@ states:
   - task1
   next_states:
   - task3
+  executed_by_extension_name: ""
+  execution_id: 0
 - name: task3
   phase: ""
   label: task3
@@ -65,3 +71,8 @@ states:
   previous_states:
   - task2
   next_states: []
+  executed_by_extension_name: ""
+  execution_id: 0
+extension_name: ext-template
+executed_by_extension_name: ""
+execution_id: 0

@@ -15,6 +15,8 @@ states:
   previous_states: []
   next_states:
   - task2
+  executed_by_extension_name: ""
+  execution_id: 0
 - name: task2
   phase: ""
   label: Task 2
@@ -34,6 +36,8 @@ states:
   next_states:
   - task3
   - task1
+  executed_by_extension_name: ""
+  execution_id: 0
 - name: task3
   phase: ""
   label: Task 3
@@ -50,3 +54,8 @@ states:
   previous_states:
   - task2
   next_states: []
+  executed_by_extension_name: ""
+  execution_id: 0
+extension_name: states-run-with-rerun-before
+executed_by_extension_name: ""
+execution_id: 0

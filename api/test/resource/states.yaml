@@ -1,3 +1,4 @@
+extension_name: "state-handler-test"
 states:
 - name: state1
   phase: ""

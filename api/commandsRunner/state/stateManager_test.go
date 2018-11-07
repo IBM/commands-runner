@@ -51,12 +51,13 @@ func init() {
 }
 
 func TestGetStatesOK(t *testing.T) {
+	//	log.SetLevel(log.DebugLevel)
 	t.Log("Entering... TestGetStatesOK")
 	statesPath := "../../test/resource/states-TestGetStatesOK.yaml"
 	SetExtensionPath("../../test/data/extensions/")
 	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
 	//	sm, err := newStateManager(statesPath)
-	sm := newStateManager()
+	sm := newStateManager("states-TestGetStatesOK")
 	sm.StatesPath = statesPath
 	err := sm.ResetEngine()
 	if err != nil {
@@ -69,7 +70,6 @@ func TestGetStatesOK(t *testing.T) {
 	stateM, _ := json.Marshal(states)
 	var statesIn States
 	statesData, err := ioutil.ReadFile(statesPath)
-	t.Logf("StatesData=%v", statesData)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -81,12 +81,13 @@ func TestGetStatesOK(t *testing.T) {
 	t.Logf("States YAML:%v", statesIn)
 	expected, _ := json.Marshal(statesIn)
 	got := stateM
-	t.Log(string(expected))
+	t.Log(string(expected) + "\n")
 	t.Log(string(got))
 	if string(got) != string(expected) {
-		t.Errorf("handler returned unexpected response: got %v want %v",
+		t.Errorf("handler returned unexpected response: got \n\n%v \n\nwant \n\n%v",
 			string(stateM), string(expected))
 	}
+	sm.ResetEngineExecutionInfo()
 	err = sm.ResetEngine()
 	if err != nil {
 		t.Error(err.Error())
@@ -97,7 +98,7 @@ func TestGetStatesWithStatus(t *testing.T) {
 	t.Log("Entering... TestGetStatesWithStatus")
 	//	sm, err := newStateManager("../../test/resource/states-run-running.yaml")
 	statesPath := "../../test/resource/states-run-running.yaml"
-	sm := newStateManager()
+	sm := newStateManager("states-run-running")
 	sm.StatesPath = statesPath
 	states, err := sm.GetStates(StateRUNNING, false, false)
 	if err != nil {
@@ -120,7 +121,7 @@ func TestSetStatesOK(t *testing.T) {
 	}
 	//	sm, err := newStateManager("../../test/resource/out-test-states-post-sample-from-json.yaml")
 	statesPath := "../../test/resource/out-test-states-post-sample-from-json.yaml"
-	sm := newStateManager()
+	sm := newStateManager("out-test-states-post-sample-from-json")
 	sm.StatesPath = statesPath
 	statesJSON := "{\"states\":[{\"name\":\"state1\",\"label\":\"state1\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cr\",\"label\":\"commands-runner\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
 	var states States
@@ -130,6 +131,7 @@ func TestSetStatesOK(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
+	sm.ResetEngineExecutionInfo()
 	err = sm.ResetEngine()
 	if err != nil {
 		t.Error(err.Error())
@@ -142,7 +144,7 @@ func TestSetStatesStatusesOK(t *testing.T) {
 	SetExtensionPath("../../test/data/extensions/")
 	//	sm, err := newStateManager("../../test/resource/states-TestSetStatesStatusesOK.yaml")
 	statesPath := "../../test/resource/states-TestSetStatesStatusesOK.yaml"
-	sm := newStateManager()
+	sm := newStateManager("states-TestSetStatesStatusesOK")
 	sm.StatesPath = statesPath
 	err := sm.SetStatesStatuses("SKIP", "state1", true, "state1", true)
 	if err != nil {
@@ -163,6 +165,7 @@ func TestSetStatesStatusesOK(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
+	sm.ResetEngineExecutionInfo()
 	err = sm.ResetEngine()
 	if err != nil {
 		t.Error(err.Error())
@@ -175,7 +178,7 @@ func TestSetStatesStatusesFromTo(t *testing.T) {
 	SetExtensionPath("../../test/data/extensions/")
 	// sm, err := newStateManager("../../test/resource/states-TestSetStatesStatusesFromTo.yaml")
 	statesPath := "../../test/resource/states-TestSetStatesStatusesFromTo.yaml"
-	sm := newStateManager()
+	sm := newStateManager("states-TestSetStatesStatusesFromTo")
 	sm.StatesPath = statesPath
 	//Test a range in the middle inclusive
 	err := sm.SetStatesStatuses("SKIP", "repeat", true, "nologpath", true)
@@ -320,6 +323,7 @@ func TestSetStatesStatusesFromTo(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
+	sm.ResetEngineExecutionInfo()
 	err = sm.ResetEngine()
 	if err != nil {
 		t.Error(err.Error())
@@ -334,7 +338,7 @@ func TestSetStatesWithDelete(t *testing.T) {
 	}
 	// sm, err := newStateManager("../../test/resource/out-test-states-delete-json.yaml")
 	statesPath := "../../test/resource/out-test-states-delete-json.yaml"
-	sm := newStateManager()
+	sm := newStateManager("out-test-states-delete-json")
 	sm.StatesPath = statesPath
 	statesJSON := "{\"states\":[{\"name\":\"state1\",\"delete:\":true,\"label\":\"State 1\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cr\",\"label\":\"commands-runner\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
 	var states States
@@ -377,7 +381,7 @@ func TestSetStatesMerge(t *testing.T) {
 		t.Error(err.Error())
 	}
 	// sm, err := newStateManager("../../test/resource/out-test-states-merge-json.yaml")
-	sm := newStateManager()
+	sm := newStateManager("out-test-states-merge-json.yaml")
 	sm.StatesPath = statesPath
 	statesJSON := "{\"states\":[{\"name\":\"state1\",\"label\":\"State 1\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cr\",\"label\":\"commands-runner\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
 	var states States
@@ -398,6 +402,7 @@ func TestSetStatesMerge(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
+	sm.ResetEngineExecutionInfo()
 	err = sm.ResetEngine()
 	if err != nil {
 		t.Error(err.Error())
@@ -423,7 +428,7 @@ func TestSetStatesMergeWithDelete(t *testing.T) {
 	}
 	// sm, err := newStateManager("../../test/resource/out-test-states-merge-delete-json.yaml")
 	statesPath := "../../test/resource/out-test-states-merge-delete-json.yaml"
-	sm := newStateManager()
+	sm := newStateManager("out-test-states-merge-delete-json")
 	sm.StatesPath = statesPath
 	statesJSON := "{\"states\":[{\"name\":\"state1\",\"label\":\"State 1\",\"status\":\"SUCCEEDED\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cr2\",\"label\":\"commmands-runner\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
 	var states States
@@ -452,6 +457,7 @@ func TestSetStatesMergeWithDelete(t *testing.T) {
 	if statesResult.StateArray[0].Status != StateSUCCEEDED {
 		t.Error("State1 doesn't have the correct status. expecting SUCCEEDED got " + statesResult.StateArray[0].Status)
 	}
+	sm.ResetEngineExecutionInfo()
 	err = sm.ResetEngine()
 	if err != nil {
 		t.Error(err.Error())
@@ -468,7 +474,7 @@ func TestSetStatesMergeWithCycle(t *testing.T) {
 	}
 	//	sm, err := newStateManager("../../test/resource/out-test-states-merge-cycle-json.yaml")
 	statesPath := "../../test/resource/out-test-states-merge-cycle-json.yaml"
-	sm := newStateManager()
+	sm := newStateManager("out-test-states-merge-cycle-json")
 	sm.StatesPath = statesPath
 	statesJSON := "{\"states\":[{\"name\":\"state1\",\"label\":\"State 1\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cr\",\"label\":\"commands-runner\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
 	var states States
@@ -489,6 +495,7 @@ func TestSetStatesMergeWithCycle(t *testing.T) {
 	} else {
 		t.Log(err.Error())
 	}
+	sm.ResetEngineExecutionInfo()
 	err = sm.ResetEngine()
 	if err != nil {
 		t.Error(err.Error())
@@ -505,7 +512,7 @@ func TestInsertStatesBeforeFirst(t *testing.T) {
 	}
 	//	sm, err := newStateManager("../../test/resource/out-test-insert-before-first-state.yaml")
 	statesPath := "../../test/resource/out-test-insert-before-first-state.yaml"
-	sm := newStateManager()
+	sm := newStateManager("out-test-insert-before-first-state")
 	sm.StatesPath = statesPath
 	states := &States{
 		StateArray: []State{
@@ -545,7 +552,7 @@ func TestInsertStatesAfterFirst(t *testing.T) {
 	}
 	//	sm, err := newStateManager("../../test/resource/out-test-insert-after-first-state.yaml")
 	statesPath := "../../test/resource/out-test-insert-after-first-state.yaml"
-	sm := newStateManager()
+	sm := newStateManager("out-test-insert-after-first-state")
 	sm.StatesPath = statesPath
 	states := &States{
 		StateArray: []State{
@@ -586,7 +593,7 @@ func TestInsertStatesBeforeLast(t *testing.T) {
 	}
 	// sm, err := newStateManager("../../test/resource/out-test-insert-before-last-state.yaml")
 	statesPath := "../../test/resource/out-test-insert-before-last-state.yaml"
-	sm := newStateManager()
+	sm := newStateManager("out-test-insert-before-last-state")
 	sm.StatesPath = statesPath
 	states := &States{
 		StateArray: []State{
@@ -631,7 +638,7 @@ func TestInsertStatesAfterLast(t *testing.T) {
 	}
 	// sm, err := newStateManager("../../test/resource/out-test-insert-after-last-state.yaml")
 	statesPath := "../../test/resource/out-test-insert-after-last-state.yaml"
-	sm := newStateManager()
+	sm := newStateManager("out-test-insert-after-last-state")
 	sm.StatesPath = statesPath
 	states := &States{
 		StateArray: []State{
@@ -673,7 +680,7 @@ func TestInsertStatesAfterLastByName(t *testing.T) {
 	}
 	// sm, err := newStateManager("../../test/resource/out-test-insert-after-last-state.yaml")
 	statesPath := "../../test/resource/out-test-insert-after-last-state.yaml"
-	sm := newStateManager()
+	sm := newStateManager("out-test-insert-after-last-state")
 	sm.StatesPath = statesPath
 	states := &States{
 		StateArray: []State{
@@ -719,7 +726,7 @@ func TestInsertStatesWithCycle(t *testing.T) {
 	}
 	// sm, err := newStateManager("../../test/resource/out-test-insert-cycle-state.yaml")
 	statesPath := "../../test/resource/out-test-insert-cycle-state.yaml"
-	sm := newStateManager()
+	sm := newStateManager("out-test-insert-cycle-state")
 	sm.StatesPath = statesPath
 	states := &States{
 		StateArray: []State{
@@ -764,7 +771,7 @@ func TestDeleteStatesFirst(t *testing.T) {
 	}
 	// sm, err := newStateManager("../../test/resource/out-test-delete-first-state.yaml")
 	statesPath := "../../test/resource/out-test-delete-first-state.yaml"
-	sm := newStateManager()
+	sm := newStateManager("out-test-delete-first-state")
 	sm.StatesPath = statesPath
 	states := &States{
 		StateArray: []State{
@@ -801,7 +808,7 @@ func TestDeleteStatesLast(t *testing.T) {
 	}
 	// sm, err := newStateManager("../../test/resource/out-test-delete-last-state.yaml")
 	statesPath := "../../test/resource/out-test-delete-last-state.yaml"
-	sm := newStateManager()
+	sm := newStateManager("out-test-delete-last-state")
 	sm.StatesPath = statesPath
 	states := &States{
 		StateArray: []State{
@@ -838,7 +845,7 @@ func TestDeleteStatesFirstByName(t *testing.T) {
 	}
 	//	sm, err := newStateManager("../../test/resource/out-test-delete-first-state.yaml")
 	statesPath := "../../test/resource/out-test-delete-first-state.yaml"
-	sm := newStateManager()
+	sm := newStateManager("out-test-delete-first-state")
 	sm.StatesPath = statesPath
 	states := &States{
 		StateArray: []State{
@@ -875,7 +882,7 @@ func TestDeleteStatesLastByName(t *testing.T) {
 	}
 	// sm, err := newStateManager("../../test/resource/out-test-delete-last-state.yaml")
 	statesPath := "../../test/resource/out-test-delete-last-state.yaml"
-	sm := newStateManager()
+	sm := newStateManager("out-test-delete-last-state")
 	sm.StatesPath = statesPath
 	states := &States{
 		StateArray: []State{
@@ -912,7 +919,7 @@ func TestDeleteStatesProtected(t *testing.T) {
 	}
 	// sm, err := newStateManager("../../test/resource/out-test-delete-last-state.yaml")
 	statesPath := "../../test/resource/out-test-delete-last-state.yaml"
-	sm := newStateManager()
+	sm := newStateManager("out-test-delete-last-state")
 	sm.StatesPath = statesPath
 	states := &States{
 		StateArray: []State{
@@ -944,7 +951,7 @@ func TestGetStateOK(t *testing.T) {
 	SetExtensionPath("../../test/data/extensions/")
 	// sm, err := newStateManager("../../test/resource/states-TestGetStateOK.yaml")
 	statesPath := "../../test/resource/states-TestGetStateOK.yaml"
-	sm := newStateManager()
+	sm := newStateManager("states-TestGetStateOK")
 	sm.StatesPath = statesPath
 	state, err := sm.GetState("state1")
 	if err != nil {
@@ -961,7 +968,7 @@ func TestGetStateNOK(t *testing.T) {
 	t.Log("Entering... TestGetStateNOK")
 	// sm, err := newStateManager("../../test/resource/states-TestGetStateNOK.yaml")
 	statesPath := "../../test/resource/states-TestGetStateNOK.yaml"
-	sm := newStateManager()
+	sm := newStateManager("states-TestGetStateNOK")
 	sm.StatesPath = statesPath
 	stateN, err := sm.GetState("not-exist")
 	if err == nil {
@@ -973,7 +980,7 @@ func TestGetStateEmptyState(t *testing.T) {
 	t.Log("Entering... TestGetStateNOK")
 	// sm, err := newStateManager("../../test/resource/states-TestGetStateEmptyState.yaml")
 	statesPath := "../../test/resource/states-TestGetStateEmptyState.yaml"
-	sm := newStateManager()
+	sm := newStateManager("states-TestGetStateEmptyState")
 	sm.StatesPath = statesPath
 	_, err := sm.GetState("")
 	if err == nil {
@@ -991,7 +998,7 @@ func TestSetStateStatus(t *testing.T) {
 	scriptTimeoutV := time.Now().Second()
 	statesPath := "../../test/resource/states-TestSetStateStatus.yaml"
 	// sm, err := newStateManager(statesPath)
-	sm := newStateManager()
+	sm := newStateManager("states-TestSetStateStatus")
 	sm.StatesPath = statesPath
 	err := sm.ResetEngine()
 	if err != nil {
@@ -1036,6 +1043,7 @@ func TestSetStateStatus(t *testing.T) {
 	if err == nil {
 		t.Error("Expecting error as the status is incorrect")
 	}
+	sm.ResetEngineExecutionInfo()
 	err = sm.ResetEngine()
 	if err != nil {
 		t.Error(err.Error())
@@ -1048,7 +1056,7 @@ func TestEngineSuccess(t *testing.T) {
 	SetExtensionPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-run-success.yaml"
 	// sm, err := newStateManager(statesPath)
-	sm := newStateManager()
+	sm := newStateManager("states-run-success")
 	sm.StatesPath = statesPath
 	t.Log("Reset States file")
 	err := sm.ResetEngine()
@@ -1065,6 +1073,7 @@ func TestEngineSuccess(t *testing.T) {
 	if len(states.StateArray) > 0 {
 		t.Error("At least one state failed:" + states.StateArray[0].Name)
 	}
+	sm.ResetEngineExecutionInfo()
 	err = sm.ResetEngine()
 	if err != nil {
 		t.Error(err.Error())
@@ -1077,7 +1086,7 @@ func TestEngineWithRerunAfter(t *testing.T) {
 	SetExtensionPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-run-with-rerun-after.yaml"
 	// sm, err := newStateManager(statesPath)
-	sm := newStateManager()
+	sm := newStateManager("states-run-with-rerun-after")
 	sm.StatesPath = statesPath
 	t.Log("Reset States file")
 	err := sm.ResetEngine()
@@ -1094,6 +1103,7 @@ func TestEngineWithRerunAfter(t *testing.T) {
 	if len(states.StateArray) > 0 {
 		t.Error("At least one state failed:" + states.StateArray[0].Name)
 	}
+	sm.ResetEngineExecutionInfo()
 	err = sm.ResetEngine()
 	if err != nil {
 		t.Error(err.Error())
@@ -1106,7 +1116,7 @@ func TestEngineWithRerunBefore(t *testing.T) {
 	SetExtensionPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-run-with-rerun-before.yaml"
 	// sm, err := newStateManager(statesPath)
-	sm := newStateManager()
+	sm := newStateManager("states-run-with-rerun-before")
 	sm.StatesPath = statesPath
 	t.Log("Reset States file")
 	err := sm.ResetEngine()
@@ -1118,6 +1128,7 @@ func TestEngineWithRerunBefore(t *testing.T) {
 	if err == nil {
 		t.Error("Expect error because the stateToRerun of task2 reference task1 which is before in the sequence")
 	}
+	sm.ResetEngineExecutionInfo()
 	err = sm.ResetEngine()
 	if err != nil {
 		t.Error(err.Error())
@@ -1130,7 +1141,7 @@ func TestEngineCycleOnRerun(t *testing.T) {
 	SetExtensionPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-run-cycle-on-rerun.yaml"
 	// sm, err := newStateManager(statesPath)
-	sm := newStateManager()
+	sm := newStateManager("states-run-cycle-on-rerun")
 	sm.StatesPath = statesPath
 	t.Log("Execute states file")
 	err := sm.Start()
@@ -1147,7 +1158,7 @@ func TestEngineCycleOnNext(t *testing.T) {
 	SetExtensionPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-run-cycle-on-next.yaml"
 	// sm, err := newStateManager(statesPath)
-	sm := newStateManager()
+	sm := newStateManager("states-run-cycle-on-next")
 	sm.StatesPath = statesPath
 	t.Log("Execute states file")
 	err := sm.Start()
@@ -1183,7 +1194,7 @@ func TestStatusFailedDependency(t *testing.T) {
 	SetExtensionPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-run-failed-dependency.yaml"
 	// sm, err := newStateManager(statesPath)
-	sm := newStateManager()
+	sm := newStateManager("states-run-failed-dependency")
 	sm.StatesPath = statesPath
 	t.Log("Reset States file")
 	err := sm.ResetEngine()
@@ -1203,6 +1214,7 @@ func TestStatusFailedDependency(t *testing.T) {
 		t.Error("The statuses are not correct, expecting task1: SUCCEEDED, task2: FAILED, task3: FAILED")
 	}
 	t.Log(states)
+	sm.ResetEngineExecutionInfo()
 	err = sm.ResetEngine()
 	if err != nil {
 		t.Error(err.Error())
@@ -1215,7 +1227,7 @@ func TestEngineFailure(t *testing.T) {
 	SetExtensionPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-run-failure.yaml"
 	// sm, err := newStateManager(statesPath)
-	sm := newStateManager()
+	sm := newStateManager("states-run-failure")
 	sm.StatesPath = statesPath
 	t.Log("Reset States file")
 	err := sm.ResetEngine()
@@ -1236,6 +1248,7 @@ func TestEngineFailure(t *testing.T) {
 	if len(states.StateArray) <= 0 {
 		t.Error("At least one state must failed")
 	}
+	sm.ResetEngineExecutionInfo()
 	err = sm.ResetEngine()
 	if err != nil {
 		t.Error(err.Error())
@@ -1247,7 +1260,7 @@ func TestSetStateStatusEmptyState(t *testing.T) {
 	SetExtensionPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-TestSetStateStatusEmptyState.yaml"
 	// sm, err := newStateManager(statesPath)
-	sm := newStateManager()
+	sm := newStateManager("states-TestSetStateStatusEmptyState")
 	sm.StatesPath = statesPath
 	err := sm.ResetEngine()
 	if err != nil {
@@ -1258,6 +1271,7 @@ func TestSetStateStatusEmptyState(t *testing.T) {
 	if err == nil {
 		t.Error("An error should be raised as the state is not specified")
 	}
+	sm.ResetEngineExecutionInfo()
 	err = sm.ResetEngine()
 	if err != nil {
 		t.Error(err.Error())
@@ -1269,7 +1283,7 @@ func TestGetLogGoodState1(t *testing.T) {
 	t.Log("Entering... TestGetLogGoodState1")
 	statesPath := "../../test/resource/states-TestGetLogGoodState1.yaml"
 	// sm, err := newStateManager(statesPath)
-	sm := newStateManager()
+	sm := newStateManager("states-TestGetLogGoodState1")
 	sm.StatesPath = statesPath
 	raw, err := sm.GetLog("state1", 0, math.MaxInt64, false)
 	if err != nil {
@@ -1286,7 +1300,7 @@ func TestGetLogGoodState1ByChar(t *testing.T) {
 	t.Log("Entering... TestGetLogGoodState1ByChar")
 	statesPath := "../../test/resource/states-TestGetLogGoodState1ByChar.yaml"
 	// sm, err := newStateManager(statesPath)
-	sm := newStateManager()
+	sm := newStateManager("states-TestGetLogGoodState1ByChar")
 	sm.StatesPath = statesPath
 	raw, err := sm.GetLog("state1", 0, math.MaxInt64, true)
 	if err != nil {
@@ -1304,7 +1318,7 @@ func TestGetLogGoodCR(t *testing.T) {
 	//log.SetLevel(log.DebugLevel)
 	statesPath := "../../test/resource/states-TestGetLogGoodState2.yaml"
 	// sm, err := newStateManager(statesPath)
-	sm := newStateManager()
+	sm := newStateManager("states-TestGetLogGoodState2")
 	sm.StatesPath = statesPath
 	raw, err := sm.GetLog("state2", 0, math.MaxInt64, false)
 	if err != nil {
@@ -1321,7 +1335,7 @@ func TestGetLogGoodMock(t *testing.T) {
 	t.Log("Entering... TestGetLogGoodMock")
 	statesPath := "../../test/resource/states-TestGetLogGoodMock.yaml"
 	// sm, err := newStateManager(statesPath)
-	sm := newStateManager()
+	sm := newStateManager("states-TestGetLogGoodMock")
 	sm.StatesPath = statesPath
 	raw, err := sm.GetLog("mock", 0, math.MaxInt64, false)
 	if err != nil {
@@ -1337,7 +1351,7 @@ func TestGetLogGoodMockByChar(t *testing.T) {
 	t.Log("Entering... TestGetLogGoodMockByChar")
 	statesPath := "../../test/resource/states-TestGetLogGoodMockByChar.yaml"
 	// sm, err := newStateManager(statesPath)
-	sm := newStateManager()
+	sm := newStateManager("states-TestGetLogGoodMockByChar")
 	sm.StatesPath = statesPath
 	raw, err := sm.GetLog("mock", 0, math.MaxInt64, true)
 	if err != nil {
@@ -1353,7 +1367,7 @@ func TestGetLogUnexistantState(t *testing.T) {
 	t.Log("Entering... TestGetLogUnexistantState")
 	statesPath := "../../test/resource/states-TestGetLogUnexistantState.yaml"
 	// sm, err := newStateManager(statesPath)
-	sm := newStateManager()
+	sm := newStateManager("states-TestGetLogUnexistantState")
 	sm.StatesPath = statesPath
 	_, err := sm.GetLog("UnexistantState", 0, math.MaxInt64, false)
 	if err == nil {
@@ -1366,7 +1380,7 @@ func TestGetLogEmptyState(t *testing.T) {
 	t.Log("Entering... TestGetLogUnexistantState")
 	statesPath := "../../test/resource/states-TestGetLogEmptyState.yaml"
 	// sm, err := newStateManager(statesPath)
-	sm := newStateManager()
+	sm := newStateManager("states-TestGetLogEmptyStat")
 	sm.StatesPath = statesPath
 	_, err := sm.GetLog("", 0, math.MaxInt64, false)
 	if err == nil {
@@ -1379,7 +1393,7 @@ func TestGetLogGoodFromToInRange(t *testing.T) {
 	t.Log("Entering... TestGetLogGoodFromToInRange")
 	statesPath := "../../test/resource/states-TestGetLogGoodFromToInRange.yaml"
 	// sm, err := newStateManager(statesPath)
-	sm := newStateManager()
+	sm := newStateManager("states-TestGetLogGoodFromToInRange")
 	sm.StatesPath = statesPath
 	raw, err := sm.GetLog("state1", 2, 2, false)
 	if err != nil {
@@ -1400,7 +1414,7 @@ func TestGetLogGoodFromToInRangeByChar(t *testing.T) {
 	t.Log("Entering... TestGetLogGoodFromToInRangeByChar")
 	statesPath := "../../test/resource/states-TestGetLogGoodFromToInRangeByChar.yaml"
 	// sm, err := newStateManager(statesPath)
-	sm := newStateManager()
+	sm := newStateManager("states-TestGetLogGoodFromToInRangeByChar")
 	sm.StatesPath = statesPath
 	raw, err := sm.GetLog("state1", 2, 2, true)
 	if err != nil {
@@ -1417,7 +1431,7 @@ func TestGetLogGoodFromToOutOfRange(t *testing.T) {
 	t.Log("Entering... TestGetLogGoodFromToOutOfRange")
 	statesPath := "../../test/resource/states-TestGetLogGoodFromToOutOfRange.yaml"
 	// sm, err := newStateManager(statesPath)
-	sm := newStateManager()
+	sm := newStateManager("states-TestGetLogGoodFromToOutOfRange")
 	sm.StatesPath = statesPath
 	raw, err := sm.GetLog("state1", 6, 7, false)
 	if err != nil {
@@ -1434,7 +1448,7 @@ func TestGetLogGoodFromToOutOfRangeByChar(t *testing.T) {
 	t.Log("Entering... TestGetLogGoodFromToOutOfRangeByChar")
 	statesPath := "../../test/resource/states-TestGetLogGoodFromToOutOfRangeByChar.yaml"
 	// sm, err := newStateManager(statesPath)
-	sm := newStateManager()
+	sm := newStateManager("states-TestGetLogGoodFromToOutOfRangeByChar")
 	sm.StatesPath = statesPath
 	raw, err := sm.GetLog("state1", 6000, 7, false)
 	if err != nil {
@@ -1451,7 +1465,7 @@ func TestGetLogStateNotExists(t *testing.T) {
 	t.Log("Entering... TestGetLogStateNotExists")
 	statesPath := "../../test/resource/states-TestGetLogStateNotExists.yaml"
 	// sm, err := newStateManager(statesPath)
-	sm := newStateManager()
+	sm := newStateManager("states-TestGetLogStateNotExists")
 	sm.StatesPath = statesPath
 	_, err := sm.GetLog("state1", 0, math.MaxInt64, false)
 	if err != nil {
@@ -1463,7 +1477,7 @@ func TestGetLogStateMalformed(t *testing.T) {
 	t.Log("Entering... TestGetLogStateMalformed")
 	statesPath := "../../test/resource/states-malformed.yaml"
 	// sm, err := newStateManager(statesPath)
-	sm := newStateManager()
+	sm := newStateManager("states-malformed")
 	sm.StatesPath = statesPath
 	_, err := sm.GetLog("state1", 0, math.MaxInt64, false)
 	if err == nil {
@@ -1476,7 +1490,7 @@ func TestGetLogNoLogPath(t *testing.T) {
 	t.Log("Entering... TestGetLogNoLogPath")
 	statesPath := "../../test/resource/states-TestGetLogNoLogPath.yaml"
 	// sm, err := newStateManager(statesPath)
-	sm := newStateManager()
+	sm := newStateManager("states-TestGetLogNoLogPath")
 	sm.StatesPath = statesPath
 	_, err := sm.GetLog("nologpath", 0, math.MaxInt64, false)
 	if err == nil {
@@ -1489,7 +1503,7 @@ func TestGetLogEmptyLogPath(t *testing.T) {
 	t.Log("Entering... TestGetLogEmptyLogPath")
 	statesPath := "../../test/resource/states-TestGetLogEmptyLogPath.yaml"
 	// sm, err := newStateManager(statesPath)
-	sm := newStateManager()
+	sm := newStateManager("states-TestGetLogEmptyLogPath")
 	sm.StatesPath = statesPath
 	_, err := sm.GetLog("emptylogpath", 0, math.MaxInt64, false)
 	if err == nil {
@@ -1502,7 +1516,7 @@ func TestGetLogNilLogPath(t *testing.T) {
 	t.Log("Entering... TestGetLogNilLogPath")
 	statesPath := "../../test/resource/states-TestGetLogNilLogPath.yaml"
 	// sm, err := newStateManager(statesPath)
-	sm := newStateManager()
+	sm := newStateManager("states-TestGetLogNilLogPath")
 	sm.StatesPath = statesPath
 	_, err := sm.GetLog("nillogpath", 0, math.MaxInt64, false)
 	if err == nil {
@@ -1515,7 +1529,7 @@ func TestGetLogWrongLogPath(t *testing.T) {
 	t.Log("Entering... TestGetLogWrongLogPath")
 	statesPath := "../../test/resource/states-TestGetLogWrongLogPath.yaml"
 	// sm, err := newStateManager(statesPath)
-	sm := newStateManager()
+	sm := newStateManager("states-TestGetLogWrongLogPath")
 	sm.StatesPath = statesPath
 	_, err := sm.GetLog("wronglogpath", 0, math.MaxInt64, false)
 	if err == nil {

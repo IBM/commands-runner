@@ -56,6 +56,14 @@ func HandleEngine(w http.ResponseWriter, req *http.Request) {
 				logger.AddCallerField().Error("Unsupported method:" + req.Method)
 				http.Error(w, "Unsupported method:"+req.Method, http.StatusMethodNotAllowed)
 			}
+		case "reset-execution-info":
+			switch req.Method {
+			case "PUT":
+				PutResetEngineExecutionInfoEndpoint(w, req)
+			default:
+				logger.AddCallerField().Error("Unsupported method:" + req.Method)
+				http.Error(w, "Unsupported method:"+req.Method, http.StatusMethodNotAllowed)
+			}
 		}
 	} else {
 		switch req.Method {
@@ -126,6 +134,29 @@ func PutResetEngineEndpoint(w http.ResponseWriter, req *http.Request) {
 	}
 	log.Debug(req.URL.Path)
 	errReset := sm.ResetEngine()
+	if errReset != nil {
+		logger.AddCallerField().Error(errReset.Error())
+		http.Error(w, errReset.Error(), 500)
+		return
+	}
+}
+
+/*
+Reset the engine
+URL: /cr/v1/engine?action=<action>
+Method: PUT
+action: 'reset-execution-info'
+*/
+func PutResetEngineExecutionInfoEndpoint(w http.ResponseWriter, req *http.Request) {
+	log.Debug("Entering in PutResetEngineEndpoint")
+	sm, _, errSM := getStateManagerFromRequest(req)
+	if errSM != nil {
+		logger.AddCallerField().Error(errSM.Error())
+		http.Error(w, errSM.Error(), http.StatusBadRequest)
+		return
+	}
+	log.Debug(req.URL.Path)
+	errReset := sm.ResetEngineExecutionInfo()
 	if errReset != nil {
 		logger.AddCallerField().Error(errReset.Error())
 		http.Error(w, errReset.Error(), 500)

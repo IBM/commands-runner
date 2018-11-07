@@ -59,7 +59,23 @@ func TestEngineStartPUT(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 
 	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("Can not revert test")
+		t.Errorf("Can not reset engine")
+	}
+
+	req, err = http.NewRequest("PUT", "/cr/v1/engine?action=reset-execution-info&extension-name=TestEngineStartPUT", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
+	handler = http.HandlerFunc(HandleEngine)
+
+	// Our handlers satisfy http.Handler, so we can call their ServeHTTP method
+	// directly and pass in our Request and ResponseRecorder.
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("Can not reset execution info")
 	}
 
 	req, err = http.NewRequest("GET", "/cr/v1/engine?extension-name=TestEngineStartPUT", nil)
@@ -123,7 +139,23 @@ func TestEngineStartExtensonPUT(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 
 	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("Can not revert test")
+		t.Errorf("Can not reset engine")
+	}
+
+	req, err = http.NewRequest("PUT", "/cr/v1/engine?action=reset-execution-info&extension-name="+extension, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
+	handler = http.HandlerFunc(HandleEngine)
+
+	// Our handlers satisfy http.Handler, so we can call their ServeHTTP method
+	// directly and pass in our Request and ResponseRecorder.
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("Can not reset execution info")
 	}
 
 	req, err = http.NewRequest("GET", "/cr/v1/engine?extension-name="+extension, nil)

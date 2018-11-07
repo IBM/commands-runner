@@ -49,7 +49,7 @@ tag::
 	@echo "TAG_VERSION:$(TAG_VERSION)"
 
 .PHONY: all
-all:: pre-req copyright-check go-test server client
+all:: pre-req copyright-check go-test server client code
 
 #This requires Graphitz and    ''
 .PHONY: dependency-graph-text
