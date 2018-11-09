@@ -122,9 +122,9 @@ func SetConfigRootKey(rootKey string) {
 /*
 Set the client path
 */
-func SetClientPath(clientPath string) {
-	global.ClientPath = clientPath
-}
+// func SetClientPath(clientPath string) {
+// 	global.ClientPath = clientPath
+// }
 
 /*
 Search the configuration_name property

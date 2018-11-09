@@ -1,32 +1,32 @@
 states:
 - name: task1
   phase: ""
-  label: task1
-  log_path: embedded/task1.log
+  label: Task 1
+  log_path: /tmp/mydir/task1-success.log
   status: READY
   start_time: ""
   end_time: ""
   reason: ""
-  script: scripts/success.sh task1
-  script_timeout: 60
+  script: ../../test/scripts/success.sh task1
+  script_timeout: 10
   protected: false
   deleted: false
   states_to_rerun: []
   previous_states: []
   next_states:
-  - task2
+  - ext-template
   executed_by_extension_name: ""
   execution_id: 0
-- name: task2
+- name: ext-template
   phase: ""
-  label: task2
-  log_path: embedded/task2.log
+  label: Ext Template
+  log_path: /tmp/ext-template.log
   status: READY
   start_time: ""
   end_time: ""
   reason: ""
-  script: scripts/success.sh task2
-  script_timeout: 60
+  script: ../../test/scripts/success.sh task2
+  script_timeout: 10
   protected: false
   deleted: false
   states_to_rerun: []
@@ -38,22 +38,22 @@ states:
   execution_id: 0
 - name: task3
   phase: ""
-  label: task3
-  log_path: embedded/task3.log
+  label: Task 3
+  log_path: /tmp/task3-success.log
   status: READY
   start_time: ""
   end_time: ""
   reason: ""
-  script: scripts/success.sh task3
-  script_timeout: 60
+  script: ../../test/scripts/success.sh task3
+  script_timeout: 10
   protected: false
   deleted: false
   states_to_rerun: []
   previous_states:
-  - task2
+  - ext-template
   next_states: []
   executed_by_extension_name: ""
   execution_id: 0
-extension_name: ext-template
+extension_name: states-run-success-with-extension
 executed_by_extension_name: ""
 execution_id: 0

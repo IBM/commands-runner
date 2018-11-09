@@ -1051,6 +1051,7 @@ func TestSetStateStatus(t *testing.T) {
 }
 
 func TestEngineSuccess(t *testing.T) {
+	//	log.SetLevel(log.DebugLevel)
 	t.Log("Entering...TestEngineSuccess")
 	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
 	SetExtensionPath("../../test/data/extensions/")
@@ -1064,7 +1065,7 @@ func TestEngineSuccess(t *testing.T) {
 		t.Error(err.Error())
 	}
 	t.Log("Execute states file")
-	sm.Execute("task1", "task3")
+	sm.Execute("task1", "task3", nil, nil)
 	t.Log("Get Failed states")
 	states, errStates := sm.GetStates(StateFAILED, false, false)
 	if errStates != nil {
@@ -1075,6 +1076,73 @@ func TestEngineSuccess(t *testing.T) {
 	}
 	sm.ResetEngineExecutionInfo()
 	err = sm.ResetEngine()
+	if err != nil {
+		t.Error(err.Error())
+	}
+}
+
+func TestEngineSuccessWithExtension(t *testing.T) {
+	//	log.SetLevel(log.DebugLevel)
+	t.Log("Entering...TestEngineSuccess")
+	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionPath("../../test/data/extensions/")
+	statesPath := "../../test/resource/states-run-success-with-extension.yaml"
+	// sm, err := newStateManager(statesPath)
+	smExt, err := GetStatesManager("ext-template")
+	if err != nil {
+		t.Error(err.Error())
+	}
+	smExt.ResetEngineExecutionInfo()
+	smExt.ResetEngine()
+	sm, err := GetStatesManager("states-run-success-with-extension")
+	if err != nil {
+		t.Error(err.Error())
+	}
+	sm.StatesPath = statesPath
+	t.Log("Reset States file")
+
+	sm.ResetEngineExecutionInfo()
+	err = sm.ResetEngine()
+	if err != nil {
+		t.Error(err.Error())
+	}
+	t.Log("Execute states file")
+	err = sm.Start()
+	if err != nil {
+		t.Error(err.Error())
+	}
+	t.Log("Get Failed states")
+	states, errStates := sm.GetStates(StateFAILED, false, false)
+	if errStates != nil {
+		t.Error(errStates.Error())
+	}
+	if len(states.StateArray) > 0 {
+		t.Error("At least one state failed:" + states.StateArray[0].Name)
+	}
+	statesExt, err := smExt.GetStates("", false, true)
+	if statesExt.ExecutedByExtensionName != "states-run-success-with-extension" {
+		t.Error("Expect ExecutedByExtensionName to be states-run-success-with-extension but have " + statesExt.ExecutedByExtensionName)
+	}
+
+	if statesExt.ExecutionID != 1 {
+		t.Error("Expect ExecutionID to be 1 but have " + strconv.Itoa(statesExt.ExecutionID))
+	}
+
+	for _, state := range statesExt.StateArray {
+		if state.ExecutionID != 1 {
+			t.Error("Expect ExecutionID for state " + state.Name + " to be 1 but have " + strconv.Itoa(state.ExecutionID))
+		}
+		if state.ExecutedByExtensionName != "states-run-success-with-extension" {
+			t.Error("Expect ExecutedByExtensionName for state " + state.Name + " to be states-run-success-with-extension but have " + statesExt.ExecutedByExtensionName)
+		}
+	}
+	smExt.ResetEngineExecutionInfo()
+	sm.ResetEngineExecutionInfo()
+	err = sm.ResetEngine()
+	if err != nil {
+		t.Error(err.Error())
+	}
+	err = smExt.ResetEngine()
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -1094,7 +1162,7 @@ func TestEngineWithRerunAfter(t *testing.T) {
 		t.Error(err.Error())
 	}
 	t.Log("Execute states file")
-	sm.Execute("task1", "task3")
+	sm.Execute("task1", "task3", nil, nil)
 	t.Log("Get Failed states")
 	states, errStates := sm.GetStates(StateFAILED, false, false)
 	if errStates != nil {
@@ -1124,7 +1192,7 @@ func TestEngineWithRerunBefore(t *testing.T) {
 		t.Error(err.Error())
 	}
 	t.Log("Execute states file")
-	err = sm.Execute("task1", "task3")
+	err = sm.Execute("task1", "task3", nil, nil)
 	if err == nil {
 		t.Error("Expect error because the stateToRerun of task2 reference task1 which is before in the sequence")
 	}
@@ -1202,7 +1270,7 @@ func TestStatusFailedDependency(t *testing.T) {
 		t.Error(err.Error())
 	}
 	t.Log("Execute states file")
-	sm.Execute("task1", "task3")
+	sm.Execute("task1", "task3", nil, nil)
 	t.Log("Get Failed states")
 	states, errStates := sm.GetStates("", false, false)
 	if errStates != nil {
@@ -1235,7 +1303,7 @@ func TestEngineFailure(t *testing.T) {
 		t.Error(err.Error())
 	}
 	t.Log("Execute states file")
-	err = sm.Execute("task1", "task3")
+	err = sm.Execute("task1", "task3", nil, nil)
 	if err == nil {
 		t.Error("Expecting error as the execution should fail")
 	}

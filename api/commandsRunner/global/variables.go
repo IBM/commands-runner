@@ -27,4 +27,4 @@ var ConfigYamlFileName = "config.yml"
 var ConfigRootKey = "config"
 
 //Client Path, used when generate the scripts to run an extension
-var ClientPath = "./cr-cli"
+//var ClientPath = "./cr-cli"

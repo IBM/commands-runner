@@ -5,6 +5,7 @@
 /api/test/resource/test*
 /api/test/resource/config.*
 /api/test/resource/dummy-extension.zip
+/api/test/data/extensions/embedded/ext-template/embedded/*
 api/commandsRunner/cm
 examples/data/*
 examples/_build

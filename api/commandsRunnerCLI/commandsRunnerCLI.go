@@ -16,7 +16,6 @@ import (
 
 	cli "gopkg.in/urfave/cli.v1"
 
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunnerCLI/clientManager"
 )
 
@@ -899,7 +898,7 @@ func Client() *cli.App {
 		{
 			Name:      "state",
 			Usage:     "Manage a given state (get, set)",
-			UsageText: global.ClientPath + " state [-e <extension_name>] -s <state> set --status <new_status>",
+			UsageText: "<client> state [-e <extension_name>] -s <state> set --status <new_status>",
 			Flags: []cli.Flag{
 				cli.StringFlag{
 					Name:        "extension, e",

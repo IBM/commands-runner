@@ -26,6 +26,8 @@ import (
 	"sync"
 	"time"
 
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/logger"
+
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/commandsRunner"
@@ -250,7 +252,9 @@ func (sm *States) setDefaultValues() {
 		}
 		//		log.Debug("Check status")
 		if sm.StateArray[index].Status == "" {
-			sm.StateArray[index].Status = StateREADY
+			sm.setStateStatus(sm.StateArray[index], StateREADY, true)
+
+			// sm.StateArray[index].Status = StateREADY
 		}
 		//		log.Debug("Check LogPath/Script")
 
@@ -267,11 +271,11 @@ func (sm *States) setDefaultValues() {
 			sm.StateArray[index].LogPath = logDir
 			log.Debug("Set state.LogPath to " + sm.StateArray[index].LogPath)
 		}
-		if sm.StateArray[index].Script == "" {
-			//			log.Debug("Set state.Script")
-			sm.StateArray[index].Script = global.ClientPath + " extension -e " + sm.StateArray[index].Name + " deploy -w"
-			//			log.Debug("Set state.Script to " + sm.StateArray[index].Script)
-		}
+		// if sm.StateArray[index].Script == "" {
+		// 	//			log.Debug("Set state.Script")
+		// 	sm.StateArray[index].Script = global.ClientPath + " extension -e " + sm.StateArray[index].Name + " deploy -w"
+		// 	//			log.Debug("Set state.Script to " + sm.StateArray[index].Script)
+		// }
 		//		log.Debug("Check ScriptTimeout")
 		if sm.StateArray[index].ScriptTimeout == 0 {
 			//			log.Debug("Set state.ScriptTimeout")
@@ -406,7 +410,12 @@ func (sm *States) GetStates(status string, extensionsOnly bool, recursive bool) 
 		mux:                     &sync.Mutex{},
 	}
 	for i := 0; i < len(sm.StateArray); i++ {
-		if strings.HasPrefix(sm.StateArray[i].Script, global.ClientPath+" extension") {
+		isExention, err := IsExtension(sm.StateArray[i].Name)
+		if err != nil {
+			return nil, err
+		}
+		if isExention {
+			//			if strings.HasPrefix(sm.StateArray[i].Script, global.ClientPath+" extension") {
 			states.StateArray = append(states.StateArray, sm.StateArray[i])
 			if recursive {
 				smp, err := GetStatesManager(sm.StateArray[i].Name)
@@ -926,12 +935,13 @@ func (sm *States) isRunning() bool {
 //setStateStatus Set the status of a given states. I
 //f recusively is true and if the state is an extension then the states of the extension will be set to the status and this recursively.
 func (sm *States) setStateStatus(state State, status string, recursively bool) error {
+	log.Debug("Entering.... setStateStatus state:" + state.Name + " status:" + status + " recursively:" + strconv.FormatBool(recursively))
 	index, _ := indexState(sm.StateArray, state.Name)
 	if index == -1 {
 		return errors.New("State: " + state.Name + " not found!")
 	}
 	if state.Status != StateSKIP {
-		log.Debugln("Change status of " + state.Name)
+		log.Debugln("Change status of " + state.Name + " to " + status)
 		sm.StateArray[index].Status = status
 	}
 	sm.StateArray[index].StartTime = ""
@@ -943,17 +953,17 @@ func (sm *States) setStateStatus(state State, status string, recursively bool) e
 			return err
 		}
 		if isExtension {
-			// extensionPath, err := GetRegisteredExtensionPath(state.Name)
-			// if err != nil {
-			// 	return err
-			// }
-
-			extensionStateManager, err := getStateManager(state.Name)
+			log.Debug(state.Name + " is an extension")
+			extensionStateManager, err := GetStatesManager(state.Name)
+			if err != nil {
+				return err
+			}
+			err = extensionStateManager.readStates()
 			if err != nil {
 				return err
 			}
 			for _, state := range extensionStateManager.StateArray {
-				err := sm.setStateStatus(state, status, true)
+				err := extensionStateManager.setStateStatus(state, status, true)
 				if err != nil {
 					return err
 				}
@@ -1104,6 +1114,28 @@ func (sm *States) setDependencyStatus(isStart bool, currentState string, status 
 	return nil
 }
 
+func (sm *States) setExecutionID(state string, callerState *State) (*State, error) {
+	log.Debugf("Entering in... setExecutionID")
+	stateFound, errState := sm._getState(state)
+	if errState != nil {
+		return nil, errState
+	}
+	if callerState == nil {
+		log.Debug("CallerState is nil for running state " + state)
+		stateFound.ExecutedByExtensionName = sm.ExecutedByExtensionName
+		stateFound.ExecutionID = sm.ExecutionID
+	} else {
+		log.Debug("CallerState is " + callerState.Name + " for running state " + state)
+		stateFound.ExecutedByExtensionName = callerState.ExecutedByExtensionName
+		stateFound.ExecutionID = callerState.ExecutionID
+	}
+	errWriteStates := sm.writeStates()
+	if errWriteStates != nil {
+		return nil, errWriteStates
+	}
+	return stateFound, nil
+}
+
 //setStateStatusWithTimeStamp Set a state status with timestamp
 func (sm *States) setStateStatusWithTimeStamp(isStart bool, state string, status string, reason string) error {
 	log.Debugf("Entering in... setStateStatusWithTimeStamp")
@@ -1122,10 +1154,8 @@ func (sm *States) setStateStatusWithTimeStamp(isStart bool, state string, status
 	} else {
 		stateFound.Reason = ""
 	}
-	if status == StateRUNNING {
-		stateFound.ExecutedByExtensionName = sm.ExecutedByExtensionName
-		stateFound.ExecutionID = sm.ExecutionID
-	}
+	log.Debug("ExecutedByExtensionName: " + stateFound.ExecutedByExtensionName)
+	log.Debug("ExecutionID: " + strconv.Itoa(stateFound.ExecutionID))
 	timeNow := time.Now().UTC().Format(time.UnixDate)
 	if isStart {
 		stateFound.StartTime = timeNow
@@ -1284,6 +1314,10 @@ func (sm *States) InsertState(state State, pos int, stateName string, before boo
 		sm.StateArray = append(sm.StateArray, bckStateArray...)
 		return errors.New(err.Error())
 	} else {
+		err := sm.setStateStatus(state, StateREADY, true)
+		if err != nil {
+			return err
+		}
 		sm.setDefaultValues()
 		return sm.writeStates()
 	}
@@ -1490,12 +1524,12 @@ func (sm *States) GetLog(state string, position int64, length int64, bychar bool
 //Start states from beginning to end
 func (sm *States) Start() error {
 	log.Debug("Enterring... Start")
-	return sm.Execute(FirstState, LastState)
+	return sm.Execute(FirstState, LastState, nil, nil)
 }
 
 //Execute states from state 'fromState' to state 'toState'
-func (sm *States) Execute(fromState string, toState string) error {
-	log.Debug("Enterring... Execute")
+func (sm *States) Execute(fromState string, toState string, callerState *State, callerOutFile *os.File) error {
+	log.Debug("Enterring... Execute from " + fromState + " to " + toState)
 	log.Debug("State:" + sm.StatesPath)
 	log.Debug("From state:" + fromState)
 	log.Debug("To   state:" + toState)
@@ -1516,7 +1550,7 @@ func (sm *States) Execute(fromState string, toState string) error {
 		return err
 	}
 
-	err = sm.executeStates(fromState, toState)
+	err = sm.executeStates(fromState, toState, callerState, callerOutFile)
 	if err != nil {
 		log.Debug(err.Error())
 		return err
@@ -1525,10 +1559,15 @@ func (sm *States) Execute(fromState string, toState string) error {
 }
 
 //Execute states
-func (sm *States) executeStates(fromState string, toState string) error {
+func (sm *States) executeStates(fromState string, toState string, callerState *State, callerOutFile *os.File) error {
 	//Init executionBy and ID, for the time being it is set to the sm.ExecutionName but later it could be set to the calling extension name
-	sm.ExecutedByExtensionName = sm.ExtensionName
-	sm.ExecutionID = sm.ExecutionID + 1
+	if callerState == nil {
+		sm.ExecutedByExtensionName = sm.ExtensionName
+		sm.ExecutionID = sm.ExecutionID + 1
+	} else {
+		sm.ExecutedByExtensionName = callerState.ExecutedByExtensionName
+		sm.ExecutionID = callerState.ExecutionID
+	}
 	toExecute := false || fromState == FirstState
 	for i := 0; i < len(sm.StateArray); i++ {
 		state := sm.StateArray[i]
@@ -1560,15 +1599,19 @@ func (sm *States) executeStates(fromState string, toState string) error {
 		if state.Status == StateRUNNING {
 			return errors.New("State:" + state.Name + " is " + StateRUNNING + "... Please wait before submitting again")
 		}
-		script := state.Script
-		if toExecute && script != "" {
+		if toExecute {
 			log.Debug("Execute..." + state.Name)
+			state, errSetExecutionID := sm.setExecutionID(state.Name, callerState)
+			if errSetExecutionID != nil {
+				log.Debug(errSetExecutionID.Error())
+				return errSetExecutionID
+			}
 			errSetRunning := sm.setStateStatusWithTimeStamp(true, state.Name, StateRUNNING, "")
 			if errSetRunning != nil {
 				log.Debug(errSetRunning.Error())
 				return errSetRunning
 			}
-			err := sm.executeState(state)
+			err := sm.executeState(*state, callerState, callerOutFile)
 			if err != nil {
 				errSetFailed := sm.setStateStatusWithTimeStamp(false, state.Name, StateFAILED, "Cmd failed:"+err.Error())
 				if errSetFailed != nil {
@@ -1589,31 +1632,18 @@ func (sm *States) executeStates(fromState string, toState string) error {
 }
 
 //Execute a state
-func (sm *States) executeState(state State) error {
+func (sm *States) executeState(state State, callerState *State, callerOutFile *os.File) error {
+	log.Debug("Entering... executeState " + state.Name)
 	//Check if there is a script
-	if state.Script == "" {
-		return nil
-	}
-	log.Debug("script: " + state.Script)
-	//Build the command line
-	script := state.Script
-	parts := strings.Fields(script)
-	var cmd *exec.Cmd
-	if len(parts) > 1 {
-		cmd = exec.Command(parts[0], parts[1:]...)
-	} else {
-		cmd = exec.Command(parts[0])
-	}
-	cmd.Dir = filepath.Dir(sm.StatesPath)
-	log.Debug("Execution directory: " + cmd.Dir)
 	//Create the log directory if not exists
 	dir := filepath.Dir(state.LogPath)
 	if !filepath.IsAbs(dir) {
-		dir = filepath.Join(cmd.Dir, dir)
+		dir = filepath.Join(filepath.Dir(sm.StatesPath), dir)
 	}
 	errMkDir := os.MkdirAll(dir, 0777)
 	if errMkDir != nil {
-		panic(errMkDir)
+		logger.AddCallerField().Error(errMkDir.Error())
+		return errMkDir
 	}
 	//Check if log exists and rename it for backup
 	outfilePath := filepath.Join(dir, filepath.Base(state.LogPath))
@@ -1621,13 +1651,15 @@ func (sm *States) executeState(state State) error {
 		newOutfilePath := filepath.Join(dir, filepath.Base(state.LogPath)+"-"+time.Now().Format("2006-01-02T150405.999999-07:00"))
 		err := os.Rename(outfilePath, newOutfilePath)
 		if err != nil {
-			panic(err)
+			logger.AddCallerField().Error(err.Error())
+			return err
 		}
 	}
 	//Create the log file.
-	outfile, err := os.OpenFile(outfilePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	outfile, err := os.OpenFile(outfilePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
-		panic(err)
+		logger.AddCallerField().Error(err.Error())
+		return err
 	}
 	defer outfile.Close()
 	//Update states to be rerun
@@ -1639,41 +1671,89 @@ func (sm *States) executeState(state State) error {
 			if stateToReRun.Status != StateSKIP {
 				err := sm.setStateStatus(*stateToReRun, StateREADY, true)
 				if err != nil {
+					logger.AddCallerField().Error(err)
 					return errors.New("State to rerun " + stateToReRun.Name + " not found in states_to_rerun attribute of " + state.Name + ":" + err.Error())
 				}
 				log.Debug("Reset to READY state " + stateToReRun.Name)
 			}
 		}
 	}
-	//Redirect the std to the log file.
-	cmd.Stdout = outfile
-	cmd.Stderr = outfile
-	errExec := cmd.Start()
-	done := make(chan error, 1)
-	//Wait signal from channel
-	go func() {
-		done <- cmd.Wait()
-	}()
-	select {
-	case <-time.After(time.Duration(state.ScriptTimeout) * time.Minute):
-		if state.ScriptTimeout != 0 {
-			if err := cmd.Process.Kill(); err != nil {
-				log.Fatal("failed to kill: ", err)
-			}
-			errExec = errors.New("State " + state.Name + " killed as timeout reached")
-		}
-	case err := <-done:
-		if err != nil {
-			errExec = errors.New("process done with error = " + err.Error())
-		}
+	var errExec error
+	isExtension, errExt := IsExtension(state.Name)
+	if errExt != nil {
+		logger.AddCallerField().Error(errExt.Error())
+		return errExt
 	}
-
+	if isExtension {
+		stateManager, errStateManager := GetStatesManager(state.Name)
+		if errStateManager != nil {
+			logger.AddCallerField().Error(errStateManager.Error())
+			return errStateManager
+		}
+		errExec = stateManager.Execute(FirstState, LastState, &state, outfile)
+	} else {
+		if state.Script == "" {
+			err := errors.New("The state " + state.Name + " has no script defined")
+			logger.AddCallerField().Error(err.Error())
+			return err
+		}
+		log.Debug("script: " + state.Script)
+		//Build the command line
+		script := state.Script
+		parts := strings.Fields(script)
+		var cmd *exec.Cmd
+		if len(parts) > 1 {
+			cmd = exec.Command(parts[0], parts[1:]...)
+		} else {
+			cmd = exec.Command(parts[0])
+		}
+		cmd.Dir = filepath.Dir(sm.StatesPath)
+		log.Debug("Execution directory: " + cmd.Dir)
+		//Redirect the std to the log file.
+		var multiWriter io.Writer
+		wOutFile := bufio.NewWriterSize(outfile, 40)
+		log.Debug("wOutFile: " + strconv.Itoa(wOutFile.Size()))
+		var wCallerOutFile *bufio.Writer
+		if callerOutFile != nil {
+			wCallerOutFile = bufio.NewWriterSize(callerOutFile, 40)
+			multiWriter = io.MultiWriter(wOutFile, wCallerOutFile)
+		} else {
+			multiWriter = io.MultiWriter(wOutFile)
+		}
+		cmd.Stdout = multiWriter
+		cmd.Stderr = multiWriter
+		errExec = cmd.Start()
+		done := make(chan error, 1)
+		//Wait signal from channel
+		go func() {
+			done <- cmd.Wait()
+		}()
+		select {
+		case <-time.After(time.Duration(state.ScriptTimeout) * time.Minute):
+			if state.ScriptTimeout != 0 {
+				if err := cmd.Process.Kill(); err != nil {
+					log.Fatal("failed to kill: ", err)
+				}
+				errExec = errors.New("State " + state.Name + " killed as timeout reached")
+			}
+		case err := <-done:
+			if err != nil {
+				errExec = errors.New("process done with error = " + err.Error())
+			}
+		}
+		if callerOutFile != nil {
+			wCallerOutFile.Flush()
+			callerOutFile.Sync()
+			// callerOutFile.Close()
+		}
+		wOutFile.Flush()
+	}
 	outfile.Sync()
 	outfile.Close()
 	if errExec != nil {
 		f, err := os.OpenFile(outfilePath, os.O_WRONLY|os.O_APPEND, 0644)
 		if err != nil {
-			log.Debug(err.Error())
+			logger.AddCallerField().Error(err.Error())
 			return errExec
 		}
 
@@ -1690,7 +1770,7 @@ func (sm *States) executeState(state State) error {
 		}
 		log.Debug("errExec:" + errExec.Error())
 		if _, err = f.WriteString("\nstate:" + state.Name + "\nscript:" + state.Script + "\nlog:" + state.LogPath + "\n" + errExec.Error()); err != nil {
-			log.Debug(err.Error())
+			logger.AddCallerField().Error(err.Error())
 		}
 	}
 	return errExec
