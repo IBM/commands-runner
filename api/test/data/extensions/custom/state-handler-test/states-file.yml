@@ -11,7 +11,9 @@ states:
   script_timeout: 10
   protected: false
   deleted: false
+  prerequisite_states: []
   states_to_rerun: []
+  rerun_on_run_of_states: []
   previous_states: []
   next_states:
   - repeat
@@ -27,7 +29,9 @@ states:
   script_timeout: 10
   protected: false
   deleted: false
+  prerequisite_states: []
   states_to_rerun: []
+  rerun_on_run_of_states: []
   previous_states: []
   next_states:
   - state2
@@ -43,7 +47,9 @@ states:
   script_timeout: 61
   protected: false
   deleted: false
+  prerequisite_states: []
   states_to_rerun: []
+  rerun_on_run_of_states: []
   previous_states: []
   next_states:
   - nologpath
@@ -59,7 +65,9 @@ states:
   script_timeout: 60
   protected: false
   deleted: false
+  prerequisite_states: []
   states_to_rerun: []
+  rerun_on_run_of_states: []
   previous_states: []
   next_states:
   - wronglogpath
@@ -75,6 +83,8 @@ states:
   script_timeout: 60
   protected: false
   deleted: false
+  prerequisite_states: []
   states_to_rerun: []
+  rerun_on_run_of_states: []
   previous_states: []
   next_states: []

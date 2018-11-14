@@ -74,7 +74,8 @@ func (crc *CommandsRunnerClient) GetStates(extensionName string, status string, 
 			out += fmt.Sprintf("End time  : %s\n", state.EndTime)
 			out += fmt.Sprintf("Reason    : %s\n", state.Reason)
 			out += fmt.Sprintf("Protected : %t\n", state.Protected)
-			out += fmt.Sprintf("Deleted : %t\n", state.Deleted)
+			out += fmt.Sprintf("Deleted   : %t\n", state.Deleted)
+			out += fmt.Sprintf("Next run  : %t\n", state.NextRun)
 			for _, stateToRun := range state.StatesToRerun {
 				out += fmt.Sprintf("- State to rerun : %s\n", stateToRun)
 			}

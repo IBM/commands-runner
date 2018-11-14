@@ -11,8 +11,10 @@
 package state
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	log "github.com/sirupsen/logrus"
 
@@ -60,6 +62,16 @@ func HandleEngine(w http.ResponseWriter, req *http.Request) {
 			switch req.Method {
 			case "PUT":
 				PutResetEngineExecutionInfoEndpoint(w, req)
+			default:
+				logger.AddCallerField().Error("Unsupported method:" + req.Method)
+				http.Error(w, "Unsupported method:"+req.Method, http.StatusMethodNotAllowed)
+			}
+		case "mock":
+			switch req.Method {
+			case "GET":
+				GetMockEndpoint(w, req)
+			case "PUT":
+				SetMockEndpoint(w, req)
 			default:
 				logger.AddCallerField().Error("Unsupported method:" + req.Method)
 				http.Error(w, "Unsupported method:"+req.Method, http.StatusMethodNotAllowed)
@@ -188,4 +200,36 @@ func GetIsRunningEndpoint(w http.ResponseWriter, req *http.Request) {
 	} else {
 		w.WriteHeader(http.StatusOK)
 	}
+}
+
+func GetMockEndpoint(w http.ResponseWriter, req *http.Request) {
+	data := GetMock()
+	mock := &Mock{
+		Mock: data,
+	}
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "  ")
+	err := enc.Encode(mock)
+	if err != nil {
+		logger.AddCallerField().Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func SetMockEndpoint(w http.ResponseWriter, req *http.Request) {
+	query, _ := url.ParseQuery(req.URL.RawQuery)
+	log.Debugf("Query: %s", query)
+
+	mock := ""
+	mockFound, okMock := query["mock"]
+	if okMock {
+		log.Debug("mock:%s", mockFound)
+		mock = mockFound[0]
+	}
+	mockBool, err := strconv.ParseBool(mock)
+	if err != nil {
+		logger.AddCallerField().Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	SetMock(mockBool)
 }

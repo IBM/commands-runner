@@ -11,8 +11,13 @@
 package clientManager
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
+	"strconv"
+
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/state"
 
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 )
@@ -92,4 +97,45 @@ func (crc *CommandsRunnerClient) StartEngine(extensionName string, fromState str
 		return "", errors.New("Unable to start the engine: " + data + ", please check the logs")
 	}
 	return "", nil
+}
+
+//MockEngine set/unset engine mock mode.
+//No running state must exit
+func (crc *CommandsRunnerClient) SetMockEngine(mock bool) (string, error) {
+	//Build url
+	url := "engine?action=mock&mock=" + strconv.FormatBool(mock)
+	//Call rest api
+	data, errCode, err := crc.RestCall(http.MethodPut, global.BaseURL, url, nil, nil)
+	if err != nil {
+		return "", err
+	}
+	if errCode != http.StatusOK {
+		return "", errors.New("Unable to set the mock mode for the engine: " + data + ", please check log for more information")
+	}
+	return "", nil
+}
+
+func (crc *CommandsRunnerClient) GetMockEngine() (string, error) {
+	//Build url
+	url := "engine?action=mock"
+	//Call rest api
+	data, errCode, err := crc.RestCall(http.MethodGet, global.BaseURL, url, nil, nil)
+	if err != nil {
+		return "", err
+	}
+	if errCode != http.StatusOK {
+		return "", errors.New("Unable to get the mock mode for the engine: " + data + ", please check log for more information")
+	}
+	if crc.OutputFormat == "text" {
+		var mock state.Mock
+		jsonErr := json.Unmarshal([]byte(data), &mock)
+		if jsonErr != nil {
+			fmt.Println(jsonErr.Error())
+			return "", jsonErr
+		}
+		out := fmt.Sprintf("mock : %t\n", mock.Mock)
+		return out, nil
+	}
+
+	return crc.convertJSONOrYAML(data)
 }

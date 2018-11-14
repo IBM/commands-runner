@@ -19,7 +19,6 @@ states:
   - task2
   executed_by_extension_name: ""
   execution_id: 0
-  next_run: false
 - name: task2
   phase: ""
   label: Task 2
@@ -34,14 +33,14 @@ states:
   deleted: false
   prerequisite_states: []
   states_to_rerun: []
-  rerun_on_run_of_states: []
+  rerun_on_run_of_states: 
+  - task3
   previous_states:
   - task1
   next_states:
   - task3
   executed_by_extension_name: ""
   execution_id: 0
-  next_run: false
 - name: task3
   phase: ""
   label: Task 3
@@ -62,7 +61,6 @@ states:
   next_states: []
   executed_by_extension_name: ""
   execution_id: 0
-  next_run: false
 extension_name: states-run-success
 executed_by_extension_name: ""
 execution_id: 0

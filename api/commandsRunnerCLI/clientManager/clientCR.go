@@ -20,8 +20,8 @@ import (
 )
 
 //GetLogLevel of PCM
-func (crc *CommandsRunnerClient) GetPCMLogLevel() (string, error) {
-	url := "pcm/log/level"
+func (crc *CommandsRunnerClient) GetCRLogLevel() (string, error) {
+	url := "cr/log/level"
 	data, errCode, err := crc.RestCall(http.MethodGet, global.BaseURL, url, nil, nil)
 	if err != nil {
 		return data, err
@@ -45,8 +45,8 @@ func (crc *CommandsRunnerClient) GetPCMLogLevel() (string, error) {
 	return crc.convertJSONOrYAML(data)
 }
 
-func (crc *CommandsRunnerClient) SetPCMLogLevel(level string) (string, error) {
-	url := "pcm/log/level?level=" + level
+func (crc *CommandsRunnerClient) SetCRLogLevel(level string) (string, error) {
+	url := "cr/log/level?level=" + level
 	data, errCode, err := crc.RestCall(http.MethodPut, global.BaseURL, url, nil, nil)
 	if err != nil {
 		return data, err

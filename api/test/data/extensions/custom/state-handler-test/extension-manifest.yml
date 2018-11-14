@@ -11,7 +11,9 @@ states:
   script_timeout: 10
   protected: false
   deleted: false
+  prerequisite_states: []
   states_to_rerun: []
+  rerun_on_run_of_states: []
   previous_states: []
   next_states:
   - task2
@@ -27,7 +29,9 @@ states:
   script_timeout: 10
   protected: false
   deleted: false
+  prerequisite_states: []
   states_to_rerun: []
+  rerun_on_run_of_states: []
   previous_states:
   - task1
   next_states:
@@ -44,7 +48,9 @@ states:
   script_timeout: 10
   protected: false
   deleted: false
+  prerequisite_states: []
   states_to_rerun: []
+  rerun_on_run_of_states: []
   previous_states:
   - task2
   next_states: []

@@ -63,6 +63,10 @@ const StatesFileErrorMessagePattern = "STATES_FILE_ERROR_MESSAGE:"
 
 const PhaseAtEachRun = "AtEachRun"
 
+type Mock struct {
+	Mock bool `yaml:"mock" json:"mock"`
+}
+
 type State struct {
 	//Name name of the state
 	Name string `yaml:"name" json:"name"`
@@ -88,8 +92,17 @@ type State struct {
 	Protected bool `yaml:"protected" json:"protected"`
 	//Deleted If true the corresponding state will be deleted when merging with an existing states file.
 	Deleted bool `yaml:"deleted" json:"deleted"`
-	//StatesToRerun List of states to rerun after this one get executed.
+	//PrerequisiteStates  if the current states is READY/FAILED then those listed will be set to READY too.
+	//Each listed state must be before the current state.
+	PrerequisiteStates []string `yaml:"prerequisite_states" json:"prerequisite_states"`
+	//StatesToRerun if the current state is READY/FAILED then those listed will be set to READY too.
+	//Each listed state must be after the current state.
 	StatesToRerun []string `yaml:"states_to_rerun" json:"states_to_rerun"`
+	//RerunOnRunOfStates if one state of this list is READY/FAILED then the current state will be set to READY.
+	//Each listed state must be before the current state.
+	RerunOnRunOfStates []string `yaml:"rerun_on_run_of_states" json:"rerun_on_run_of_states"`
+	//CalculatedStatesToRerun (not-persisted/used internally) Calculated list of states to rerun
+	CalculatedStatesToRerun []string `yaml:"-" json:"-"`
 	//PreviousStates List of previous states, this is not taken into account for the topology sort.
 	PreviousStates []string `yaml:"previous_states" json:"previous_states"`
 	//NextStates List of next states, this determines the order in which the states will get executed. A topological sort is used to determine the order.
@@ -100,6 +113,8 @@ type State struct {
 	ExecutedByExtensionName string `yaml:"executed_by_extension_name" json:"executed_by_extension_name"`
 	//The execution sequence id for that specific launch
 	ExecutionID int `yaml:"execution_id" json:"execution_id"`
+	//This is true if the state will run based on status, PrerequisiteStates, RerunOnRunOfStates and StatesToRerun
+	NextRun bool `yaml:"next_run" json:"next_run"`
 }
 
 type States struct {
@@ -215,9 +230,6 @@ func (sm *States) unlock() {
 func (sm *States) readStates() error {
 	log.Debug("Entering... readStates")
 	log.Debug("statesPath... " + sm.StatesPath)
-	// Read state file.
-	// sm.lock()
-	//	defer sm.unlock()
 	log.Debugf("sm address %p:", &sm)
 	statesData, err := ioutil.ReadFile(sm.StatesPath)
 	//	log.Debugf("StatesData=%s", statesData)
@@ -232,9 +244,33 @@ func (sm *States) readStates() error {
 	if err != nil {
 		return err
 	}
+	err = sm.setCalculatedStatesToRerun()
+	if err != nil {
+		return err
+	}
 	sm.setDefaultValues()
 	log.Debug("States:\n" + string(statesData))
 	log.Debug("Exiting... readStates")
+	return nil
+}
+
+//Set Calculated statesToRerun
+func (sm *States) setCalculatedStatesToRerun() error {
+	log.Debug("Entering... setCalculatedStatesToRerun")
+	//	isNextStateMigrationDone := false
+	for index := range sm.StateArray {
+		sm.StateArray[index].CalculatedStatesToRerun = make([]string, 0)
+		sm.StateArray[index].CalculatedStatesToRerun = append(sm.StateArray[index].CalculatedStatesToRerun, sm.StateArray[index].StatesToRerun...)
+		sm.StateArray[index].CalculatedStatesToRerun = append(sm.StateArray[index].CalculatedStatesToRerun, sm.StateArray[index].PrerequisiteStates...)
+		for _, stateName := range sm.StateArray[index].RerunOnRunOfStates {
+			state, err := sm._getState(stateName)
+			if err != nil {
+				return err
+			}
+			state.CalculatedStatesToRerun = append(state.CalculatedStatesToRerun, sm.StateArray[index].Name)
+		}
+	}
+	log.Debug("Exiting... setCalculatedStatesToRerun")
 	return nil
 }
 
@@ -253,8 +289,6 @@ func (sm *States) setDefaultValues() {
 		//		log.Debug("Check status")
 		if sm.StateArray[index].Status == "" {
 			sm.setStateStatus(sm.StateArray[index], StateREADY, true)
-
-			// sm.StateArray[index].Status = StateREADY
 		}
 		//		log.Debug("Check LogPath/Script")
 
@@ -271,30 +305,10 @@ func (sm *States) setDefaultValues() {
 			sm.StateArray[index].LogPath = logDir
 			log.Debug("Set state.LogPath to " + sm.StateArray[index].LogPath)
 		}
-		// if sm.StateArray[index].Script == "" {
-		// 	//			log.Debug("Set state.Script")
-		// 	sm.StateArray[index].Script = global.ClientPath + " extension -e " + sm.StateArray[index].Name + " deploy -w"
-		// 	//			log.Debug("Set state.Script to " + sm.StateArray[index].Script)
-		// }
-		//		log.Debug("Check ScriptTimeout")
 		if sm.StateArray[index].ScriptTimeout == 0 {
-			//			log.Debug("Set state.ScriptTimeout")
 			sm.StateArray[index].ScriptTimeout = 60
-			//			log.Debug("Set state.ScriptTimeout to " + strconv.Itoa(sm.StateArray[index].ScriptTimeout))
 		}
-		// Remove state in the nextStates which doesn't exist in the state file.
-		// for indexNext, nextState := range sm.StateArray[index].NextStates {
-		// 	indexState, _ := indexState(sm.StateArray, nextState)
-		// 	if indexState == -1 {
-		// 		sm.StateArray[index].NextStates = append(sm.StateArray[index].NextStates[:indexNext], sm.StateArray[index].NextStates[indexNext+1:]...)
-		// 	}
-		// }
 	}
-	//if not migrated then set the nextStates
-	// if !isNextStateMigrationDone {
-	// 	sm.setNextStates()
-	// 	sm.copyStateToRerunToNextStates()
-	// }
 	log.Debug("Exiting... setDefaultValues")
 }
 
@@ -409,10 +423,17 @@ func (sm *States) GetStates(status string, extensionsOnly bool, recursive bool) 
 		ExecutionID:             sm.ExecutionID,
 		mux:                     &sync.Mutex{},
 	}
+	statuses, err := sm.CalculateStatesToRun(FirstState, LastState)
+	if err != nil {
+		return nil, err
+	}
 	for i := 0; i < len(sm.StateArray); i++ {
 		isExention, err := IsExtension(sm.StateArray[i].Name)
 		if err != nil {
 			return nil, err
+		}
+		if _, ok := statuses[sm.StateArray[i].Name]; ok {
+			sm.StateArray[i].NextRun = true
 		}
 		if isExention {
 			//			if strings.HasPrefix(sm.StateArray[i].Script, global.ClientPath+" extension") {
@@ -453,7 +474,6 @@ func (sm *States) SetStates(states States, overwrite bool) error {
 	log.Debug("ExtensionPath:" + sm.StatesPath)
 	sm.lock()
 	defer sm.unlock()
-	//	states.setDefaultValues()
 	err := states.topoSort()
 	if err != nil {
 		return err
@@ -692,7 +712,7 @@ func (sm *States) topoSort() error {
 	}
 	if !isNextStateMigrationDone {
 		sm.setNextStates()
-		sm.copyStateToRerunToNextStates()
+		//		sm.copyStateToRerunToNextStates()
 	}
 	statesData, _ := sm.convert2String()
 	log.Debugf("%s", statesData)
@@ -710,6 +730,7 @@ func (sm *States) topoSort() error {
 //topoSortGraph Do a topological sort of a directred graph.
 //If cycles the error contains the list cycles and nodes.
 //It checks also if the StatesToRerun are after the state that defines them.
+//It checks also if the PrerequisiteStatesToRerun are before the state that defines them.
 func (sm *States) topoSortGraph(graph *simple.DirectedGraph, statesMap map[int64]*State) error {
 	sorted, err := topo.Sort(graph)
 	//Error means cycles
@@ -720,6 +741,14 @@ func (sm *States) topoSortGraph(graph *simple.DirectedGraph, statesMap map[int64
 	//Generate the new states based on the sort
 	sm.generateStatesFromGraph(sorted, graph, statesMap)
 	err = sm.checkStatesToRerun()
+	if err != nil {
+		return err
+	}
+	err = sm.checkRerunOnRunOfStates()
+	if err != nil {
+		return err
+	}
+	err = sm.checkPrerequisiteStates()
 	return err
 }
 
@@ -731,6 +760,46 @@ func (sm *States) checkStatesToRerun() error {
 			for _, stateName := range sm.StateArray[i].StatesToRerun {
 				if _, ok := statesVisited[stateName]; ok {
 					return errors.New("State " + sm.StateArray[i].Name + " contains the StatesToRerun element " + stateName + " which is before the state")
+				}
+			}
+			statesVisited[sm.StateArray[i].Name] = sm.StateArray[i].Name
+		}
+	}
+	return nil
+}
+
+//checkPrerequisiteStates Check if the PrerequisiteStates are before each state that define them.
+func (sm *States) checkPrerequisiteStates() error {
+	log.Debug("Entering.... checkPrerequisiteStates")
+	statesVisited := make(map[string]string, 0)
+	log.Debug("len(sm.StateArray): " + strconv.Itoa(len(sm.StateArray)))
+	for i := len(sm.StateArray) - 1; i >= 0; i-- {
+		log.Debug("Current State: " + sm.StateArray[i].Name)
+		if !sm.StateArray[i].Deleted {
+			for _, stateName := range sm.StateArray[i].PrerequisiteStates {
+				log.Debug("Current State: " + sm.StateArray[i].Name + " current prereq: " + stateName)
+				if _, ok := statesVisited[stateName]; ok {
+					return errors.New("State " + sm.StateArray[i].Name + " contains the PrerequisiteStates element " + stateName + " which is after the state")
+				}
+			}
+			statesVisited[sm.StateArray[i].Name] = sm.StateArray[i].Name
+		}
+	}
+	return nil
+}
+
+//checkRerunOnRunOfStates Check if the RerunOnRunOfStates are before each state that define them.
+func (sm *States) checkRerunOnRunOfStates() error {
+	log.Debug("Entering.... checkRerunOnRunOfStates")
+	statesVisited := make(map[string]string, 0)
+	log.Debug("len(sm.StateArray): " + strconv.Itoa(len(sm.StateArray)))
+	for i := len(sm.StateArray) - 1; i >= 0; i-- {
+		log.Debug("Current State: " + sm.StateArray[i].Name)
+		if !sm.StateArray[i].Deleted {
+			for _, stateName := range sm.StateArray[i].RerunOnRunOfStates {
+				log.Debug("Current State: " + sm.StateArray[i].Name + " current prereq: " + stateName)
+				if _, ok := statesVisited[stateName]; ok {
+					return errors.New("State " + sm.StateArray[i].Name + " contains the checkRerunOnRunOfStates element " + stateName + " which is after the state")
 				}
 			}
 			statesVisited[sm.StateArray[i].Name] = sm.StateArray[i].Name
@@ -974,6 +1043,15 @@ func (sm *States) setStateStatus(state State, status string, recursively bool) e
 	return errStates
 }
 
+func SetMock(mock bool) {
+	global.Mock = mock
+}
+
+//Retrieve level
+func GetMock() bool {
+	return global.Mock
+}
+
 //ResetEngine Reset states, all non-skip state will be set to READY recursively
 //No RUNNING state must be found.
 func (sm *States) ResetEngine() error {
@@ -1093,26 +1171,26 @@ func (sm *States) SetState(state string, status string, reason string, script st
 }
 
 //setDependencyStatus Set the status and reason for each state referencing the currentState.
-func (sm *States) setDependencyStatus(isStart bool, currentState string, status string, reason string) error {
-	log.Debugf("Entering in... setDependencyStatus")
-	for _, state := range sm.StateArray {
-		log.Debug("Check dependency for state:" + state.Name)
-		for _, rerunStateName := range state.StatesToRerun {
-			if rerunStateName == currentState {
-				log.Debug("Dependency " + rerunStateName + " found")
-				log.Debug("Current dependency state: " + state.Name + " status " + state.Status)
-				if state.Status != StateSKIP {
-					log.Debug("set to status " + status + " State: " + rerunStateName)
-					err := sm.setStateStatusWithTimeStamp(isStart, state.Name, status, reason)
-					if err != nil {
-						return err
-					}
-				}
-			}
-		}
-	}
-	return nil
-}
+// func (sm *States) setDependencyStatus(isStart bool, currentState string, status string, reason string) error {
+// 	log.Debugf("Entering in... setDependencyStatus")
+// 	for _, state := range sm.StateArray {
+// 		log.Debug("Check dependency for state:" + state.Name)
+// 		for _, rerunStateName := range state.StatesToRerun {
+// 			if rerunStateName == currentState {
+// 				log.Debug("Dependency " + rerunStateName + " found")
+// 				log.Debug("Current dependency state: " + state.Name + " status " + state.Status)
+// 				if state.Status != StateSKIP {
+// 					log.Debug("set to status " + status + " State: " + rerunStateName)
+// 					err := sm.setStateStatusWithTimeStamp(isStart, state.Name, status, reason)
+// 					if err != nil {
+// 						return err
+// 					}
+// 				}
+// 			}
+// 		}
+// 	}
+// 	return nil
+// }
 
 func (sm *States) setExecutionID(state string, callerState *State) (*State, error) {
 	log.Debugf("Entering in... setExecutionID")
@@ -1147,10 +1225,10 @@ func (sm *States) setStateStatusWithTimeStamp(isStart bool, state string, status
 	stateFound.Status = status
 	if status == StateFAILED {
 		stateFound.Reason = reason
-		err := sm.setDependencyStatus(isStart, state, status, "being a dependency of the failed state "+state)
-		if err != nil {
-			return err
-		}
+		// err := sm.setDependencyStatus(isStart, state, status, "being a dependency of the failed state "+state)
+		// if err != nil {
+		// 	return err
+		// }
 	} else {
 		stateFound.Reason = ""
 	}
@@ -1281,14 +1359,8 @@ func (sm *States) InsertState(state State, pos int, stateName string, before boo
 			if !sm.isInNextState(sm.StateArray[arrayPos-1], state.Name) {
 				sm.StateArray[arrayPos-1].NextStates = append(sm.StateArray[arrayPos-1].NextStates, state.Name)
 			}
-			// if !sm.isInPreviousState(state, sm.StateArray[arrayPos-1].Name) {
-			// 	state.PreviousStates = append(state.PreviousStates, sm.StateArray[arrayPos-1].Name)
-			// }
 		}
 		if arrayPos < len(sm.StateArray) {
-			// if !sm.isInPreviousState(sm.StateArray[arrayPos], state.Name) {
-			// 	sm.StateArray[arrayPos].PreviousStates = append(sm.StateArray[arrayPos].PreviousStates, state.Name)
-			// }
 			if !sm.isInNextState(state, sm.StateArray[arrayPos].Name) {
 				state.NextStates = append(state.NextStates, sm.StateArray[arrayPos].Name)
 			}
@@ -1527,12 +1599,68 @@ func (sm *States) Start() error {
 	return sm.Execute(FirstState, LastState, nil, nil)
 }
 
-//Execute states from state 'fromState' to state 'toState'
-func (sm *States) Execute(fromState string, toState string, callerState *State, callerOutFile *os.File) error {
-	log.Debug("Enterring... Execute from " + fromState + " to " + toState)
+func (sm *States) CalculateStatesToRun(fromState string, toState string) (map[string]string, error) {
+	log.Debug("Enterring... calculateStatesToRun from " + fromState + " to " + toState)
 	log.Debug("State:" + sm.StatesPath)
 	log.Debug("From state:" + fromState)
 	log.Debug("To   state:" + toState)
+	statuses := make(map[string]string, 0)
+	statesVisited := make(map[string]string, 0)
+	statesToProcess := make([]State, 0)
+	//Search all READY or FAILED states and populate statesToPRocess
+	toExecute := false || fromState == FirstState
+	for _, state := range sm.StateArray {
+		//Start using state when reach the fromState
+		toExecute = toExecute || state.Name == fromState
+		if toExecute &&
+			(state.Status == StateREADY ||
+				state.Status == StateFAILED ||
+				(state.Status != StateSKIP && state.Phase == PhaseAtEachRun)) {
+			statesToProcess = append(statesToProcess, state)
+			statuses[state.Name] = state.Status
+		}
+		//Stop when we processed to the toState
+		if state.Name == toState {
+			break
+		}
+	}
+	log.Debugf("statesToProcess: %+v", statesToProcess)
+	//Until no states to process
+	for len(statesToProcess) != 0 {
+		currentState := statesToProcess[0]
+		log.Debugf("Current state: %v", currentState)
+		//Skip if state already visited
+		if _, ok := statesVisited[currentState.Name]; !ok {
+			for _, stateName := range currentState.CalculatedStatesToRerun {
+				statuses[stateName] = StateREADY
+				state, err := sm._getState(stateName)
+				if err != nil {
+					return nil, errors.New("The state " + stateName + " is not an existing state")
+				}
+				statesToProcess = append(statesToProcess, *state)
+			}
+			//Mark state as visited
+			statesVisited[currentState.Name] = currentState.Name
+		}
+		//AS state get processed then remove it from the list
+		statesToProcess = statesToProcess[1:]
+	}
+	return statuses, nil
+}
+
+func (sm *States) setCalculatedStatesToRun(statuses map[string]string) error {
+	log.Debug("Enterring... setCalculatedStatus")
+	for stateName, status := range statuses {
+		state, err := sm._getState(stateName)
+		if err != nil {
+			return errors.New("The state " + stateName + " is not an existing state")
+		}
+		state.Status = status
+	}
+	return nil
+}
+
+func (sm *States) preprocessingExecute(fromState string, toState string) error {
 	errStates := sm.readStates()
 	if errStates != nil {
 		log.Debug(errStates.Error())
@@ -1549,7 +1677,32 @@ func (sm *States) Execute(fromState string, toState string, callerState *State, 
 		log.Debug(err.Error())
 		return err
 	}
+	//Calculate statuses
+	statuses, err := sm.CalculateStatesToRun(fromState, toState)
+	if err != nil {
+		log.Debug(err.Error())
+		return err
+	}
+	//Update statuses
+	err = sm.setCalculatedStatesToRun(statuses)
+	if err != nil {
+		log.Debug(err.Error())
+		return err
+	}
+	return nil
+}
 
+//Execute states from state 'fromState' to state 'toState'
+func (sm *States) Execute(fromState string, toState string, callerState *State, callerOutFile *os.File) error {
+	log.Debug("Enterring... Execute from " + fromState + " to " + toState)
+	log.Debug("State:" + sm.StatesPath)
+	log.Debug("From state:" + fromState)
+	log.Debug("To   state:" + toState)
+	err := sm.preprocessingExecute(fromState, toState)
+	if err != nil {
+		log.Debug(err.Error())
+		return err
+	}
 	err = sm.executeStates(fromState, toState, callerState, callerOutFile)
 	if err != nil {
 		log.Debug(err.Error())
@@ -1700,6 +1853,9 @@ func (sm *States) executeState(state State, callerState *State, callerOutFile *o
 		log.Debug("script: " + state.Script)
 		//Build the command line
 		script := state.Script
+		if global.Mock {
+			script = "echo \"Mock mode: script for state " + state.Name + " is skipped!\""
+		}
 		parts := strings.Fields(script)
 		var cmd *exec.Cmd
 		if len(parts) > 1 {

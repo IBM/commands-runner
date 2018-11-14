@@ -146,7 +146,7 @@ func Init(port string, portSSL string, configDir string, certificatePath string,
 	AddHandler("/cr/v1/state/", state.HandleState, true)
 	AddHandler("/cr/v1/states", state.HandleStates, true)
 	AddHandler("/cr/v1/engine", state.HandleEngine, true)
-	AddHandler("/cr/v1/pcm/", commandsRunner.HandleCR, true)
+	AddHandler("/cr/v1/cr/", commandsRunner.HandleCR, true)
 	AddHandler("/cr/v1/status", status.HandleStatus, true)
 	AddHandler("/cr/v1/extension", state.HandleExtension, true)
 	AddHandler("/cr/v1/extensions", state.HandleExtensions, true)

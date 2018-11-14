@@ -988,6 +988,163 @@ func TestGetStateEmptyState(t *testing.T) {
 	}
 }
 
+func TestPrerequisiteStatesBefore(t *testing.T) {
+	t.Log("Entering... TestPrerequisiteStatesBefore")
+	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionPath("../../test/data/extensions/")
+	statesPath := "../../test/resource/states-TestPrerequisiteStatesBefore.yaml"
+	sm := newStateManager("states-TestPrerequisiteStatesBefore")
+	sm.StatesPath = statesPath
+	err := sm.ResetEngine()
+	if err != nil {
+		t.Error(err.Error())
+	}
+	err = sm.checkPrerequisiteStates()
+	if err != nil {
+		t.Error(err.Error())
+	}
+	err = sm.ResetEngine()
+	if err != nil {
+		t.Error(err.Error())
+	}
+}
+
+func TestPrerequisiteStatesAfter(t *testing.T) {
+	//	log.SetLevel(log.DebugLevel)
+	t.Log("Entering... TestPrerequisiteStatesAfter")
+	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionPath("../../test/data/extensions/")
+	statesPath := "../../test/resource/states-TestPrerequisiteStatesAfter.yaml"
+	sm := newStateManager("states-TestPrerequisiteStatesAfter")
+	sm.StatesPath = statesPath
+	err := sm.readStates()
+	if err != nil {
+		t.Error(err.Error())
+	}
+	err = sm.checkPrerequisiteStates()
+	if err == nil {
+		t.Error("Expecting an error as task2 reference task3")
+	} else {
+		t.Log(err.Error())
+	}
+}
+
+func TestRerunOnRunOfStatesBefore(t *testing.T) {
+	t.Log("Entering... TestRerunOnRunOfStatesBefore")
+	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionPath("../../test/data/extensions/")
+	statesPath := "../../test/resource/states-TestRerunOnRunOfStatesBefore.yaml"
+	sm := newStateManager("states-TestRerunOnRunOfStatesBefore")
+	sm.StatesPath = statesPath
+	err := sm.ResetEngine()
+	if err != nil {
+		t.Error(err.Error())
+	}
+	err = sm.checkRerunOnRunOfStates()
+	if err != nil {
+		t.Error(err.Error())
+	}
+	err = sm.ResetEngine()
+	if err != nil {
+		t.Error(err.Error())
+	}
+}
+
+func TestRerunOnRunOfStatesAfter(t *testing.T) {
+	//log.SetLevel(log.DebugLevel)
+	t.Log("Entering... TestRerunOnRunOfStatesAfter")
+	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionPath("../../test/data/extensions/")
+	statesPath := "../../test/resource/states-TestRerunOnRunOfStatesAfter.yaml"
+	sm := newStateManager("states-TestRerunOnRunOfStatesAfter")
+	sm.StatesPath = statesPath
+	err := sm.readStates()
+	if err != nil {
+		t.Error(err.Error())
+	}
+	err = sm.checkRerunOnRunOfStates()
+	if err == nil {
+		t.Error("Expecting an error as task2 reference task3")
+	} else {
+		t.Log(err.Error())
+	}
+}
+
+func TestCalculateStatesToRunStatesToRerun(t *testing.T) {
+	//	log.SetLevel(log.DebugLevel)
+	t.Log("Entering... TestCalculateStatesToRunStatesToRerun")
+	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionPath("../../test/data/extensions/")
+	statesPath := "../../test/resource/states-TestCalculateStatesToRunStatesToRerun.yaml"
+	sm := newStateManager("states-TestCalculateStatesToRunStatesToRerun")
+	sm.StatesPath = statesPath
+	err := sm.readStates()
+	if err != nil {
+		t.Error(err.Error())
+	}
+	runStates, err := sm.CalculateStatesToRun(FirstState, LastState)
+	if err != nil {
+		t.Error(err.Error())
+	}
+	t.Logf("%v", runStates)
+	if _, ok := runStates["task1"]; !ok {
+		t.Error("task1 should be in the runStates")
+	}
+	if _, ok := runStates["task2"]; !ok {
+		t.Error("task2 should be in the runStates")
+	}
+}
+
+func TestCalculateStatesToRunPrereq(t *testing.T) {
+	//	log.SetLevel(log.DebugLevel)
+	t.Log("Entering... TestcalculateStatesToRunPrereq")
+	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionPath("../../test/data/extensions/")
+	statesPath := "../../test/resource/states-TestCalculateStatesToRunPrereq.yaml"
+	sm := newStateManager("states-TestCalculateStatesToRunPrereq")
+	sm.StatesPath = statesPath
+	err := sm.readStates()
+	if err != nil {
+		t.Error(err.Error())
+	}
+	runStates, err := sm.CalculateStatesToRun(FirstState, LastState)
+	if err != nil {
+		t.Error(err.Error())
+	}
+	t.Logf("%v", runStates)
+	if _, ok := runStates["task1"]; !ok {
+		t.Error("task1 should be in the runStates")
+	}
+	if _, ok := runStates["task2"]; !ok {
+		t.Error("task2 should be in the runStates")
+	}
+}
+
+func TestCalculateStatesToRunRerunOnRunOfStates(t *testing.T) {
+	//	log.SetLevel(log.DebugLevel)
+	t.Log("Entering... TestCalculateStatesToRunRerunOnRunOfStates")
+	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionPath("../../test/data/extensions/")
+	statesPath := "../../test/resource/states-TestCalculateStatesToRunRerunOnRunOfStates.yaml"
+	sm := newStateManager("states-TestCalculateStatesToRunRerunOnRunOfStates")
+	sm.StatesPath = statesPath
+	err := sm.readStates()
+	if err != nil {
+		t.Error(err.Error())
+	}
+	runStates, err := sm.CalculateStatesToRun(FirstState, LastState)
+	if err != nil {
+		t.Error(err.Error())
+	}
+	t.Logf("%v", runStates)
+	if _, ok := runStates["task1"]; !ok {
+		t.Error("task1 should be in the runStates")
+	}
+	if _, ok := runStates["task2"]; !ok {
+		t.Error("task2 should be in the runStates")
+	}
+}
+
 func TestSetStateStatus(t *testing.T) {
 	t.Log("Entering... TestSetStateStatus")
 	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
@@ -997,7 +1154,6 @@ func TestSetStateStatus(t *testing.T) {
 	scriptV := strconv.FormatInt(time.Now().UnixNano(), 7)
 	scriptTimeoutV := time.Now().Second()
 	statesPath := "../../test/resource/states-TestSetStateStatus.yaml"
-	// sm, err := newStateManager(statesPath)
 	sm := newStateManager("states-TestSetStateStatus")
 	sm.StatesPath = statesPath
 	err := sm.ResetEngine()
@@ -1074,6 +1230,61 @@ func TestEngineSuccess(t *testing.T) {
 	if len(states.StateArray) > 0 {
 		t.Error("At least one state failed:" + states.StateArray[0].Name)
 	}
+	sm.ResetEngineExecutionInfo()
+	err = sm.ResetEngine()
+	if err != nil {
+		t.Error(err.Error())
+	}
+}
+
+func TestEngineSuccessFromFailure(t *testing.T) {
+	//	log.SetLevel(log.DebugLevel)
+	t.Log("Entering...TestEngineSuccess")
+	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionPath("../../test/data/extensions/")
+	statesPath := "../../test/resource/states-rerun-success-prereq.yaml"
+	// sm, err := newStateManager(statesPath)
+	sm := newStateManager("states-rerun-success-prereq")
+	sm.StatesPath = statesPath
+	t.Log("Reset States file")
+	err := sm.ResetEngine()
+	if err != nil {
+		t.Error(err.Error())
+	}
+	t.Log("Set task1 SUCCEEDED")
+	err = sm.SetState("task1", StateSUCCEEDED, "Test", "", -1, false)
+	if err != nil {
+		t.Error(err.Error())
+	}
+	t.Log("Set task2 FAILED")
+	err = sm.SetState("task2", StateFAILED, "Test", "", -1, false)
+	if err != nil {
+		t.Error(err.Error())
+	}
+	states, _ := sm.GetStates("", false, false)
+	t.Logf("%v", states)
+	t.Log("Calculate statuses")
+	statuses, err := sm.CalculateStatesToRun(FirstState, LastState)
+	if _, ok := statuses["task1"]; !ok {
+		t.Error("task1 should be set to READY as it is a prereq of task2 which is set to FAILED in this test")
+	}
+	t.Logf("%v", statuses)
+	t.Log("Execute states file")
+	sm.Execute("task1", "task3", nil, nil)
+	t.Log("Get Failed states")
+	states, errStates := sm.GetStates(StateFAILED, false, false)
+	if errStates != nil {
+		t.Error(errStates.Error())
+	}
+	if len(states.StateArray) > 0 {
+		t.Error("At least one state failed:" + states.StateArray[0].Name)
+	}
+	for _, state := range states.StateArray {
+		if state.StartTime == "" {
+			t.Error("state " + state.Name + " didn't run")
+		}
+	}
+	t.Logf("%+v", states)
 	sm.ResetEngineExecutionInfo()
 	err = sm.ResetEngine()
 	if err != nil {
@@ -1256,38 +1467,39 @@ func TestNextStatusSet(t *testing.T) {
 	}
 	t.Logf("%+v", sm.StateArray[0].NextStates)
 }
-func TestStatusFailedDependency(t *testing.T) {
-	t.Log("Entering... TestStatusFailedDependency")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
-	statesPath := "../../test/resource/states-run-failed-dependency.yaml"
-	// sm, err := newStateManager(statesPath)
-	sm := newStateManager("states-run-failed-dependency")
-	sm.StatesPath = statesPath
-	t.Log("Reset States file")
-	err := sm.ResetEngine()
-	if err != nil {
-		t.Error(err.Error())
-	}
-	t.Log("Execute states file")
-	sm.Execute("task1", "task3", nil, nil)
-	t.Log("Get Failed states")
-	states, errStates := sm.GetStates("", false, false)
-	if errStates != nil {
-		t.Error(errStates.Error())
-	}
-	if states.StateArray[0].Status != StateSUCCEEDED ||
-		states.StateArray[1].Status != StateFAILED ||
-		states.StateArray[2].Status != StateFAILED {
-		t.Error("The statuses are not correct, expecting task1: SUCCEEDED, task2: FAILED, task3: FAILED")
-	}
-	t.Log(states)
-	sm.ResetEngineExecutionInfo()
-	err = sm.ResetEngine()
-	if err != nil {
-		t.Error(err.Error())
-	}
-}
+
+// func TestStatusFailedDependency(t *testing.T) {
+// 	t.Log("Entering... TestStatusFailedDependency")
+// 	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+// 	SetExtensionPath("../../test/data/extensions/")
+// 	statesPath := "../../test/resource/states-run-failed-dependency.yaml"
+// 	// sm, err := newStateManager(statesPath)
+// 	sm := newStateManager("states-run-failed-dependency")
+// 	sm.StatesPath = statesPath
+// 	t.Log("Reset States file")
+// 	err := sm.ResetEngine()
+// 	if err != nil {
+// 		t.Error(err.Error())
+// 	}
+// 	t.Log("Execute states file")
+// 	sm.Execute("task1", "task3", nil, nil)
+// 	t.Log("Get Failed states")
+// 	states, errStates := sm.GetStates("", false, false)
+// 	if errStates != nil {
+// 		t.Error(errStates.Error())
+// 	}
+// 	if states.StateArray[0].Status != StateSUCCEEDED ||
+// 		states.StateArray[1].Status != StateFAILED ||
+// 		states.StateArray[2].Status != StateFAILED {
+// 		t.Error("The statuses are not correct, expecting task1: SUCCEEDED, task2: FAILED, task3: FAILED")
+// 	}
+// 	t.Log(states)
+// 	sm.ResetEngineExecutionInfo()
+// 	err = sm.ResetEngine()
+// 	if err != nil {
+// 		t.Error(err.Error())
+// 	}
+// }
 
 func TestEngineFailure(t *testing.T) {
 	t.Log("Entering... TestEngineFailure")

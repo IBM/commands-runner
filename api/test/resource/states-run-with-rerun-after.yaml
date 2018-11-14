@@ -11,13 +11,16 @@ states:
   script_timeout: 10
   protected: false
   deleted: false
+  prerequisite_states: []
   states_to_rerun:
   - task2
+  rerun_on_run_of_states: []
   previous_states: []
   next_states:
   - task2
   executed_by_extension_name: ""
   execution_id: 0
+  next_run: false
 - name: task2
   phase: ""
   label: Task 2
@@ -30,14 +33,17 @@ states:
   script_timeout: 10
   protected: false
   deleted: false
+  prerequisite_states: []
   states_to_rerun:
   - task3
+  rerun_on_run_of_states: []
   previous_states:
   - task1
   next_states:
   - task3
   executed_by_extension_name: ""
   execution_id: 0
+  next_run: false
 - name: task3
   phase: ""
   label: Task 3
@@ -50,12 +56,15 @@ states:
   script_timeout: 10
   protected: false
   deleted: false
+  prerequisite_states: []
   states_to_rerun: []
+  rerun_on_run_of_states: []
   previous_states:
   - task2
   next_states: []
   executed_by_extension_name: ""
   execution_id: 0
+  next_run: false
 extension_name: states-run-with-rerun-after
 executed_by_extension_name: ""
 execution_id: 0

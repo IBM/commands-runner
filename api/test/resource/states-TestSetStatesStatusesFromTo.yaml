@@ -11,12 +11,15 @@ states:
   script_timeout: 10
   protected: false
   deleted: false
+  prerequisite_states: []
   states_to_rerun: []
+  rerun_on_run_of_states: []
   previous_states: []
   next_states:
   - repeat
   executed_by_extension_name: ""
   execution_id: 0
+  next_run: false
 - name: repeat
   phase: ""
   label: Repeat
@@ -29,12 +32,15 @@ states:
   script_timeout: 10
   protected: false
   deleted: false
+  prerequisite_states: []
   states_to_rerun: []
+  rerun_on_run_of_states: []
   previous_states: []
   next_states:
   - state2
   executed_by_extension_name: ""
   execution_id: 0
+  next_run: false
 - name: state2
   phase: ""
   label: State 2
@@ -47,12 +53,15 @@ states:
   script_timeout: 61
   protected: false
   deleted: false
+  prerequisite_states: []
   states_to_rerun: []
+  rerun_on_run_of_states: []
   previous_states: []
   next_states:
   - nologpath
   executed_by_extension_name: ""
   execution_id: 0
+  next_run: false
 - name: nologpath
   phase: ""
   label: No Log Path
@@ -65,12 +74,15 @@ states:
   script_timeout: 60
   protected: false
   deleted: false
+  prerequisite_states: []
   states_to_rerun: []
+  rerun_on_run_of_states: []
   previous_states: []
   next_states:
   - wronglogpath
   executed_by_extension_name: ""
   execution_id: 0
+  next_run: false
 - name: wronglogpath
   phase: ""
   label: wronglogpath
@@ -83,11 +95,14 @@ states:
   script_timeout: 60
   protected: false
   deleted: false
+  prerequisite_states: []
   states_to_rerun: []
+  rerun_on_run_of_states: []
   previous_states: []
   next_states: []
   executed_by_extension_name: ""
   execution_id: 0
+  next_run: false
 extension_name: states-TestSetStatesStatusesFromTo
 executed_by_extension_name: ""
 execution_id: 0

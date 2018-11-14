@@ -233,6 +233,35 @@ func Client() *cli.App {
 		return nil
 	}
 
+	setMock := func(c *cli.Context) error {
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
+		if errClient != nil {
+			fmt.Println(errClient.Error())
+			return errClient
+		}
+		_, err := client.SetMockEngine(c.Bool("mock"))
+		if err != nil {
+			fmt.Println(err.Error())
+			return err
+		}
+		return nil
+	}
+
+	getMock := func(c *cli.Context) error {
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
+		if errClient != nil {
+			fmt.Println(errClient.Error())
+			return errClient
+		}
+		data, err := client.GetMockEngine()
+		if err != nil {
+			fmt.Println(err.Error())
+			return err
+		}
+		fmt.Print(data)
+		return nil
+	}
+
 	getUIMetaData := func(c *cli.Context) error {
 		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
 		if errClient != nil {
@@ -461,24 +490,24 @@ func Client() *cli.App {
 		return err
 	}
 
-	getPCMLogLevel := func(c *cli.Context) error {
+	getCRLogLevel := func(c *cli.Context) error {
 		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
 		}
-		data, err := client.GetPCMLogLevel()
+		data, err := client.GetCRLogLevel()
 		fmt.Print(data)
 		return err
 	}
 
-	setPCMLogLevel := func(c *cli.Context) error {
+	setCRLogLevel := func(c *cli.Context) error {
 		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
 		if errClient != nil {
 			fmt.Println(errClient.Error())
 			return errClient
 		}
-		data, err := client.SetPCMLogLevel(logLevel)
+		data, err := client.SetCRLogLevel(logLevel)
 		fmt.Print(data)
 		return err
 	}
@@ -725,20 +754,20 @@ func Client() *cli.App {
 				},
 			},
 		},
-		/*            PCM                  */
+		/*            CR                  */
 		{
 			Name:  "cr",
 			Usage: "cr management",
 			Subcommands: []cli.Command{
 				{
 					Name:   "log-level",
-					Usage:  "Get the current log level of the platform config manager",
-					Action: getPCMLogLevel,
+					Usage:  "Get the current log level",
+					Action: getCRLogLevel,
 				},
 				{
 					Name:   "set-log-level",
-					Usage:  "Get the current log level of the platform config manager",
-					Action: setPCMLogLevel,
+					Usage:  "Set the log level",
+					Action: setCRLogLevel,
 					Flags: []cli.Flag{
 						cli.StringFlag{
 							Name:        "level, l",
@@ -836,6 +865,24 @@ func Client() *cli.App {
 					Aliases: []string{"r"},
 					Usage:   "Reset the engine, all statuses not equal SKIP will be set to READY",
 					Action:  reset,
+				},
+				{
+					Name:    "set-mock",
+					Aliases: []string{"sm"},
+					Usage:   "Set mock mode for the engine",
+					Flags: []cli.Flag{
+						cli.BoolFlag{
+							Name:  "mock, m",
+							Usage: "If set then the engine will skip all scripts",
+						},
+					},
+					Action: setMock,
+				},
+				{
+					Name:    "get-mock",
+					Aliases: []string{"gm"},
+					Usage:   "Get the mock mode if the engine",
+					Action:  getMock,
 				},
 			},
 		},

@@ -12,19 +12,19 @@ states:
   protected: false
   deleted: false
   prerequisite_states: []
-  states_to_rerun: []
+  states_to_rerun:
+  - task2
   rerun_on_run_of_states: []
   previous_states: []
   next_states:
   - task2
   executed_by_extension_name: ""
   execution_id: 0
-  next_run: false
 - name: task2
   phase: ""
   label: Task 2
   log_path: /tmp/task-success.log
-  status: READY
+  status: SUCCEEDED
   start_time: ""
   end_time: ""
   reason: ""
@@ -41,12 +41,11 @@ states:
   - task3
   executed_by_extension_name: ""
   execution_id: 0
-  next_run: false
 - name: task3
   phase: ""
   label: Task 3
   log_path: /tmp/task-success.log
-  status: READY
+  status: SUCCEEDED
   start_time: ""
   end_time: ""
   reason: ""
@@ -62,7 +61,6 @@ states:
   next_states: []
   executed_by_extension_name: ""
   execution_id: 0
-  next_run: false
 extension_name: states-run-success
 executed_by_extension_name: ""
 execution_id: 0

@@ -11,12 +11,15 @@ states:
   script_timeout: 10
   protected: false
   deleted: false
+  prerequisite_states: []
   states_to_rerun: []
+  rerun_on_run_of_states: []
   previous_states: []
   next_states:
   - ext-template
   executed_by_extension_name: ""
   execution_id: 0
+  next_run: false
 - name: ext-template
   phase: ""
   label: Ext Template
@@ -29,13 +32,16 @@ states:
   script_timeout: 10
   protected: false
   deleted: false
+  prerequisite_states: []
   states_to_rerun: []
+  rerun_on_run_of_states: []
   previous_states:
   - task1
   next_states:
   - task3
   executed_by_extension_name: ""
   execution_id: 0
+  next_run: false
 - name: task3
   phase: ""
   label: Task 3
@@ -48,12 +54,15 @@ states:
   script_timeout: 10
   protected: false
   deleted: false
+  prerequisite_states: []
   states_to_rerun: []
+  rerun_on_run_of_states: []
   previous_states:
   - ext-template
   next_states: []
   executed_by_extension_name: ""
   execution_id: 0
+  next_run: false
 extension_name: states-run-success-with-extension
 executed_by_extension_name: ""
 execution_id: 0
