@@ -72,6 +72,7 @@ func getUIMetadataTemplate(extensionName string, uiMetadataName string) ([]byte,
 		}
 	}
 	indentOutTemplate := bytes.NewBufferString(global.ConfigRootKey + ":\n")
+	indentOutTemplate.WriteString(leftPad("configuration_name: "+uiMetadataName, 2, " ") + "\n")
 	scanner := bufio.NewScanner(strings.NewReader(outTemplate.String()))
 	for scanner.Scan() {
 		indentOutTemplate.WriteString(leftPad(scanner.Text(), 2, " ") + "\n")
