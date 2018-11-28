@@ -558,6 +558,17 @@ func Client() *cli.App {
 		return err
 	}
 
+	getCRSettings := func(c *cli.Context) error {
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
+		if errClient != nil {
+			fmt.Println(errClient.Error())
+			return errClient
+		}
+		data, err := client.GetCRSettings()
+		fmt.Print(data)
+		return err
+	}
+
 	app := cli.NewApp()
 	app.Usage = "Config Manager for Cloud Foundry installation"
 	app.Description = "CLI to manage initial Cloud Foundry installation"
@@ -821,6 +832,11 @@ func Client() *cli.App {
 							Destination: &logLevel,
 						},
 					},
+				},
+				{
+					Name:   "settings",
+					Usage:  "Get the current commands runner settings",
+					Action: getCRSettings,
 				},
 			},
 		},

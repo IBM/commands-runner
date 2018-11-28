@@ -23,26 +23,36 @@ import (
 
 func HandleCR(w http.ResponseWriter, req *http.Request) {
 	log.Debug("Entering in handlePCM")
-	validatePath := regexp.MustCompile("/cr/v1/(pcm)/log/([\\w]*)$")
+	validatePath := regexp.MustCompile("/cr/v1/cr/(\\blog\\b|\\bsettings\\b)(/([\\w]*))?$")
 	log.Debug(req.URL.Path)
 	params := validatePath.FindStringSubmatch(req.URL.Path)
 	log.Debug(params)
-	switch req.Method {
-	case "GET":
-		if params[2] == "level" {
-			GetLogLevelEndpoint(w, req)
-		} else {
-			http.Error(w, "Unsupported url:"+req.URL.Path, http.StatusBadRequest)
+	switch params[1] {
+	case "log":
+		switch req.Method {
+		case "GET":
+			switch params[2] {
+			case "/level":
+				GetLogLevelEndpoint(w, req)
+			default:
+				logger.AddCallerField().Error("Unsupported command:" + params[2])
+				http.Error(w, "Unsupported command:"+params[2], http.StatusBadRequest)
+			}
+		case "PUT":
+			if params[3] == "/level" {
+				SetLogLevelEndpoint(w, req)
+			} else {
+				http.Error(w, "Unsupported url:"+req.URL.Path, http.StatusBadRequest)
+			}
+		default:
+			logger.AddCallerField().Error("Unsupported method:" + req.Method)
+			http.Error(w, "Unsupported method:"+req.Method, http.StatusMethodNotAllowed)
 		}
-	case "PUT":
-		if params[2] == "level" {
-			SetLogLevelEndpoint(w, req)
-		} else {
-			http.Error(w, "Unsupported url:"+req.URL.Path, http.StatusBadRequest)
-		}
+	case "settings":
+		GetSettingsEndpoint(w, req)
 	default:
-		logger.AddCallerField().Error("Unsupported method:" + req.Method)
-		http.Error(w, "Unsupported method:"+req.Method, http.StatusMethodNotAllowed)
+		logger.AddCallerField().Error("Unsupported command:" + params[1])
+		http.Error(w, "Unsupported command:"+params[1], http.StatusMethodNotAllowed)
 	}
 }
 
@@ -54,6 +64,17 @@ func GetLogLevelEndpoint(w http.ResponseWriter, req *http.Request) {
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
 	err := enc.Encode(logLevel)
+	if err != nil {
+		logger.AddCallerField().Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func GetSettingsEndpoint(w http.ResponseWriter, req *http.Request) {
+	settings := GetSettings()
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "  ")
+	err := enc.Encode(settings)
 	if err != nil {
 		logger.AddCallerField().Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)

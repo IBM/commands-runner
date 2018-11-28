@@ -19,6 +19,9 @@ var ConfigYamlFileName = "config.yml"
 //ConfigRootKey default root key for the yaml config file.
 var ConfigRootKey = "config"
 
+//DefaultExtensionName default extension name.
+var DefaultExtensionName string
+
 //Mock default false, when true all scripts are skipped
 var Mock = false
 

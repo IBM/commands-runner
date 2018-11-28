@@ -11,11 +11,13 @@
 package clientManager
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/olebedev/config"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/commandsRunner"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 )
 
@@ -55,4 +57,28 @@ func (crc *CommandsRunnerClient) SetCRLogLevel(level string) (string, error) {
 		return data, errors.New("Unable to set pcm log level: " + data + ", please check log for more information")
 	}
 	return data, nil
+}
+
+//GetLogLevel of PCM
+func (crc *CommandsRunnerClient) GetCRSettings() (string, error) {
+	url := "cr/settings"
+	data, errCode, err := crc.RestCall(http.MethodGet, global.BaseURL, url, nil, nil)
+	if err != nil {
+		return data, err
+	}
+	if errCode != http.StatusOK {
+		return data, errors.New("Unable to get pcm log-level: " + data + ", please check log for more information")
+	}
+	//Generate the text format otherwize return the json
+	if crc.OutputFormat == "text" {
+		var settings commandsRunner.Settings
+		err := json.Unmarshal([]byte(data), &settings)
+		if err != nil {
+			return "", err
+		}
+		out := fmt.Sprintf("defaultExtensionName: %s\n", settings.DefaultExtensionName)
+		out += fmt.Sprintf("configRootKey       : %s\n", settings.ConfigRootKey)
+		return out, nil
+	}
+	return crc.convertJSONOrYAML(data)
 }
