@@ -21,3 +21,18 @@ var ConfigRootKey = "config"
 
 //Mock default false, when true all scripts are skipped
 var Mock = false
+
+//Server Configuration director
+var ServerConfigDir string
+
+//Server Port
+var ServerPort string
+
+//Server Port SSL
+var ServerPortSSL string
+
+//Server Certificate path
+var ServerCertificatePath string
+
+//Server Key Path
+var ServerKeyPath string

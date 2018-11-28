@@ -13,6 +13,8 @@ package commandsRunnerCLI
 import (
 	"errors"
 	"fmt"
+	"net/http"
+	"strconv"
 
 	cli "gopkg.in/urfave/cli.v1"
 
@@ -179,6 +181,50 @@ func Client() *cli.App {
 			return err
 		}
 		fmt.Print(data)
+		return nil
+	}
+
+	generateConfig := func(c *cli.Context) error {
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
+		if errClient != nil {
+			fmt.Println(errClient.Error())
+			return errClient
+		}
+		data, err := client.GenerateConfig(extensionName)
+		if err != nil {
+			fmt.Println(err.Error())
+			return err
+		}
+		fmt.Print(data)
+		return nil
+	}
+
+	validateConfig := func(c *cli.Context) error {
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
+		if errClient != nil {
+			fmt.Println(errClient.Error())
+			return errClient
+		}
+		data, err := client.ValidateConfig(extensionName)
+		fmt.Print(data)
+		//Either 200 (ok), 299 (Warning), 406 (Error) or real error
+		if err != nil {
+			code, errCode := strconv.Atoi(err.Error())
+			//Can not convert
+			if errCode != nil {
+				fmt.Println(err.Error())
+				return err
+			}
+			switch code {
+			case http.StatusOK:
+				return nil
+			case http.StatusNotAcceptable:
+				return err
+			case 299:
+				return nil
+			}
+			return err
+		}
 		return nil
 	}
 
@@ -826,6 +872,19 @@ func Client() *cli.App {
 						},
 					},
 					Action: setConfig,
+				},
+				{
+					Name:    "validate",
+					Aliases: []string{"v"},
+					Usage:   "Validate the configuration",
+					Action:  validateConfig,
+				},
+				{
+					Name:    "generate-config",
+					Aliases: []string{"g"},
+					Hidden:  true,
+					Usage:   "Generate configuration based on the save configuration",
+					Action:  generateConfig,
 				},
 			},
 		},
