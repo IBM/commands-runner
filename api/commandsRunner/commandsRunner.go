@@ -40,12 +40,6 @@ const COPYRIGHT string = `######################################################
 #  IBM Corporation - initial API and implementation
 ###############################################################################`
 
-var serverConfigDir string
-var serverPort string
-var serverPortSSL string
-var serverCertificatePath string
-var serverKeyPath string
-
 func setupResponse(w *http.ResponseWriter, req *http.Request) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
@@ -96,10 +90,10 @@ func validateToken(configDir string, protectedHandler http.HandlerFunc) http.Han
 func AddHandler(pattern string, handler http.HandlerFunc, requireAuth bool) {
 	log.Debug("Entering... AddHandler")
 	log.Debug("pattern:" + pattern)
-	log.Debug("serverConfigDir:" + serverConfigDir)
+	log.Debug("serverConfigDir:" + global.ServerConfigDir)
 	log.Debug("requireAuth:" + strconv.FormatBool(requireAuth))
 	if requireAuth {
-		http.HandleFunc(pattern, validateToken(serverConfigDir, handler))
+		http.HandleFunc(pattern, validateToken(global.ServerConfigDir, handler))
 	} else {
 		http.HandleFunc(pattern, handler)
 	}
@@ -107,22 +101,22 @@ func AddHandler(pattern string, handler http.HandlerFunc, requireAuth bool) {
 
 func start() {
 	go func() {
-		log.Info("http://localhost:" + serverPort)
-		if err := http.ListenAndServe(":"+serverPort, nil); err != nil {
+		log.Info("http://localhost:" + global.ServerPort)
+		if err := http.ListenAndServe(":"+global.ServerPort, nil); err != nil {
 			log.Errorf("ListenAndServe error: %v", err)
 		}
 	}()
-	_, errCertPath := os.Stat(serverCertificatePath)
-	_, errKeyPath := os.Stat(serverKeyPath)
+	_, errCertPath := os.Stat(global.ServerCertificatePath)
+	_, errKeyPath := os.Stat(global.ServerKeyPath)
 	if errCertPath == nil && errKeyPath == nil {
-		log.Info("https://localhost:" + serverPortSSL)
+		log.Info("https://localhost:" + global.ServerPortSSL)
 		go func() {
-			if err := http.ListenAndServeTLS(":"+serverPortSSL, serverCertificatePath, serverKeyPath, nil); err != nil {
+			if err := http.ListenAndServeTLS(":"+global.ServerPortSSL, global.ServerCertificatePath, global.ServerKeyPath, nil); err != nil {
 				log.Errorf("ListenAndServeTLS error: %v", err)
 			}
 		}()
 	} else {
-		log.Info("SSL not enabled as " + serverCertificatePath + " or " + serverKeyPath + " is not present.")
+		log.Info("SSL not enabled as " + global.ServerCertificatePath + " or " + global.ServerKeyPath + " is not present.")
 	}
 	status.SetStatus(status.CMStatus, "Up")
 }
@@ -136,11 +130,11 @@ type InitFunc func(port string, portSSL string, configDir string, certificatePat
 type PostStartFunc func(configDir string)
 
 func Init(port string, portSSL string, configDir string, certificatePath string, keyPath string) {
-	serverPort = port
-	serverPortSSL = portSSL
-	serverConfigDir = configDir
-	serverCertificatePath = certificatePath
-	serverKeyPath = keyPath
+	global.ServerPort = port
+	global.ServerPortSSL = portSSL
+	global.ServerConfigDir = configDir
+	global.ServerCertificatePath = certificatePath
+	global.ServerKeyPath = keyPath
 	config.SetConfigPath(configDir)
 	AddHandler("/cr/v1/state", state.HandleState, true)
 	AddHandler("/cr/v1/state/", state.HandleState, true)

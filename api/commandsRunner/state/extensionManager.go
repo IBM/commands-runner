@@ -50,9 +50,12 @@ var extensionLogsPathCustom = extensionLogsPath + extensionLogsDirCustom
 Extension structure
 */
 type Extension struct {
-	Type      string    `yaml:"type" json:"type"`
-	Version   string    `yaml:"version" json:"version"`
-	CallState CallState `yaml:"call_state" json:"call_state"`
+	Type                string    `yaml:"type" json:"type"`
+	Version             string    `yaml:"version" json:"version"`
+	CallState           CallState `yaml:"call_state" json:"call_state"`
+	ValidationConfigURL string    `yaml:"validation_config_url" json:"validation_config_url"`
+	GenerateConfigURL   string    `yaml:"generate_config_url" json:"generate_config_url"`
+	ExtensionPath       string    `yaml:"-" json:"-"`
 }
 
 type CallState struct {
@@ -484,6 +487,36 @@ func listRegisteredExtensionsDir(extensionPath string) (*Extensions, error) {
 		}
 	}
 	return &extensionList, nil
+}
+
+func ReadRegisteredExtension(extensionName string) (*Extension, error) {
+	var extension Extension
+	extensionPath, err := GetRegisteredExtensionPath(extensionName)
+	if err != nil {
+		return &extension, err
+	}
+	embeddedExtension, err := IsEmbeddedExtension(extensionName)
+	if err != nil {
+		return &extension, err
+	}
+	log.Debug("extension.Name: " + extensionName)
+	manifestPath := filepath.Join(extensionPath, "extension-manifest.yml")
+	log.Debug("manifestPath: " + manifestPath)
+	manifestBytes, err := ioutil.ReadFile(manifestPath)
+	if err != nil {
+		return &extension, err
+	}
+	err = yaml.Unmarshal(manifestBytes, &extension)
+	if err != nil {
+		return &extension, err
+	}
+	if embeddedExtension {
+		extension.Type = EmbeddedExtensions
+	} else {
+		extension.Type = CustomExtensions
+	}
+	extension.ExtensionPath = extensionPath
+	return &extension, nil
 }
 
 //ListEmbeddedRegisteredExtensions lists the registered embedded exxtensions

@@ -14,6 +14,8 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"regexp"
 	"strconv"
 
@@ -23,6 +25,7 @@ import (
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/logger"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/properties"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/state"
 )
 
 //handle COnfig rest api requests
@@ -37,17 +40,116 @@ func HandleConfig(w http.ResponseWriter, req *http.Request) {
 		params := validatePath.FindStringSubmatch(req.URL.Path)
 		log.Debug(params)
 		if len(params) == 2 {
-			//Retrieve the full config
-			getPropertiesEndpoint(w, req)
+			m, errRQ := url.ParseQuery(req.URL.RawQuery)
+			if errRQ != nil {
+				logger.AddCallerField().Error(errRQ.Error())
+				http.Error(w, errRQ.Error(), 500)
+				return
+			}
+			//Retreive the new status
+			var action string
+			actionFound, okActionFound := m["action"]
+			if !okActionFound {
+				//Retrieve the full config
+				getPropertiesEndpoint(w, req)
+			} else {
+				log.Debug("Action:%s", actionFound)
+				action = actionFound[0]
+				switch action {
+				case "validate":
+					validateConfigEndpoint(w, req)
+				}
+			}
 		} else {
 			//Retrieve a single property
 			getPropertyEndpoint(w, req)
 		}
+	case "PUT":
+		generateConfigEndpoint(w, req)
 	case "POST":
 		SetPropertiesEndpoint(w, req)
 	default:
 		http.Error(w, "Unsupported method:"+req.Method, http.StatusNotFound)
 	}
+}
+
+/*
+Validate the properties
+URL: /cr/v1/config?action=validate
+MEthod: GET
+*/
+func validateConfigEndpoint(w http.ResponseWriter, req *http.Request) {
+	log.Debug("Entering in.... validateConfigEndpoint")
+	extensionName, _, err := global.GetExtensionNameFromRequest(req)
+	if err != nil {
+		logger.AddCallerField().Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	extension, err := state.ReadRegisteredExtension(extensionName)
+	if err != nil {
+		logger.AddCallerField().Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	log.Debug("extension.ValidationConfigURL:" + extension.ValidationConfigURL)
+	forwardRequest(w, req, extension.ValidationConfigURL)
+	log.Debug("Exiting in.... validateConfigEndpoint")
+}
+
+/*
+Generate config
+URL: /cr/v1/config
+Method: PUT
+*/
+
+func generateConfigEndpoint(w http.ResponseWriter, req *http.Request) {
+	log.Debug("Entering in.... generateConfigEndpoint")
+	extensionName, _, err := global.GetExtensionNameFromRequest(req)
+	if err != nil {
+		logger.AddCallerField().Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	extension, err := state.ReadRegisteredExtension(extensionName)
+	if err != nil {
+		logger.AddCallerField().Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	log.Debug("extension.ValidationConfigURL:" + extension.ValidationConfigURL)
+	forwardRequest(w, req, extension.GenerateConfigURL)
+	log.Debug("Exiting in.... generateConfigEndpoint")
+}
+
+func forwardRequest(w http.ResponseWriter, req *http.Request, newURL string) {
+	if newURL == "" {
+		return
+	}
+	forwardURL, err := url.Parse(newURL)
+	if err != nil {
+		logger.AddCallerField().Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	if forwardURL.Scheme == "" {
+		forwardURL.Scheme = "http"
+	}
+	// req.Header.Add("X-Origin-Host", req.Host)
+	if forwardURL.Host == "" {
+		forwardURL.Host = "localhost:" + global.ServerPort
+	}
+	forwardURL.RawQuery = req.URL.RawQuery
+	// req.Header.Add("X-Forwarded-Host", req.Host)
+	log.Debug("validationConfigUrl.String():" + forwardURL.String())
+	director := func(req *http.Request) {
+		req.URL = forwardURL
+	}
+	proxy := &httputil.ReverseProxy{Director: director}
+	w.Header().Del("Access-Control-Allow-Origin")
+	w.Header().Del("Access-Control-Allow-Methods")
+	w.Header().Del("Access-Control-Allow-Headers")
+	proxy.ServeHTTP(w, req)
 }
 
 /*
@@ -137,9 +239,6 @@ func GetPropertiesEndpoint(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	_, err = w.Write([]byte(result))
-	// enc := json.NewEncoder(w)
-	// enc.SetIndent("", "  ")
-	// err = enc.Encode(bmxConfig)
 	if err != nil {
 		logger.AddCallerField().Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
