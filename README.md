@@ -15,7 +15,8 @@ This project uses `dep` to manage dependencies.<br>
   name = "github.ibm.com/IBMPrivateCloud/cfp-commands-runner"
   source = "git@github.ibm.com:IBMPrivateCloud/cfp-commands-runner.git"
 ```
-1. run `dep ensure -v`, this will download all dependencies.
+5. Create your client and server (see below)
+6. run `dep ensure -v`, this will download all dependencies.
 
 ### Create a commands-runner server
 1. Create server: There a server example at [examples/server](./examples/server). In that example the server is enriched with a `helloWorld` API.

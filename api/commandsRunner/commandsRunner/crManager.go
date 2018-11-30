@@ -29,6 +29,7 @@ type Log struct {
 }
 
 type Settings struct {
+	DeploymentName       string `yaml:"deployment_name" json:"deployment_name"`
 	DefaultExtensionName string `yaml:"default_extension_name" json:"default_extension_name"`
 	ConfigRootKey        string `yaml:"config_root_key" json:"config_root_key"`
 }
@@ -57,9 +58,14 @@ func SetDefaultExtensionName(defaultExtensionName string) {
 	global.DefaultExtensionName = defaultExtensionName
 }
 
+func SetDeploymentName(deploymentName string) {
+	global.DeploymentName = deploymentName
+}
+
 //Retrieve Settings
 func GetSettings() *Settings {
 	settings := &Settings{
+		DeploymentName:       global.DeploymentName,
 		DefaultExtensionName: global.DefaultExtensionName,
 		ConfigRootKey:        global.ConfigRootKey,
 	}

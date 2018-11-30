@@ -55,3 +55,47 @@ call_state:
   states_to_rerun: [ "task1" ]
   previous_states: [ "task2" ]
   next_states: [ "task2" ]
+ui_metadata:
+  default:
+    groups:
+    - name: "Kubernetes"
+      label: "Kubernetes"
+      properties:
+      - name: "number_of_nodes"
+        label: "Number of Nodes"
+        description: "Number of Nodes (1-32)"
+        type: number
+        validation_regex: "^(?:[1-9]|[1-2][0-9]|3[0-2])$"
+        validation_error_message: "The number of cell must be in a range from 1 to 32"
+        mandatory: true
+        #The value is an integer, but the UI expects a string value.
+        sample_value: "E.g. 1" #range from 1-32
+        default: "1"
+    - name: "network_config"
+      label: "Network"
+      properties:
+      - name: "ntp_servers"
+        label: "NTP servers"
+        description: "Comma-separated list of NTP servers"
+        type: text
+        validation_regex: "^(?:(?:[a-z,0-9,\\.,-]+)(?:,|$))+$"
+        validation_error_message: "The field must contains a comma-separated list of servers"
+        mandatory: true
+        sample_value: "E.g. ntp1,myntp2.com"
+        default: "time1.google.com,time2.google.com,time3.google.com,time4.google.com"
+      - name: "subnet"
+        label: "Cloud Foundry subnet"
+        description: "The subnet that Cloud Foundry runs on, for example 10.155.194.129/27"
+        type: text
+        validation_regex: "^(?:(?:(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]))(?:[/])(?:(?:[0-9])|(?:[1-2][0-9])|(?:3[0-2])))$"
+        validation_error_message: "The field must be a subnet"
+        mandatory: true
+        sample_value: "E.g. 10.155.194.129/27"
+      - name: "gateway"
+        label: "Network gateway"
+        description: "Customer gateway within the subnet"
+        type: text
+        validation_regex: "^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$"
+        validation_error_message: "The field must be an IP address"
+        mandatory: true
+        sample_value: "E.g. 10.155.194.1"

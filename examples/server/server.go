@@ -14,7 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	commandsRunner "github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner"
+	cr "github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/commandsRunner"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/state"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/status"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/examples/server/handlers"
 )
 
@@ -47,6 +49,8 @@ func postInitServer() commandsRunner.InitFunc {
 		//The provided value is used when an extension is inserted in the state file
 		//in order to call the commands-runner to execute that extension.
 		//      config.SetClientPath("./cr-cli")
+		cr.SetDeploymentName("Simple deployment example")
+		cr.SetDefaultExtensionName("simple-embedded-extension-without-version")
 	})
 }
 
@@ -59,6 +63,8 @@ func preStartServer() commandsRunner.InitFunc {
 func postStartServer() commandsRunner.PostStartFunc {
 	log.Info("postStartServer")
 	return commandsRunner.PostStartFunc(func(configDir string) {
+		//This to tell the config-manager-ui that the installation is completed.
+		status.SetStatus("cr_post_install_status", "COMPLETED")
 	})
 }
 

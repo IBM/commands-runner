@@ -76,7 +76,8 @@ func (crc *CommandsRunnerClient) GetCRSettings() (string, error) {
 		if err != nil {
 			return "", err
 		}
-		out := fmt.Sprintf("defaultExtensionName: %s\n", settings.DefaultExtensionName)
+		out := fmt.Sprintf("DeploymentName:       %s\n", settings.DeploymentName)
+		out += fmt.Sprintf("defaultExtensionName: %s\n", settings.DefaultExtensionName)
 		out += fmt.Sprintf("configRootKey       : %s\n", settings.ConfigRootKey)
 		return out, nil
 	}
