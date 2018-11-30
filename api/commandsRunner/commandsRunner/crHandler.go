@@ -31,15 +31,15 @@ func HandleCR(w http.ResponseWriter, req *http.Request) {
 	case "log":
 		switch req.Method {
 		case "GET":
-			switch params[2] {
-			case "/level":
+			switch params[3] {
+			case "level":
 				GetLogLevelEndpoint(w, req)
 			default:
 				logger.AddCallerField().Error("Unsupported command:" + params[2])
 				http.Error(w, "Unsupported command:"+params[2], http.StatusBadRequest)
 			}
 		case "PUT":
-			if params[2] == "/level" {
+			if params[3] == "level" {
 				SetLogLevelEndpoint(w, req)
 			} else {
 				http.Error(w, "Unsupported url:"+req.URL.Path, http.StatusBadRequest)
