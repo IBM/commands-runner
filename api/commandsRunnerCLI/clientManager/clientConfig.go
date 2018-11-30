@@ -143,36 +143,39 @@ func (crc *CommandsRunnerClient) ValidateConfig(extensionName string) (string, e
 	if errResp != nil {
 		return "", errResp
 	}
-	//Convert to text otherwize return the json
-	if crc.OutputFormat == "text" {
-		cfg, jsonErr := config.ParseJson(data)
-		if jsonErr != nil {
-			fmt.Println(jsonErr.Error())
-			return "", jsonErr
-		}
-		ps, jsonErr := cfg.Map(global.ConfigRootKey)
-		//		jsonErr = json.Unmarshal([]byte(data), &configAux)
-		if jsonErr != nil {
-			fmt.Println(jsonErr.Error())
-			return "", jsonErr
-		}
-		out := ""
-		for k, v := range ps {
-			if val, ok := v.(map[string]interface{}); ok {
-				if _, ok := val["message_type"]; ok {
-					out += fmt.Sprintf("=>\n")
-					out += fmt.Sprintf("Name        : %s\n", k)
-					out += fmt.Sprintf("Value       : %v\n", val["value"])
-					out += fmt.Sprintf("Message type: %s\n", val["message_type"])
-					out += fmt.Sprintf("Message     : %s\n", val["message"])
+	if data != "" {
+		//Convert to text otherwize return the json
+		if crc.OutputFormat == "text" {
+			cfg, jsonErr := config.ParseJson(data)
+			if jsonErr != nil {
+				fmt.Println(jsonErr.Error())
+				return "", jsonErr
+			}
+			ps, jsonErr := cfg.Map(global.ConfigRootKey)
+			//		jsonErr = json.Unmarshal([]byte(data), &configAux)
+			if jsonErr != nil {
+				fmt.Println(jsonErr.Error())
+				return "", jsonErr
+			}
+			out := ""
+			for k, v := range ps {
+				if val, ok := v.(map[string]interface{}); ok {
+					if _, ok := val["message_type"]; ok {
+						out += fmt.Sprintf("=>\n")
+						out += fmt.Sprintf("Name        : %s\n", k)
+						out += fmt.Sprintf("Value       : %v\n", val["value"])
+						out += fmt.Sprintf("Message type: %s\n", val["message_type"])
+						out += fmt.Sprintf("Message     : %s\n", val["message"])
+					}
 				}
 			}
+			return out, errors.New(strconv.Itoa(errCode))
 		}
-		return out, errors.New(strconv.Itoa(errCode))
-	}
-	data, err := crc.convertJSONOrYAML(data)
-	if err != nil {
-		return "", err
+		var err error
+		data, err = crc.convertJSONOrYAML(data)
+		if err != nil {
+			return "", err
+		}
 	}
 	return data, errors.New(strconv.Itoa(errCode))
 }

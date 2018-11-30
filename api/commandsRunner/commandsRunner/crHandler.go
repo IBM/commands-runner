@@ -39,7 +39,7 @@ func HandleCR(w http.ResponseWriter, req *http.Request) {
 				http.Error(w, "Unsupported command:"+params[2], http.StatusBadRequest)
 			}
 		case "PUT":
-			if params[3] == "/level" {
+			if params[2] == "/level" {
 				SetLogLevelEndpoint(w, req)
 			} else {
 				http.Error(w, "Unsupported url:"+req.URL.Path, http.StatusBadRequest)
