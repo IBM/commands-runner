@@ -28,7 +28,7 @@ import (
 func TestSaveConfig(t *testing.T) {
 	t.Log("Entering................. TestSaveConfig")
 	SetConfigPath("../../test/resource/ConfigDir")
-	state.SetExtensionPath("../../test/resource/extensions")
+	state.SetExtensionsPath("../../test/resource/extensions")
 	body, err := os.Open("../../test/resource/config-test-save.yml")
 	defer body.Close()
 	if err != nil {
@@ -61,7 +61,7 @@ func TestGetConfig(t *testing.T) {
 	t.Log("Entering................. TestSaveConfig")
 	//log.SetLevel(log.DebugLevel)
 	SetConfigPath("../../test/resource")
-	state.SetExtensionPath("../../test/resource/extensions")
+	state.SetExtensionsPath("../../test/resource/extensions")
 	bckConfigFileName := global.ConfigYamlFileName
 	SetConfigFileName("config-test-save.yml")
 
@@ -85,7 +85,7 @@ func TestGetConfigProperty(t *testing.T) {
 	t.Log("Entering................. TestSaveConfig")
 	//log.SetLevel(log.DebugLevel)
 	SetConfigPath("../../test/resource")
-	state.SetExtensionPath("../../test/resource/extensions")
+	state.SetExtensionsPath("../../test/resource/extensions")
 	bckConfigFileName := global.ConfigYamlFileName
 	SetConfigFileName("config-test-save.yml")
 
@@ -119,7 +119,7 @@ func TestGetConfigCustomized(t *testing.T) {
 	t.Log("Entering................. TestGetConfigCustomized")
 	//log.SetLevel(log.DebugLevel)
 	SetConfigPath("../../test/resource")
-	state.SetExtensionPath("../../test/resource/extensions")
+	state.SetExtensionsPath("../../test/resource/extensions")
 	bckConfigFileName := global.ConfigYamlFileName
 	SetConfigFileName("uiconfig-test-save.yml")
 	bckConfigRootKey := global.ConfigRootKey

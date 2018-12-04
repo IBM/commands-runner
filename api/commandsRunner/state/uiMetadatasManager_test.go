@@ -19,8 +19,8 @@ import (
 
 func TestGetUIConfigsExtentionTest(t *testing.T) {
 	//log.SetLevel(log.DebugLevel)
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/resource/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/resource/extensions/")
 	configuration, err := GetUIMetaDataConfigs("ext-template", false)
 	if err != nil {
 		t.Error(err.Error())

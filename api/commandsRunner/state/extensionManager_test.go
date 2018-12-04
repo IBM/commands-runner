@@ -18,8 +18,8 @@ import (
 func TestExtensionRegistered(t *testing.T) {
 	//log.SetLevel(log.DebugLevel)
 	t.Log("Entering... check to see if an extension is registerd")
-	SetExtensionPath("../../test/data/extensions/")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
 	registered := IsExtensionRegistered("ext-template")
 	if registered == false {
 		t.Error("extension does not exist")
@@ -28,8 +28,8 @@ func TestExtensionRegistered(t *testing.T) {
 
 func TestIsIBMExtension(t *testing.T) {
 	//log.SetLevel(log.DebugLevel)
-	SetExtensionPath("../../test/data/extensions/")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
 	isExtension, err := IsEmbeddedExtension("ext-template")
 	if err != nil {
 		t.Error(err.Error())
@@ -41,8 +41,8 @@ func TestIsIBMExtension(t *testing.T) {
 
 func TestIsExtension(t *testing.T) {
 	//log.SetLevel(log.DebugLevel)
-	SetExtensionPath("../../test/data/extensions/")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
 	isExtension, err := IsExtension("ext-template")
 	if err != nil {
 		t.Error(err.Error())
@@ -54,7 +54,7 @@ func TestIsExtension(t *testing.T) {
 
 func TestListRegisteredExtensions(t *testing.T) {
 	//log.SetLevel(log.DebugLevel)
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsPath("../../test/data/extensions/")
 	extensions, err := ListExtensions("", false)
 	if err != nil {
 		t.Error(err.Error())
@@ -64,8 +64,8 @@ func TestListRegisteredExtensions(t *testing.T) {
 
 func TestExtensionPathWithVersion(t *testing.T) {
 	//log.SetLevel(log.DebugLevel)
-	SetExtensionPath("../../test/data/extensions/")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
 	path, err := getEmbeddedExtensionRepoPath("ext-template-v")
 	if err != nil {
 		t.Error(err.Error())
@@ -78,8 +78,8 @@ func TestExtensionPathWithVersion(t *testing.T) {
 
 func TestExtensionPathWithOutVersion(t *testing.T) {
 	//log.SetLevel(log.DebugLevel)
-	SetExtensionPath("../../test/data/extensions/")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
 	path, err := getEmbeddedExtensionRepoPath("ext-template")
 	if err != nil {
 		t.Error(err.Error())
@@ -92,8 +92,8 @@ func TestExtensionPathWithOutVersion(t *testing.T) {
 
 func TestExtensionPathForNonExistExtension(t *testing.T) {
 	//log.SetLevel(log.DebugLevel)
-	SetExtensionPath("../../test/data/extensions/")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
 	_, err := getEmbeddedExtensionRepoPath("not-exist")
 	if err == nil {
 		t.Error("Expecting an error as extension name not-exist doesn't exist")

@@ -20,8 +20,8 @@ import (
 
 func TestGetUIMetadatasConfigEndpointFailed(t *testing.T) {
 	t.Log("Entering................. TestGetUIConfigEndpointFailed")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/resource/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/resource/extensions/")
 	req, err := http.NewRequest("GET", "/cr/v1/uimetadatas?extension-name=does-not-exist&ui-metadata-name=hello", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -45,8 +45,8 @@ func TestGetUIMetadatasConfigEndpointFailed(t *testing.T) {
 func TestGetUIMetadatasConfigEndpointSuccess(t *testing.T) {
 	log.SetLevel(log.DebugLevel)
 	t.Log("Entering................. TestGetUIConfigEndpointFailed")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/resource/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/resource/extensions/")
 	req, err := http.NewRequest("GET", "/cr/v1/uimetadatas?extension-name=ext-template&ui-metadata-name=test-ui", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -71,8 +71,8 @@ func TestGetUIMetadatasConfigEndpointSuccess(t *testing.T) {
 func TestGetUIMetadatasAllConfigEndpointSuccess(t *testing.T) {
 	log.SetLevel(log.DebugLevel)
 	t.Log("Entering................. TestGetUIConfigEndpointFailed")
-	SetExtensionEmbeddedFile("../../test/data/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/data/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	req, err := http.NewRequest("GET", "/cr/v1/uimetadatas?names-only=true", nil)
 	if err != nil {
 		t.Fatal(err)

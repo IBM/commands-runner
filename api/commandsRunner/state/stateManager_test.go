@@ -54,8 +54,8 @@ func TestGetStatesOK(t *testing.T) {
 	//	log.SetLevel(log.DebugLevel)
 	t.Log("Entering... TestGetStatesOK")
 	statesPath := "../../test/resource/states-TestGetStatesOK.yaml"
-	SetExtensionPath("../../test/data/extensions/")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
 	//	sm, err := newStateManager(statesPath)
 	sm := newStateManager("states-TestGetStatesOK")
 	sm.StatesPath = statesPath
@@ -113,8 +113,8 @@ func TestGetStatesWithStatus(t *testing.T) {
 }
 
 func TestSetStatesOK(t *testing.T) {
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	_, err := os.Create("../../test/resource/out-test-states-post-sample-from-json.yaml")
 	if err != nil {
 		t.Error(err.Error())
@@ -140,8 +140,8 @@ func TestSetStatesOK(t *testing.T) {
 
 func TestSetStatesStatusesOK(t *testing.T) {
 	t.Log("Entering... TestSetStatesStatusesOK")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	//	sm, err := newStateManager("../../test/resource/states-TestSetStatesStatusesOK.yaml")
 	statesPath := "../../test/resource/states-TestSetStatesStatusesOK.yaml"
 	sm := newStateManager("states-TestSetStatesStatusesOK")
@@ -174,8 +174,8 @@ func TestSetStatesStatusesOK(t *testing.T) {
 
 func TestSetStatesStatusesFromTo(t *testing.T) {
 	t.Log("Entering... TestSetStatesStatusesFromTo")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	// sm, err := newStateManager("../../test/resource/states-TestSetStatesStatusesFromTo.yaml")
 	statesPath := "../../test/resource/states-TestSetStatesStatusesFromTo.yaml"
 	sm := newStateManager("states-TestSetStatesStatusesFromTo")
@@ -369,8 +369,8 @@ func TestSetStatesWithDelete(t *testing.T) {
 func TestSetStatesMerge(t *testing.T) {
 	// log.SetLevel(log.DebugLevel)
 	t.Log("Entering... TestSetStatesMerge")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/out-test-states-merge-json.yaml"
 	// err := os.Remove(statesPath)
 	// if err != nil {
@@ -420,8 +420,8 @@ func TestSetStatesMerge(t *testing.T) {
 
 func TestSetStatesMergeWithDelete(t *testing.T) {
 	t.Log("Entering... TestSetStatesMergeWithDelete")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	_, err := os.Create("../../test/resource/out-test-states-merge-delete-json.yaml")
 	if err != nil {
 		t.Error(err.Error())
@@ -466,8 +466,8 @@ func TestSetStatesMergeWithDelete(t *testing.T) {
 
 func TestSetStatesMergeWithCycle(t *testing.T) {
 	t.Log("Entering... TestSetStatesMergeWithCycle")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	_, err := os.Create("../../test/resource/out-test-states-merge-cycle-json.yaml")
 	if err != nil {
 		t.Error(err.Error())
@@ -504,8 +504,8 @@ func TestSetStatesMergeWithCycle(t *testing.T) {
 
 func TestInsertStatesBeforeFirst(t *testing.T) {
 	t.Log("Entering... TestInsertStatesBeforeFirst")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	_, err := os.Create("../../test/resource/out-test-insert-before-first-state.yaml")
 	if err != nil {
 		t.Error(err.Error())
@@ -544,8 +544,8 @@ func TestInsertStatesBeforeFirst(t *testing.T) {
 
 func TestInsertStatesAfterFirst(t *testing.T) {
 	t.Log("Entering... TestInsertStatesAfterFirst")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	_, err := os.Create("../../test/resource/out-test-insert-after-first-state.yaml")
 	if err != nil {
 		t.Error(err.Error())
@@ -585,8 +585,8 @@ func TestInsertStatesAfterFirst(t *testing.T) {
 }
 func TestInsertStatesBeforeLast(t *testing.T) {
 	t.Log("Entering... TestInsertStatesBeforeLast")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	_, err := os.Create("../../test/resource/out-test-insert-before-last-state.yaml")
 	if err != nil {
 		t.Error(err.Error())
@@ -630,8 +630,8 @@ func TestInsertStatesBeforeLast(t *testing.T) {
 
 func TestInsertStatesAfterLast(t *testing.T) {
 	t.Log("Entering... TestInsertStatesAfterFirst")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	_, err := os.Create("../../test/resource/out-test-insert-after-last-state.yaml")
 	if err != nil {
 		t.Error(err.Error())
@@ -672,8 +672,8 @@ func TestInsertStatesAfterLast(t *testing.T) {
 
 func TestInsertStatesAfterLastByName(t *testing.T) {
 	t.Log("Entering... TestInsertStatesAfterFirst")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	_, err := os.Create("../../test/resource/out-test-insert-after-last-state.yaml")
 	if err != nil {
 		t.Error(err.Error())
@@ -718,8 +718,8 @@ func TestInsertStatesAfterLastByName(t *testing.T) {
 
 func TestInsertStatesWithCycle(t *testing.T) {
 	t.Log("Entering... TestInsertStatesWithCycle")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	_, err := os.Create("../../test/resource/out-test-insert-cycle-state.yaml")
 	if err != nil {
 		t.Error(err.Error())
@@ -763,8 +763,8 @@ func TestInsertStatesWithCycle(t *testing.T) {
 
 func TestDeleteStatesFirst(t *testing.T) {
 	t.Log("Entering... TestInsertStatesAfterFirst")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	_, err := os.Create("../../test/resource/out-test-delete-first-state.yaml")
 	if err != nil {
 		t.Error(err.Error())
@@ -800,8 +800,8 @@ func TestDeleteStatesFirst(t *testing.T) {
 
 func TestDeleteStatesLast(t *testing.T) {
 	t.Log("Entering... TestInsertStatesAfterFirst")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	_, err := os.Create("../../test/resource/out-test-delete-last-state.yaml")
 	if err != nil {
 		t.Error(err.Error())
@@ -836,8 +836,8 @@ func TestDeleteStatesLast(t *testing.T) {
 }
 
 func TestDeleteStatesFirstByName(t *testing.T) {
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	t.Log("Entering... TestInsertStatesAfterFirst")
 	_, err := os.Create("../../test/resource/out-test-delete-first-state.yaml")
 	if err != nil {
@@ -874,8 +874,8 @@ func TestDeleteStatesFirstByName(t *testing.T) {
 
 func TestDeleteStatesLastByName(t *testing.T) {
 	t.Log("Entering... TestInsertStatesAfterFirst")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	_, err := os.Create("../../test/resource/out-test-delete-last-state.yaml")
 	if err != nil {
 		t.Error(err.Error())
@@ -910,8 +910,8 @@ func TestDeleteStatesLastByName(t *testing.T) {
 }
 
 func TestDeleteStatesProtected(t *testing.T) {
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	t.Log("Entering... TestInsertStatesAfterFirst")
 	_, err := os.Create("../../test/resource/out-test-delete-last-state.yaml")
 	if err != nil {
@@ -947,8 +947,8 @@ func TestDeleteStatesProtected(t *testing.T) {
 }
 func TestGetStateOK(t *testing.T) {
 	t.Log("Entering... TestGetStateOK")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	// sm, err := newStateManager("../../test/resource/states-TestGetStateOK.yaml")
 	statesPath := "../../test/resource/states-TestGetStateOK.yaml"
 	sm := newStateManager("states-TestGetStateOK")
@@ -990,8 +990,8 @@ func TestGetStateEmptyState(t *testing.T) {
 
 func TestPrerequisiteStatesBefore(t *testing.T) {
 	t.Log("Entering... TestPrerequisiteStatesBefore")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-TestPrerequisiteStatesBefore.yaml"
 	sm := newStateManager("states-TestPrerequisiteStatesBefore")
 	sm.StatesPath = statesPath
@@ -1012,8 +1012,8 @@ func TestPrerequisiteStatesBefore(t *testing.T) {
 func TestPrerequisiteStatesAfter(t *testing.T) {
 	//	log.SetLevel(log.DebugLevel)
 	t.Log("Entering... TestPrerequisiteStatesAfter")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-TestPrerequisiteStatesAfter.yaml"
 	sm := newStateManager("states-TestPrerequisiteStatesAfter")
 	sm.StatesPath = statesPath
@@ -1031,8 +1031,8 @@ func TestPrerequisiteStatesAfter(t *testing.T) {
 
 func TestRerunOnRunOfStatesBefore(t *testing.T) {
 	t.Log("Entering... TestRerunOnRunOfStatesBefore")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-TestRerunOnRunOfStatesBefore.yaml"
 	sm := newStateManager("states-TestRerunOnRunOfStatesBefore")
 	sm.StatesPath = statesPath
@@ -1053,8 +1053,8 @@ func TestRerunOnRunOfStatesBefore(t *testing.T) {
 func TestRerunOnRunOfStatesAfter(t *testing.T) {
 	//log.SetLevel(log.DebugLevel)
 	t.Log("Entering... TestRerunOnRunOfStatesAfter")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-TestRerunOnRunOfStatesAfter.yaml"
 	sm := newStateManager("states-TestRerunOnRunOfStatesAfter")
 	sm.StatesPath = statesPath
@@ -1073,8 +1073,8 @@ func TestRerunOnRunOfStatesAfter(t *testing.T) {
 func TestCalculateStatesToRunStatesToRerun(t *testing.T) {
 	//	log.SetLevel(log.DebugLevel)
 	t.Log("Entering... TestCalculateStatesToRunStatesToRerun")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-TestCalculateStatesToRunStatesToRerun.yaml"
 	sm := newStateManager("states-TestCalculateStatesToRunStatesToRerun")
 	sm.StatesPath = statesPath
@@ -1098,8 +1098,8 @@ func TestCalculateStatesToRunStatesToRerun(t *testing.T) {
 func TestCalculateStatesToRunPrereq(t *testing.T) {
 	//	log.SetLevel(log.DebugLevel)
 	t.Log("Entering... TestcalculateStatesToRunPrereq")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-TestCalculateStatesToRunPrereq.yaml"
 	sm := newStateManager("states-TestCalculateStatesToRunPrereq")
 	sm.StatesPath = statesPath
@@ -1123,8 +1123,8 @@ func TestCalculateStatesToRunPrereq(t *testing.T) {
 func TestCalculateStatesToRunRerunOnRunOfStates(t *testing.T) {
 	//	log.SetLevel(log.DebugLevel)
 	t.Log("Entering... TestCalculateStatesToRunRerunOnRunOfStates")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-TestCalculateStatesToRunRerunOnRunOfStates.yaml"
 	sm := newStateManager("states-TestCalculateStatesToRunRerunOnRunOfStates")
 	sm.StatesPath = statesPath
@@ -1147,8 +1147,8 @@ func TestCalculateStatesToRunRerunOnRunOfStates(t *testing.T) {
 
 func TestSetStateStatus(t *testing.T) {
 	t.Log("Entering... TestSetStateStatus")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	stateV := StateRUNNING
 	reasonV := strconv.FormatInt(time.Now().UnixNano(), 5)
 	scriptV := strconv.FormatInt(time.Now().UnixNano(), 7)
@@ -1209,8 +1209,8 @@ func TestSetStateStatus(t *testing.T) {
 func TestEngineSuccess(t *testing.T) {
 	//	log.SetLevel(log.DebugLevel)
 	t.Log("Entering...TestEngineSuccess")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-run-success.yaml"
 	// sm, err := newStateManager(statesPath)
 	sm := newStateManager("states-run-success")
@@ -1240,8 +1240,8 @@ func TestEngineSuccess(t *testing.T) {
 func TestEngineSuccessFromFailure(t *testing.T) {
 	//	log.SetLevel(log.DebugLevel)
 	t.Log("Entering...TestEngineSuccess")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-rerun-success-prereq.yaml"
 	// sm, err := newStateManager(statesPath)
 	sm := newStateManager("states-rerun-success-prereq")
@@ -1295,8 +1295,8 @@ func TestEngineSuccessFromFailure(t *testing.T) {
 func TestEngineSuccessWithExtension(t *testing.T) {
 	//	log.SetLevel(log.DebugLevel)
 	t.Log("Entering...TestEngineSuccess")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-run-success-with-extension.yaml"
 	// sm, err := newStateManager(statesPath)
 	smExt, err := GetStatesManager("ext-template")
@@ -1361,8 +1361,8 @@ func TestEngineSuccessWithExtension(t *testing.T) {
 
 func TestEngineWithRerunAfter(t *testing.T) {
 	t.Log("Entering... TestEngineWithRerunAfter")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-run-with-rerun-after.yaml"
 	// sm, err := newStateManager(statesPath)
 	sm := newStateManager("states-run-with-rerun-after")
@@ -1391,8 +1391,8 @@ func TestEngineWithRerunAfter(t *testing.T) {
 
 func TestEngineWithRerunBefore(t *testing.T) {
 	t.Log("Entering... TestEngineWithRerunAfter")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-run-with-rerun-before.yaml"
 	// sm, err := newStateManager(statesPath)
 	sm := newStateManager("states-run-with-rerun-before")
@@ -1416,8 +1416,8 @@ func TestEngineWithRerunBefore(t *testing.T) {
 
 func TestEngineCycleOnRerun(t *testing.T) {
 	t.Log("Entering... TestEngineCycleOnRerun")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-run-cycle-on-rerun.yaml"
 	// sm, err := newStateManager(statesPath)
 	sm := newStateManager("states-run-cycle-on-rerun")
@@ -1433,8 +1433,8 @@ func TestEngineCycleOnRerun(t *testing.T) {
 
 func TestEngineCycleOnNext(t *testing.T) {
 	t.Log("Entering... TestEngineCycleOnNext")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-run-cycle-on-next.yaml"
 	// sm, err := newStateManager(statesPath)
 	sm := newStateManager("states-run-cycle-on-next")
@@ -1503,8 +1503,8 @@ func TestNextStatusSet(t *testing.T) {
 
 func TestEngineFailure(t *testing.T) {
 	t.Log("Entering... TestEngineFailure")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-run-failure.yaml"
 	// sm, err := newStateManager(statesPath)
 	sm := newStateManager("states-run-failure")
@@ -1536,8 +1536,8 @@ func TestEngineFailure(t *testing.T) {
 }
 
 func TestSetStateStatusEmptyState(t *testing.T) {
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/data/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/data/extensions/")
 	statesPath := "../../test/resource/states-TestSetStateStatusEmptyState.yaml"
 	// sm, err := newStateManager(statesPath)
 	sm := newStateManager("states-TestSetStateStatusEmptyState")
