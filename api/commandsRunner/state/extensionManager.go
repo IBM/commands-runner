@@ -88,10 +88,6 @@ func InitExtensions(embeddedExtensionsDescriptor string, embeddedExtensionsRepos
 	}
 	SetExtensionsPath(extensionsPath)
 	SetExtensionsLogsPath(extensionsLogsPath)
-	err = registerEmbededExtensions(true)
-	if err != nil {
-		log.Fatal(err)
-	}
 }
 
 //SetExtensionEmbeddedFile sets the embedded extension path file descriptor
@@ -645,7 +641,7 @@ func restoreExtension(extensionName string) error {
 }
 
 //registerEmbededExtension register all embeded extensions
-func registerEmbededExtensions(force bool) error {
+func RegisterEmbededExtensions(force bool) error {
 	log.Debug("Entering in... registerEmbededExtensions")
 	extensions, err := ListEmbeddedExtensions()
 	if err != nil {
