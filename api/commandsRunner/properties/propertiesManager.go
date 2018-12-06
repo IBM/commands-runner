@@ -30,7 +30,7 @@ type Properties map[string]interface{}
 
 //GetConfigPath gets the statesFile path
 func GetConfigPath(extensionName string) string {
-	return state.GetRootExtensionPath(state.GetExtensionPath(), extensionName)
+	return state.GetRootExtensionPath(state.GetExtensionsPath(), extensionName)
 }
 
 func logProperties(ps Properties) {

@@ -144,7 +144,7 @@ func getStatePath(extensionName string) (string, error) {
 		return "", errors.New("extensionName is empty")
 	}
 	var statesPathAux string
-	statesPathAux = GetRootExtensionPath(GetExtensionPath(), extensionName)
+	statesPathAux = GetRootExtensionPath(GetExtensionsPath(), extensionName)
 	statesPathAux = filepath.Join(statesPathAux, global.StatesFileName)
 	return statesPathAux, nil
 }
@@ -293,10 +293,10 @@ func (sm *States) setDefaultValues() {
 		//		log.Debug("Check LogPath/Script")
 
 		if sm.StateArray[index].LogPath == "" {
-			dir := GetExtensionLogsPathEmbedded()
+			dir := GetExtensionsLogsPathEmbedded()
 			if sm.isCustomStatePath() {
 				log.Debug("Customer extension")
-				dir = GetExtensionLogsPathCustom()
+				dir = GetExtensionsLogsPathCustom()
 			} else {
 				log.Debug("Embbeded extension")
 			}

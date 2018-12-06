@@ -20,8 +20,8 @@ import (
 func TestGetUIConfigExtentionTest(t *testing.T) {
 	//log.SetLevel(log.DebugLevel)
 	//	global.SetExtensionResourcePath("../../test/resource/extensions")
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/resource/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/resource/extensions/")
 	configuration, err := GetUIMetaDataConfig("ext-template", "test-ui")
 	if err != nil {
 		t.Error(err.Error())
@@ -36,8 +36,8 @@ func TestGetUIConfigExtentionTest(t *testing.T) {
 
 func TestGetUIMetadataParseConfigsExtentionTest(t *testing.T) {
 	//log.SetLevel(log.DebugLevel)
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/resource/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/resource/extensions/")
 	cfg, err := getUIMetadataParseConfigs("ext-template")
 	if err != nil {
 		t.Error(err.Error())

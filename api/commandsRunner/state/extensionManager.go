@@ -31,20 +31,20 @@ import (
 const EmbeddedExtensions = "embedded"
 const CustomExtensions = "custom"
 
-var extensionEmbeddedFile string
+var extensionsEmbeddedFile string
 var embeddedExtensionsRepositoryPath string
 
-var extensionPath string
-var extensionDirEmbedded = EmbeddedExtensions
-var extensionPathEmbedded = extensionPath + extensionDirEmbedded
-var extensionDirCustom = CustomExtensions + string(filepath.Separator)
-var extensionPathCustom = extensionPath + extensionDirCustom
+var extensionsPath string
+var extensionsDirEmbedded = EmbeddedExtensions
+var extensionsPathEmbedded = extensionsPath + extensionsDirEmbedded
+var extensionsDirCustom = CustomExtensions + string(filepath.Separator)
+var extensionsPathCustom = extensionsPath + extensionsDirCustom
 
-var extensionLogsPath string
-var extensionLogsDirEmbedded = extensionDirEmbedded
-var extensionLogsPathEmbedded = extensionLogsPath + extensionLogsDirEmbedded
-var extensionLogsDirCustom = CustomExtensions
-var extensionLogsPathCustom = extensionLogsPath + extensionLogsDirCustom
+var extensionsLogsPath string
+var extensionsLogsDirEmbedded = extensionsDirEmbedded
+var extensionsLogsPathEmbedded = extensionsLogsPath + extensionsLogsDirEmbedded
+var extensionsLogsDirCustom = CustomExtensions
+var extensionsLogsPathCustom = extensionsLogsPath + extensionsLogsDirCustom
 
 /*
 Extension structure
@@ -75,29 +75,25 @@ type Extensions struct {
 Init initialise the extensionManager package.
 embeddedExtensionDescriptor the path to the file listing the embedded extension names.
 embeddedExtensionsRepositoryPath the directory path where the extensions are located. This path will be extended with "embeded" or "custom" depending of the type of extension.
-extensionPath the directory path where the extension will be copied by the registration process. This path will be extended with "embeded" or "custom" depending of the type of extension.
-extensionLogsPath the directory path where the logs will be save.
+extensionsPath the directory path where the extension will be copied by the registration process. This path will be extended with "embeded" or "custom" depending of the type of extension.
+extensionsLogsPath the directory path where the logs will be save.
 This path is relative to extension deployment location which is <extensionPath>/<embedded|custom>/<extensionName>.
 This path will be extended with "embeded" or "custom" depending of the type of extension.
 */
-func InitExtensions(embeddedExtensionDescriptor string, embeddedExtensionsRepositoryPath string, extensionPath string, extensionLogsPath string) {
-	SetExtensionEmbeddedFile(embeddedExtensionDescriptor)
+func InitExtensions(embeddedExtensionsDescriptor string, embeddedExtensionsRepositoryPath string, extensionsPath string, extensionsLogsPath string) {
+	SetExtensionsEmbeddedFile(embeddedExtensionsDescriptor)
 	err := SetEmbeddedExtensionsRepositoryPath(embeddedExtensionsRepositoryPath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	SetExtensionPath(extensionPath)
-	SetExtensionLogsPath(extensionLogsPath)
-	err = registerEmbededExtensions(true)
-	if err != nil {
-		log.Fatal(err)
-	}
+	SetExtensionsPath(extensionsPath)
+	SetExtensionsLogsPath(extensionsLogsPath)
 }
 
 //SetExtensionEmbeddedFile sets the embedded extension path file descriptor
-func SetExtensionEmbeddedFile(_extensionEmbeddedFile string) {
-	log.Debug("Entering in... SetExtensionEmbeddedFile")
-	extensionEmbeddedFile = strings.TrimRight(_extensionEmbeddedFile, string(filepath.Separator))
+func SetExtensionsEmbeddedFile(_extensionsEmbeddedFile string) {
+	log.Debug("Entering in... SetExtensionsEmbeddedFile")
+	extensionsEmbeddedFile = strings.TrimRight(_extensionsEmbeddedFile, string(filepath.Separator))
 }
 
 /*
@@ -112,50 +108,50 @@ func SetEmbeddedExtensionsRepositoryPath(_embeddedExtensionsRepositoryPath strin
 }
 
 //SetExtensionPath set the path where the extensions must be deployed
-func SetExtensionPath(_extensionPath string) {
-	extensionPath = strings.TrimRight(_extensionPath, string(filepath.Separator))
-	extensionPathEmbedded = filepath.Join(extensionPath, extensionDirEmbedded)
-	if _, err := os.Stat(extensionPathEmbedded); os.IsNotExist(err) {
-		log.Debug("Create dir:" + extensionPathEmbedded)
-		os.MkdirAll(extensionPathEmbedded, 0744)
+func SetExtensionsPath(_extensionsPath string) {
+	extensionsPath = strings.TrimRight(_extensionsPath, string(filepath.Separator))
+	extensionsPathEmbedded = filepath.Join(extensionsPath, extensionsDirEmbedded)
+	if _, err := os.Stat(extensionsPathEmbedded); os.IsNotExist(err) {
+		log.Debug("Create dir:" + extensionsPathEmbedded)
+		os.MkdirAll(extensionsPathEmbedded, 0744)
 	}
-	extensionPathCustom = filepath.Join(extensionPath, extensionDirCustom)
-	if _, err := os.Stat(extensionPathCustom); os.IsNotExist(err) {
-		log.Debug("Create dir:" + extensionPathCustom)
-		os.MkdirAll(extensionPathCustom, 0744)
+	extensionsPathCustom = filepath.Join(extensionsPath, extensionsDirCustom)
+	if _, err := os.Stat(extensionsPathCustom); os.IsNotExist(err) {
+		log.Debug("Create dir:" + extensionsPathCustom)
+		os.MkdirAll(extensionsPathCustom, 0744)
 	}
 }
 
 //SetExtensionLogsPath set the path where the extensions logs are kept
-func SetExtensionLogsPath(_extensionLogsPath string) {
-	extensionLogsPath = strings.TrimRight(_extensionLogsPath, string(filepath.Separator))
-	extensionLogsPathEmbedded = filepath.Join(extensionLogsPath, extensionDirEmbedded)
-	extensionLogsPathCustom = filepath.Join(extensionLogsPath, extensionDirCustom)
+func SetExtensionsLogsPath(_extensionsLogsPath string) {
+	extensionsLogsPath = strings.TrimRight(_extensionsLogsPath, string(filepath.Separator))
+	extensionsLogsPathEmbedded = filepath.Join(extensionsLogsPath, extensionsDirEmbedded)
+	extensionsLogsPathCustom = filepath.Join(extensionsLogsPath, extensionsDirCustom)
 }
 
 //GetExtensionPath retrieves the extension path
-func GetExtensionPath() string {
-	return extensionPath
+func GetExtensionsPath() string {
+	return extensionsPath
 }
 
 //GetExtensionPathEmbedded retrieves the extension path for embedded extensions
-func GetExtensionPathEmbedded() string {
-	return extensionPathEmbedded
+func GetExtensionsPathEmbedded() string {
+	return extensionsPathEmbedded
 }
 
 //GetExtensionPathCustom retrieves the extension path for the custom extensions
-func GetExtensionPathCustom() string {
-	return extensionPathCustom
+func GetExtensionsPathCustom() string {
+	return extensionsPathCustom
 }
 
 //GetExtensionLogsPathEmbedded retrieves the embedded extensions logs path
-func GetExtensionLogsPathEmbedded() string {
-	return extensionLogsPathEmbedded
+func GetExtensionsLogsPathEmbedded() string {
+	return extensionsLogsPathEmbedded
 }
 
 //GetExtensionLogsPathCustom retrieves the custom extensions logs path
-func GetExtensionLogsPathCustom() string {
-	return extensionLogsPathCustom
+func GetExtensionsLogsPathCustom() string {
+	return extensionsLogsPathCustom
 }
 
 //GetRepoLocalPath retrieves the location of the embedded extensions packages
@@ -174,9 +170,9 @@ func GetRegisteredExtensionPath(extensionName string) (string, error) {
 		return "", err
 	}
 	if isEmbeddedExtension {
-		extensionPath = filepath.Join(GetExtensionPathEmbedded(), extensionName)
+		extensionPath = filepath.Join(GetExtensionsPathEmbedded(), extensionName)
 	} else {
-		extensionPath = filepath.Join(GetExtensionPathCustom(), extensionName)
+		extensionPath = filepath.Join(GetExtensionsPathCustom(), extensionName)
 	}
 	return extensionPath, nil
 }
@@ -188,9 +184,9 @@ func GetRelativeExtensionPath(extensionName string) string {
 	isEmbeddedExtension, _ := IsEmbeddedExtension(extensionName)
 	log.Debug("isEmbeddedExtension:" + extensionName + " =>" + strconv.FormatBool(isEmbeddedExtension))
 	if isEmbeddedExtension {
-		extensionPath = filepath.Join(extensionDirEmbedded, extensionName)
+		extensionPath = filepath.Join(extensionsDirEmbedded, extensionName)
 	} else {
-		extensionPath = filepath.Join(extensionDirCustom, extensionName)
+		extensionPath = filepath.Join(extensionsDirCustom, extensionName)
 	}
 	return extensionPath
 }
@@ -218,7 +214,7 @@ func IsExtensionRegistered(extensionName string) bool {
 //IsCustomExtensionRegistered Check if an extension is register by browzing the extensions directory
 func IsCustomExtensionRegistered(filename string) bool {
 	log.Debug("Entering in... IsCustomExtensionRegistered")
-	if _, err := os.Stat(filepath.Join(GetExtensionPathCustom(), filename)); os.IsNotExist(err) {
+	if _, err := os.Stat(filepath.Join(GetExtensionsPathCustom(), filename)); os.IsNotExist(err) {
 		return false
 	}
 	return true
@@ -227,8 +223,8 @@ func IsCustomExtensionRegistered(filename string) bool {
 //IsEmbeddedxtensionRegistered Check if an extension is register by browzing the extensions directory
 func IsEmbeddedExtensionRegistered(filename string) bool {
 	log.Debug("Entering in... IsEmbeddedExtensionRegistered")
-	log.Debug(filepath.Join(GetExtensionPathEmbedded(), filename))
-	if _, err := os.Stat(filepath.Join(GetExtensionPathEmbedded(), filename)); os.IsNotExist(err) {
+	log.Debug(filepath.Join(GetExtensionsPathEmbedded(), filename))
+	if _, err := os.Stat(filepath.Join(GetExtensionsPathEmbedded(), filename)); os.IsNotExist(err) {
 		return false
 	}
 	return true
@@ -340,7 +336,7 @@ func getEmbeddedExtensionRepoPath(extensionName string) (string, error) {
 //CopyExtensionToEmbeddedExtensionPath copy the extension to the extension directory
 func CopyExtensionToEmbeddedExtensionPath(extensionName string) error {
 	log.Debug("Entering in... CopyExtensionToEmbeddedExtensionPath")
-	destDir := filepath.Join(GetExtensionPathEmbedded(), extensionName)
+	destDir := filepath.Join(GetExtensionsPathEmbedded(), extensionName)
 	extensionRepoPath, err := getEmbeddedExtensionRepoPath(extensionName)
 	if err != nil {
 		return err
@@ -360,8 +356,8 @@ func CopyExtensionToEmbeddedExtensionPath(extensionName string) error {
 		}
 		log.Debug("path:" + path)
 		log.Debug("extensionRepoPath:" + extensionRepoPath)
-		log.Debug("GetExtensionPathEmbedded()+extensionName:" + filepath.Join(GetExtensionPathEmbedded(), extensionName))
-		newPath := strings.Replace(path, extensionRepoPath, filepath.Join(GetExtensionPathEmbedded(), extensionName), 1)
+		log.Debug("GetExtensionPathEmbedded()+extensionName:" + filepath.Join(GetExtensionsPathEmbedded(), extensionName))
+		newPath := strings.Replace(path, extensionRepoPath, filepath.Join(GetExtensionsPathEmbedded(), extensionName), 1)
 		log.Debug("newPath:" + newPath)
 		switch {
 		case f.IsDir():
@@ -453,7 +449,7 @@ func listRegisteredExtensionsDir(extensionPath string) (*Extensions, error) {
 			var extension Extension
 			var callState CallState
 			extensionName := file.Name()
-			if extensionPath == GetExtensionPathCustom() {
+			if extensionPath == GetExtensionsPathCustom() {
 				extension.Type = CustomExtensions
 			} else {
 				extension.Type = EmbeddedExtensions
@@ -522,7 +518,7 @@ func ReadRegisteredExtension(extensionName string) (*Extension, error) {
 //ListEmbeddedRegisteredExtensions lists the registered embedded exxtensions
 func ListEmbeddedRegisteredExtensions() (*Extensions, error) {
 	log.Debug("Entering in... ListEmbeddedRegisteredExtensions")
-	extensions, err := listRegisteredExtensionsDir(GetExtensionPathEmbedded())
+	extensions, err := listRegisteredExtensionsDir(GetExtensionsPathEmbedded())
 	if err != nil {
 		return nil, err
 	}
@@ -533,7 +529,7 @@ func ListEmbeddedRegisteredExtensions() (*Extensions, error) {
 //Custom extensions get be listed only if registered.
 func ListRegisteredCustomExtensions() (*Extensions, error) {
 	log.Debug("Entering in... ListRegisteredCustomExtensions")
-	extensions, err := listRegisteredExtensionsDir(GetExtensionPathCustom())
+	extensions, err := listRegisteredExtensionsDir(GetExtensionsPathCustom())
 	if err != nil {
 		return nil, err
 	}
@@ -545,11 +541,11 @@ func ListEmbeddedExtensions() (*Extensions, error) {
 	log.Debug("Entering in... ListEmbeddedExtensions")
 	var extensionList Extensions
 	//extensionList.Extensions = make(map[string]Extension)
-	log.Debug("extensionEmbeddedFile:" + extensionEmbeddedFile)
-	if extensionEmbeddedFile == "" {
+	log.Debug("extensionEmbeddedFile:" + extensionsEmbeddedFile)
+	if extensionsEmbeddedFile == "" {
 		return &extensionList, nil
 	}
-	resource, err := ioutil.ReadFile(extensionEmbeddedFile)
+	resource, err := ioutil.ReadFile(extensionsEmbeddedFile)
 	if err != nil {
 		log.Debug(err.Error())
 		return nil, err
@@ -645,7 +641,7 @@ func restoreExtension(extensionName string) error {
 }
 
 //registerEmbededExtension register all embeded extensions
-func registerEmbededExtensions(force bool) error {
+func RegisterEmbededExtensions(force bool) error {
 	log.Debug("Entering in... registerEmbededExtensions")
 	extensions, err := ListEmbeddedExtensions()
 	if err != nil {
@@ -688,17 +684,17 @@ func RegisterExtension(extensionName, zipPath string, force bool) error {
 			}
 		}
 		errInstall = CopyExtensionToEmbeddedExtensionPath(extensionName)
-		extensionPath = filepath.Join(GetExtensionPathEmbedded(), extensionName)
+		extensionPath = filepath.Join(GetExtensionsPathEmbedded(), extensionName)
 	} else {
 		if zipPath != "" {
-			errInstall = Unzip(zipPath, GetExtensionPathCustom(), extensionName)
+			errInstall = Unzip(zipPath, GetExtensionsPathCustom(), extensionName)
 			if errInstall == nil {
 				os.Remove(zipPath)
 			}
 		} else {
 			errInstall = errors.New("the zipPath parameter is missing")
 		}
-		extensionPath = filepath.Join(GetExtensionPathCustom(), extensionName)
+		extensionPath = filepath.Join(GetExtensionsPathCustom(), extensionName)
 	}
 	var errGenStatesFile error
 	if errInstall == nil {
@@ -829,7 +825,7 @@ func UnregisterExtension(extensionName string) error {
 	if !IsCustomExtensionRegistered(extensionName) {
 		return errors.New("This extension is not registered")
 	}
-	err = os.RemoveAll(filepath.Join(GetExtensionPathCustom(), extensionName))
+	err = os.RemoveAll(filepath.Join(GetExtensionsPathCustom(), extensionName))
 	if err != nil {
 		return err
 	}

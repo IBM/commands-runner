@@ -85,8 +85,8 @@ param4: "Eg: sample_value 4"
 
 func TestGetUIMetadataTemplate(t *testing.T) {
 	log.SetLevel(log.DebugLevel)
-	SetExtensionEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionPath("../../test/resource/extensions/")
+	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsPath("../../test/resource/extensions/")
 	data, err := getUIMetadataTemplate("ext-template", "test-ui")
 	if err != nil {
 		t.Logf("\n%s", data)

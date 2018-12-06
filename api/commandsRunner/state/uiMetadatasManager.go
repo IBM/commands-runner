@@ -141,10 +141,10 @@ func getUIMetadataConfigsCfg(extensionName string, namesOnly bool) (*config.Conf
 func getUIMetadataParseConfigs(extensionName string) (cfg *config.Config, err error) {
 	log.Debug("Entering in... getUIMetadataParseConfigs")
 	filePath := filepath.Join(global.ConfigDirectory, "/extension-manifest.yml")
-	rootPath := GetExtensionPathCustom()
+	rootPath := GetExtensionsPathCustom()
 	embeddedExtension, _ := IsEmbeddedExtension(extensionName)
 	if embeddedExtension {
-		rootPath = GetExtensionPathEmbedded()
+		rootPath = GetExtensionsPathEmbedded()
 	}
 	filePath = filepath.Join(rootPath, extensionName, "/extension-manifest.yml")
 	manifest, err := ioutil.ReadFile(filePath)

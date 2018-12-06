@@ -19,6 +19,9 @@ const COPYRIGHT string = `######################################################
 #  IBM Corporation - initial API and implementation
 ###############################################################################`
 
+//Server config file name
+const CommandsRunnerConfigFileName = "commands-runner.yml"
+
 //DefaultHost default host server
 const DefaultHost = "localhost"
 

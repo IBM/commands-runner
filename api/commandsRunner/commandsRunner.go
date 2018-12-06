@@ -23,10 +23,12 @@ import (
 	log "github.com/sirupsen/logrus"
 	cli "gopkg.in/urfave/cli.v1"
 
+	oconfig "github.com/olebedev/config"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/commandsRunner"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/config"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/logger"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/properties"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/state"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/status"
 )
@@ -97,6 +99,54 @@ func AddHandler(pattern string, handler http.HandlerFunc, requireAuth bool) {
 	} else {
 		http.HandleFunc(pattern, handler)
 	}
+}
+
+func readCommandsRunnerConfig(configDir string) error {
+	log.Debug("Entering in... readConfig")
+	raw, e := ioutil.ReadFile(filepath.Join(configDir, global.CommandsRunnerConfigFileName))
+	if e == nil {
+		uiConfigCfg, err := oconfig.ParseYamlBytes(raw)
+		if err != nil {
+			log.Debug(err.Error())
+			return err
+		}
+		var properties properties.Properties
+		properties, err = uiConfigCfg.Map("")
+		if err != nil {
+			log.Debug(err.Error())
+			return err
+		}
+		if val, ok := properties["port"]; ok {
+			global.ServerPort = val.(string)
+		}
+		if val, ok := properties["port_ssl"]; ok {
+			global.ServerPortSSL = val.(string)
+		}
+		if val, ok := properties["default_extension_name"]; ok {
+			commandsRunner.SetDefaultExtensionName(val.(string))
+		}
+		if val, ok := properties["default_deployment_name"]; ok {
+			commandsRunner.SetDeploymentName(val.(string))
+		}
+		if val, ok := properties["extension_embedded_file"]; ok {
+			state.SetExtensionsEmbeddedFile(val.(string))
+		}
+		if val, ok := properties["embedded_extensions_repository_path"]; ok {
+			err := state.SetEmbeddedExtensionsRepositoryPath(val.(string))
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+		if val, ok := properties["extensions_path"]; ok {
+			state.SetExtensionsPath(val.(string))
+		}
+		if val, ok := properties["extensions_logs_path"]; ok {
+			state.SetExtensionsLogsPath(val.(string))
+		}
+		return nil
+	}
+	log.Info("No CommandsRunner config file found")
+	return nil
 }
 
 func start() {
@@ -211,15 +261,23 @@ func ServerStart(preInit InitFunc, postInit InitFunc, preStart InitFunc, postSta
 				if !filepath.IsAbs(configDir) {
 					log.Fatal("The path of config must be absolute: " + configDir)
 				}
-				if preInit != nil {
-					preInit(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName)
+				err = readCommandsRunnerConfig(configDir)
+				if err != nil {
+					log.Fatal(err.Error())
 				}
-				Init(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName)
+				if preInit != nil {
+					preInit(port, portSSL, configDir, filepath.Join(configDir, global.SSLCertFileName), filepath.Join(configDir, global.SSLKeyFileName))
+				}
+				Init(port, portSSL, configDir, filepath.Join(configDir, global.SSLCertFileName), filepath.Join(configDir, global.SSLKeyFileName))
 				if postInit != nil {
-					postInit(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName)
+					postInit(port, portSSL, configDir, filepath.Join(configDir, global.SSLCertFileName), filepath.Join(configDir, global.SSLKeyFileName))
+				}
+				err = state.RegisterEmbededExtensions(true)
+				if err != nil {
+					log.Fatal(err)
 				}
 				if preStart != nil {
-					preStart(port, portSSL, configDir, configDir+"/"+global.SSLCertFileName, configDir+"/"+global.SSLKeyFileName)
+					preStart(port, portSSL, configDir, filepath.Join(configDir, global.SSLCertFileName), filepath.Join(configDir, global.SSLKeyFileName))
 				}
 				start()
 				if postStart != nil {

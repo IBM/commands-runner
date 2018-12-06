@@ -48,7 +48,7 @@ func TestSetProperties(t *testing.T) {
 	t.Log("Entering... TestSetproperties.Properties")
 	props = make(properties.Properties)
 	global.ConfigDirectory = "../../test/resource"
-	state.SetExtensionPath("../../test/resource/extensions")
+	state.SetExtensionsPath("../../test/resource/extensions")
 	//	t.Error(global.ConfigDirectory)
 	os.MkdirAll(global.ConfigDirectory, 0744)
 	props["Prop3"] = "Val3"
@@ -64,7 +64,7 @@ func TestGetProperties(t *testing.T) {
 	t.Log("Entering... TestGetproperties.Properties")
 	t.Logf("%s\n", configString)
 	global.ConfigDirectory = "../../test/resource"
-	state.SetExtensionPath("../../test/resource/extensions")
+	state.SetExtensionsPath("../../test/resource/extensions")
 	dataDirectory := state.GetRootExtensionPath("../../test/resource/extensions", "config-manager-test")
 	t.Log("dataDirectory:" + dataDirectory)
 	err := ioutil.WriteFile(filepath.Join(dataDirectory, global.ConfigYamlFileName), []byte(configString), 0644)
@@ -93,7 +93,7 @@ func TestFindProperty(t *testing.T) {
 	t.Log("Entering... TestFindProperty")
 	t.Logf("%s\n", configString)
 	global.ConfigDirectory = "../../test/resource"
-	state.SetExtensionPath("../../test/resource/extensions")
+	state.SetExtensionsPath("../../test/resource/extensions")
 	dataDirectory := state.GetRootExtensionPath("../../test/resource/extensions", "config-manager-test")
 	err := ioutil.WriteFile(filepath.Join(dataDirectory, global.ConfigYamlFileName), []byte(configString), 0644)
 	if err != nil {
@@ -125,7 +125,7 @@ func TestRemoveProperty(t *testing.T) {
 	t.Log("Entering... TestRemoveProperty")
 	t.Logf("%s\n", configString)
 	global.ConfigDirectory = "../../test/resource"
-	state.SetExtensionPath("../../test/resource/extensions")
+	state.SetExtensionsPath("../../test/resource/extensions")
 	dataDirectory := state.GetRootExtensionPath("../../test/resource/extensions", "config-manager-test")
 	err := ioutil.WriteFile(filepath.Join(dataDirectory, global.ConfigYamlFileName), []byte(configString), 0644)
 	if err != nil {
