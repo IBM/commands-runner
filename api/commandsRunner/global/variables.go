@@ -42,3 +42,9 @@ var ServerCertificatePath string
 
 //Server Key Path
 var ServerKeyPath string
+
+//About URL
+var AboutURL string
+
+//Default About
+var About string

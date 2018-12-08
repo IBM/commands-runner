@@ -14,7 +14,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -93,7 +92,7 @@ func validateConfigEndpoint(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	log.Debug("extension.ValidationConfigURL:" + extension.ValidationConfigURL)
-	forwardRequest(w, req, extension.ValidationConfigURL)
+	global.ForwardRequest(w, req, extension.ValidationConfigURL)
 	log.Debug("Exiting in.... validateConfigEndpoint")
 }
 
@@ -118,38 +117,8 @@ func generateConfigEndpoint(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	log.Debug("extension.ValidationConfigURL:" + extension.ValidationConfigURL)
-	forwardRequest(w, req, extension.GenerateConfigURL)
+	global.ForwardRequest(w, req, extension.GenerateConfigURL)
 	log.Debug("Exiting in.... generateConfigEndpoint")
-}
-
-func forwardRequest(w http.ResponseWriter, req *http.Request, newURL string) {
-	if newURL == "" {
-		return
-	}
-	forwardURL, err := url.Parse(newURL)
-	if err != nil {
-		logger.AddCallerField().Error(err.Error())
-		http.Error(w, err.Error(), http.StatusNotFound)
-		return
-	}
-	if forwardURL.Scheme == "" {
-		forwardURL.Scheme = "http"
-	}
-	// req.Header.Add("X-Origin-Host", req.Host)
-	if forwardURL.Host == "" {
-		forwardURL.Host = "localhost:" + global.ServerPort
-	}
-	forwardURL.RawQuery = req.URL.RawQuery
-	// req.Header.Add("X-Forwarded-Host", req.Host)
-	log.Debug("validationConfigUrl.String():" + forwardURL.String())
-	director := func(req *http.Request) {
-		req.URL = forwardURL
-	}
-	proxy := &httputil.ReverseProxy{Director: director}
-	w.Header().Del("Access-Control-Allow-Origin")
-	w.Header().Del("Access-Control-Allow-Methods")
-	w.Header().Del("Access-Control-Allow-Headers")
-	proxy.ServeHTTP(w, req)
 }
 
 /*
