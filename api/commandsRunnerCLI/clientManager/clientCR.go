@@ -83,3 +83,29 @@ func (crc *CommandsRunnerClient) GetCRSettings() (string, error) {
 	}
 	return crc.convertJSONOrYAML(data)
 }
+
+//GetAbout of PCM
+func (crc *CommandsRunnerClient) GetCRAbout() (string, error) {
+	url := "cr/about"
+	data, errCode, err := crc.RestCall(http.MethodGet, global.BaseURL, url, nil, nil)
+	if err != nil {
+		return data, err
+	}
+	if errCode != http.StatusOK {
+		return data, errors.New("Unable to get about: " + data + ", please check log for more information")
+	}
+	//Generate the text format otherwize return the json
+	if crc.OutputFormat == "text" {
+		cfg, err := config.ParseJson(data)
+		if err != nil {
+			return "", err
+		}
+		about, err := cfg.String("about")
+		if err != nil {
+			return "", err
+		}
+		out := fmt.Sprintf("About: %s\n", about)
+		return out, nil
+	}
+	return crc.convertJSONOrYAML(data)
+}

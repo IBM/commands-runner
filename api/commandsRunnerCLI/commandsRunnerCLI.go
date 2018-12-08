@@ -547,6 +547,17 @@ func Client() *cli.App {
 		return err
 	}
 
+	getCRAbout := func(c *cli.Context) error {
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
+		if errClient != nil {
+			fmt.Println(errClient.Error())
+			return errClient
+		}
+		data, err := client.GetCRAbout()
+		fmt.Print(data)
+		return err
+	}
+
 	setCRLogLevel := func(c *cli.Context) error {
 		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
 		if errClient != nil {
@@ -816,6 +827,11 @@ func Client() *cli.App {
 			Name:  "cr",
 			Usage: "cr management",
 			Subcommands: []cli.Command{
+				{
+					Name:   "about",
+					Usage:  "About",
+					Action: getCRAbout,
+				},
 				{
 					Name:   "log-level",
 					Usage:  "Get the current log level",

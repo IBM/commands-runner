@@ -16,14 +16,16 @@ import (
 	"net/url"
 	"regexp"
 
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
+
 	log "github.com/sirupsen/logrus"
 
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/logger"
 )
 
 func HandleCR(w http.ResponseWriter, req *http.Request) {
-	log.Debug("Entering in handlePCM")
-	validatePath := regexp.MustCompile("/cr/v1/cr/(\\blog\\b|\\bsettings\\b)(/([\\w]*))?$")
+	log.Debug("Entering in handleCR")
+	validatePath := regexp.MustCompile("/cr/v1/cr/(\\blog\\b|\\bsettings\\b|\\babout\\b)(/([\\w]*))?$")
 	log.Debug(req.URL.Path)
 	params := validatePath.FindStringSubmatch(req.URL.Path)
 	log.Debug(params)
@@ -50,6 +52,8 @@ func HandleCR(w http.ResponseWriter, req *http.Request) {
 		}
 	case "settings":
 		GetSettingsEndpoint(w, req)
+	case "about":
+		GetAboutEndpoint(w, req)
 	default:
 		logger.AddCallerField().Error("Unsupported command:" + params[1])
 		http.Error(w, "Unsupported command:"+params[1], http.StatusMethodNotAllowed)
@@ -78,6 +82,26 @@ func GetSettingsEndpoint(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		logger.AddCallerField().Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func GetAboutEndpoint(w http.ResponseWriter, req *http.Request) {
+	log.Debug("Entering in... GetAboutEndpoint")
+	log.Debug("global.AboutURL: " + global.AboutURL)
+	if global.AboutURL == "" {
+		data := GetAbout()
+		about := &About{
+			About: data,
+		}
+		enc := json.NewEncoder(w)
+		enc.SetIndent("", "  ")
+		err := enc.Encode(about)
+		if err != nil {
+			logger.AddCallerField().Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	} else {
+		global.ForwardRequest(w, req, global.AboutURL)
 	}
 }
 

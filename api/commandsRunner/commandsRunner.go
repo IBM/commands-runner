@@ -143,6 +143,12 @@ func readCommandsRunnerConfig(configDir string) error {
 		if val, ok := properties["extensions_logs_path"]; ok {
 			state.SetExtensionsLogsPath(val.(string))
 		}
+		if val, ok := properties["about_url"]; ok {
+			commandsRunner.SetAboutURL(val.(string))
+		}
+		if val, ok := properties["about"]; ok {
+			commandsRunner.SetAbout(val.(string))
+		}
 		return nil
 	}
 	log.Info("No CommandsRunner config file found")
