@@ -744,10 +744,10 @@ func (sm *States) topoSortGraph(graph *simple.DirectedGraph, statesMap map[int64
 	if err != nil {
 		return err
 	}
-	err = sm.checkRerunOnRunOfStates()
-	if err != nil {
-		return err
-	}
+	// err = sm.checkRerunOnRunOfStates()
+	// if err != nil {
+	// 	return err
+	// }
 	err = sm.checkPrerequisiteStates()
 	return err
 }
