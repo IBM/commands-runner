@@ -259,7 +259,6 @@ func (sm *States) setCalculatedStatesToRerun() error {
 	log.Debug("Entering... setCalculatedStatesToRerun")
 	//	isNextStateMigrationDone := false
 	for index := range sm.StateArray {
-		sm.StateArray[index].CalculatedStatesToRerun = make([]string, 0)
 		sm.StateArray[index].CalculatedStatesToRerun = append(sm.StateArray[index].CalculatedStatesToRerun, sm.StateArray[index].StatesToRerun...)
 		sm.StateArray[index].CalculatedStatesToRerun = append(sm.StateArray[index].CalculatedStatesToRerun, sm.StateArray[index].PrerequisiteStates...)
 		for _, stateName := range sm.StateArray[index].RerunOnRunOfStates {
@@ -269,6 +268,9 @@ func (sm *States) setCalculatedStatesToRerun() error {
 			}
 			state.CalculatedStatesToRerun = append(state.CalculatedStatesToRerun, sm.StateArray[index].Name)
 		}
+	}
+	for index := range sm.StateArray {
+		log.Debugf("%s - %v", sm.StateArray[index].Name, sm.StateArray[index].CalculatedStatesToRerun)
 	}
 	log.Debug("Exiting... setCalculatedStatesToRerun")
 	return nil
@@ -744,10 +746,10 @@ func (sm *States) topoSortGraph(graph *simple.DirectedGraph, statesMap map[int64
 	if err != nil {
 		return err
 	}
-	err = sm.checkRerunOnRunOfStates()
-	if err != nil {
-		return err
-	}
+	// err = sm.checkRerunOnRunOfStates()
+	// if err != nil {
+	// 	return err
+	// }
 	err = sm.checkPrerequisiteStates()
 	return err
 }
