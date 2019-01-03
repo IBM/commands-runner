@@ -1634,12 +1634,14 @@ func (sm *States) CalculateStatesToRun(fromState string, toState string) (map[st
 		//Skip if state already visited
 		if _, ok := statesVisited[currentState.Name]; !ok {
 			for _, stateName := range currentState.CalculatedStatesToRerun {
-				statuses[stateName] = StateREADY
 				state, err := sm._getState(stateName)
 				if err != nil {
 					return nil, errors.New("The state " + stateName + " is not an existing state")
 				}
-				statesToProcess = append(statesToProcess, *state)
+				if state.Status != StateSKIP {
+					statuses[stateName] = StateREADY
+					statesToProcess = append(statesToProcess, *state)
+				}
 			}
 			//Mark state as visited
 			statesVisited[currentState.Name] = currentState.Name
@@ -1655,9 +1657,13 @@ func (sm *States) setCalculatedStatesToRun(statuses map[string]string) error {
 	for stateName, status := range statuses {
 		state, err := sm._getState(stateName)
 		if err != nil {
-			return errors.New("The state " + stateName + " is not an existing state")
+			return errors.New("The state " + stateName + " is not an existing state. error=" + err.Error())
 		}
-		state.Status = status
+		err = sm.setStateStatus(*state, status, true)
+		if err != nil {
+			return errors.New("Can not set " + stateName + " to status " + status + " recursively. error=" + err.Error())
+		}
+		//		state.Status = status
 	}
 	return nil
 }

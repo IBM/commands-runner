@@ -272,6 +272,7 @@ func SetPropertiesEndpoint(w http.ResponseWriter, req *http.Request) {
 		if err != nil {
 			logger.AddCallerField().Error(err.Error())
 			http.Error(w, err.Error(), 500)
+			return
 		}
 		ps, err = cfg.Map(global.ConfigRootKey)
 	} else {

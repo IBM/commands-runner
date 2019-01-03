@@ -325,9 +325,11 @@ func PutDeleteStateStatesEndpoint(w http.ResponseWriter, req *http.Request) {
 		if errCvt != nil {
 			logger.AddCallerField().Error(errCvt.Error())
 			http.Error(w, "Can not convert first-char parameter to integer "+errCvt.Error(), 500)
+			return
 		}
 	} else {
 		http.Error(w, "The position to insert must be provided", http.StatusBadRequest)
+		return
 	}
 	stateName := ""
 	if stateNameFound, okStateName := m["state-name"]; okStateName {
@@ -515,6 +517,7 @@ func GetStateLogEndpoint(w http.ResponseWriter, req *http.Request) {
 		if errCvt != nil {
 			logger.AddCallerField().Error(errCvt.Error())
 			http.Error(w, "Can not convert first-line parameter to integer "+errCvt.Error(), 500)
+			return
 		}
 		bychar = false
 	}
@@ -524,6 +527,7 @@ func GetStateLogEndpoint(w http.ResponseWriter, req *http.Request) {
 		if errCvt != nil {
 			logger.AddCallerField().Error(errCvt.Error())
 			http.Error(w, "Can not convert first-char parameter to integer "+errCvt.Error(), 500)
+			return
 		}
 		bychar = true
 	}
@@ -538,6 +542,7 @@ func GetStateLogEndpoint(w http.ResponseWriter, req *http.Request) {
 		if errCvt != nil {
 			logger.AddCallerField().Error(errCvt.Error())
 			http.Error(w, "Can not convert length parameter to integer "+errCvt.Error(), 500)
+			return
 		}
 	}
 	//Retrieve the log.
@@ -610,6 +615,7 @@ func PutStateEndpoint(w http.ResponseWriter, req *http.Request) {
 		if err != nil {
 			logger.AddCallerField().Error(err.Error())
 			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
 		}
 	}
 	log.Debugf("scriptTimeout:%s", scriptTimeout)
