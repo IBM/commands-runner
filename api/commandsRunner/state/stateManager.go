@@ -1766,15 +1766,15 @@ func (sm *States) executeStates(fromState string, toState string, callerState *S
 		}
 		if toExecute {
 			log.Debug("Execute..." + state.Name)
-			state, errSetExecutionID := sm.setExecutionID(state.Name, callerState)
-			if errSetExecutionID != nil {
-				log.Debug(errSetExecutionID.Error())
-				return errSetExecutionID
-			}
 			errSetRunning := sm.setStateStatusWithTimeStamp(true, state.Name, StateRUNNING, "")
 			if errSetRunning != nil {
 				log.Debug(errSetRunning.Error())
 				return errSetRunning
+			}
+			state, errSetExecutionID := sm.setExecutionID(state.Name, callerState)
+			if errSetExecutionID != nil {
+				log.Debug(errSetExecutionID.Error())
+				return errSetExecutionID
 			}
 			err := sm.executeState(*state, callerState, callerOutFile)
 			if err != nil {

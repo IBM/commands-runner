@@ -143,6 +143,38 @@ func (crc *CommandsRunnerClient) GetLogs(extensionName string, stateName string,
 		startStateIndex = 0
 		endStateIndex = len(states.StateArray)
 	}
+	//Wait that the first states in the range ran or is running
+	if follow {
+		for {
+			statesStarted := false
+			for _, stateAux := range states.StateArray[startStateIndex:endStateIndex] {
+				if stateAux.ExecutedByExtensionName == "" ||
+					stateAux.ExecutionID == 0 ||
+					stateAux.ExecutedByExtensionName != states.ExecutedByExtensionName ||
+					stateAux.ExecutionID != states.ExecutionID {
+					continue
+				}
+				if stateAux.Status != state.StateREADY &&
+					stateAux.Status != state.StateSKIP {
+					statesStarted = true
+					break
+				}
+			}
+			if statesStarted {
+				break
+			}
+			time.Sleep(5 * time.Second)
+			//Retrieve list of states and unmarshal
+			data, err := crc.getRestStates(extensionName, "", false, false)
+			if err != nil {
+				return err
+			}
+			errUnMarshal := json.Unmarshal([]byte(data), &states)
+			if errUnMarshal != nil {
+				return errUnMarshal
+			}
+		}
+	}
 	var pos int64
 	var currentIndex int
 	//display the existing logs for all states
