@@ -244,10 +244,10 @@ func (sm *States) readStates() error {
 	if err != nil {
 		return err
 	}
-	err = sm.setCalculatedStatesToRerun()
-	if err != nil {
-		return err
-	}
+	// err = sm.setCalculatedStatesToRerun()
+	// if err != nil {
+	// 	return err
+	// }
 	sm.setDefaultValues()
 	log.Debug("States:\n" + string(statesData))
 	log.Debug("Exiting... readStates")
@@ -1607,6 +1607,10 @@ func (sm *States) CalculateStatesToRun(fromState string, toState string) (map[st
 	log.Debug("From state:" + fromState)
 	log.Debug("To   state:" + toState)
 	statuses := make(map[string]string, 0)
+	err := sm.setCalculatedStatesToRerun()
+	if err != nil {
+		return statuses, err
+	}
 	statesVisited := make(map[string]string, 0)
 	statesToProcess := make([]State, 0)
 	//Search all READY or FAILED states and populate statesToPRocess
@@ -1762,15 +1766,15 @@ func (sm *States) executeStates(fromState string, toState string, callerState *S
 		}
 		if toExecute {
 			log.Debug("Execute..." + state.Name)
-			state, errSetExecutionID := sm.setExecutionID(state.Name, callerState)
-			if errSetExecutionID != nil {
-				log.Debug(errSetExecutionID.Error())
-				return errSetExecutionID
-			}
 			errSetRunning := sm.setStateStatusWithTimeStamp(true, state.Name, StateRUNNING, "")
 			if errSetRunning != nil {
 				log.Debug(errSetRunning.Error())
 				return errSetRunning
+			}
+			state, errSetExecutionID := sm.setExecutionID(state.Name, callerState)
+			if errSetExecutionID != nil {
+				log.Debug(errSetExecutionID.Error())
+				return errSetExecutionID
 			}
 			err := sm.executeState(*state, callerState, callerOutFile)
 			if err != nil {
