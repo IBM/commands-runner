@@ -825,6 +825,15 @@ func UnregisterExtension(extensionName string) error {
 	if !IsCustomExtensionRegistered(extensionName) {
 		return errors.New("This extension is not registered")
 	}
+	stateManager, errStateManager := GetStatesManager(extensionName)
+	if errStateManager == nil {
+		err = stateManager.readStates()
+		if err == nil {
+			if stateManager.ParentExtensionName != "" {
+				return errors.New("This extension is still used in the parent extension " + stateManager.ParentExtensionName)
+			}
+		}
+	}
 	err = os.RemoveAll(filepath.Join(GetExtensionsPathCustom(), extensionName))
 	if err != nil {
 		return err

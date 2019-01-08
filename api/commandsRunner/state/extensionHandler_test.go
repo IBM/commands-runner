@@ -383,7 +383,7 @@ func TestRegisterIBMExtensionFilesExists(t *testing.T) {
 }
 
 func TestDeletionEndpointExists(t *testing.T) {
-	t.Log("Entering........... TestExtensionDeletion")
+	t.Log("Entering........... TestDeletionEndpointExists")
 	SetExtensionsPath("../../test/resource/tmp/")
 	extensionName := "dummy-extension"
 	_ = os.Mkdir(GetExtensionsPath(), 0777)
@@ -400,7 +400,7 @@ func TestDeletionEndpointExists(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 
 	if rr.Code != 200 {
-		t.Fatalf("Delete returned: %v", rr.Code)
+		t.Fatalf("Delete returned: %v - %v", rr.Code, rr.Body.String())
 	}
 
 	cleanup()
