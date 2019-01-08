@@ -48,26 +48,35 @@ func TestSetProperties(t *testing.T) {
 	t.Log("Entering... TestSetproperties.Properties")
 	props = make(properties.Properties)
 	global.ConfigDirectory = "../../test/resource"
-	state.SetExtensionsPath("../../test/resource/extensions")
+	extensionPath, err := global.CopyToTemp("TestSetProperties", "../../test/resource/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	state.SetExtensionsPath(extensionPath)
 	//	t.Error(global.ConfigDirectory)
 	os.MkdirAll(global.ConfigDirectory, 0744)
 	props["Prop3"] = "Val3"
 	props["Prop4"] = "Val4"
 	props["subnet"] = "192.168.100.0/24"
-	err := SetProperties("config-manager-test", props)
+	err = SetProperties("config-manager-test", props)
 	if err != nil {
 		t.Error(err.Error())
 	}
+	global.RemoveTemp("TestSetProperties")
 }
 
 func TestGetProperties(t *testing.T) {
 	t.Log("Entering... TestGetproperties.Properties")
 	t.Logf("%s\n", configString)
 	global.ConfigDirectory = "../../test/resource"
-	state.SetExtensionsPath("../../test/resource/extensions")
+	extensionPath, err := global.CopyToTemp("TestGetProperties", "../../test/resource/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	state.SetExtensionsPath(extensionPath)
 	dataDirectory := state.GetRootExtensionPath("../../test/resource/extensions", "config-manager-test")
 	t.Log("dataDirectory:" + dataDirectory)
-	err := ioutil.WriteFile(filepath.Join(dataDirectory, global.ConfigYamlFileName), []byte(configString), 0644)
+	err = ioutil.WriteFile(filepath.Join(dataDirectory, global.ConfigYamlFileName), []byte(configString), 0644)
 	if err != nil {
 		t.Error("Can not create temp file")
 	}
@@ -87,15 +96,20 @@ func TestGetProperties(t *testing.T) {
 	if val != "itdove" {
 		t.Error("Expected value Val1 and get" + val)
 	}
+	global.RemoveTemp("TestGetProperties")
 }
 
 func TestFindProperty(t *testing.T) {
 	t.Log("Entering... TestFindProperty")
 	t.Logf("%s\n", configString)
 	global.ConfigDirectory = "../../test/resource"
-	state.SetExtensionsPath("../../test/resource/extensions")
+	extensionPath, err := global.CopyToTemp("TestFindProperty", "../../test/resource/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	state.SetExtensionsPath(extensionPath)
 	dataDirectory := state.GetRootExtensionPath("../../test/resource/extensions", "config-manager-test")
-	err := ioutil.WriteFile(filepath.Join(dataDirectory, global.ConfigYamlFileName), []byte(configString), 0644)
+	err = ioutil.WriteFile(filepath.Join(dataDirectory, global.ConfigYamlFileName), []byte(configString), 0644)
 	if err != nil {
 		t.Error("Can not create temp file")
 	}
@@ -119,15 +133,20 @@ func TestFindProperty(t *testing.T) {
 	if err == nil {
 		t.Error("Expected not found and found")
 	}
+	global.RemoveTemp("TestFindProperty")
 }
 
 func TestRemoveProperty(t *testing.T) {
 	t.Log("Entering... TestRemoveProperty")
 	t.Logf("%s\n", configString)
 	global.ConfigDirectory = "../../test/resource"
-	state.SetExtensionsPath("../../test/resource/extensions")
+	extensionPath, err := global.CopyToTemp("TestRemoveProperty", "../../test/resource/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	state.SetExtensionsPath(extensionPath)
 	dataDirectory := state.GetRootExtensionPath("../../test/resource/extensions", "config-manager-test")
-	err := ioutil.WriteFile(filepath.Join(dataDirectory, global.ConfigYamlFileName), []byte(configString), 0644)
+	err = ioutil.WriteFile(filepath.Join(dataDirectory, global.ConfigYamlFileName), []byte(configString), 0644)
 	if err != nil {
 		t.Error("Can not create temp file")
 	}
@@ -140,4 +159,5 @@ func TestRemoveProperty(t *testing.T) {
 	if p != nil {
 		t.Error("Expected not found and found")
 	}
+	global.RemoveTemp("TestRemoveProperty")
 }

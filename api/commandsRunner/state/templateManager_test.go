@@ -16,11 +16,11 @@ import (
 	"testing"
 
 	"github.com/olebedev/config"
-	log "github.com/sirupsen/logrus"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 )
 
 func TestTraverseProperties(t *testing.T) {
-	log.SetLevel(log.DebugLevel)
+	//log.SetLevel(log.DebugLevel)
 	var properties []interface{}
 	properties = make([]interface{}, 0)
 	p1 := make(map[string]interface{}, 0)
@@ -84,13 +84,18 @@ param4: "Eg: sample_value 4"
 }
 
 func TestGetUIMetadataTemplate(t *testing.T) {
-	log.SetLevel(log.DebugLevel)
+	//log.SetLevel(log.DebugLevel)
 	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionsPath("../../test/resource/extensions/")
+	extensionPath, err := global.CopyToTemp("TestGetUIMetadataTemplate", "../../test/data/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	SetExtensionsPath(extensionPath)
 	data, err := getUIMetadataTemplate("ext-template", "test-ui")
 	if err != nil {
 		t.Logf("\n%s", data)
 		t.Error(err.Error())
 	}
 	t.Logf("\n%s", data)
+	global.RemoveTemp("TestGetUIMetadataTemplate")
 }

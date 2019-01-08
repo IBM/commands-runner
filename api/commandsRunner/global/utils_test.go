@@ -34,3 +34,18 @@ func TestExtractKey(t *testing.T) {
 		t.Error("states key not found")
 	}
 }
+
+// func TestCopyTemp(t *testing.T) {
+// 	log.SetLevel(log.DebugLevel)
+// 	caller, err := CopyToTemp("TestCopyTemp", "../../test/data/extensions")
+// 	if err != nil {
+// 		t.Error(err.Error())
+// 	}
+// 	RemoveTemp("TestCopyTemp")
+// 	caller, err = CopyToTemp("TestCopyTemp/test", "../../test/data/extensions/test-extensions.yml")
+// 	if err != nil {
+// 		t.Error(err.Error())
+// 	}
+// 	RemoveTemp("TestCopyTemp/test")
+// 	t.Error("Caller:" + caller)
+// }

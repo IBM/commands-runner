@@ -62,5 +62,6 @@ states:
   execution_id: 0
   next_run: false
 extension_name: TestEngineResetRunning
+parent_extension_name: ""
 executed_by_extension_name: ""
 execution_id: 0

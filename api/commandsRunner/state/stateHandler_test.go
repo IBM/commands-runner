@@ -17,8 +17,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 
 	log "github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
@@ -26,6 +29,7 @@ import (
 
 var statesJson string
 var stateJson string
+var stateInsertDeleteJson string
 
 func init() {
 	state1log := "sample-state1 line 1\nsample-state1 line 2\nsample-state1 line 3\nsample-state1 line 4\nsample-state1 line 5"
@@ -42,11 +46,16 @@ func init() {
 	}
 	statesJson = "{\"states\":[{\"name\":\"state1\",\"label\":\"Step 1\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cr\",\"label\":\"commands-runer\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
 	stateJson = "{\"name\":\"ext-template\",\"label\":\"Insert\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}"
+	stateInsertDeleteJson = "{\"name\":\"ext-template-insert-delete-handler\",\"label\":\"Insert\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}"
 }
 
 func TestStatesOk(t *testing.T) {
 	t.Log("Entering................. TestStatesOk")
-	SetExtensionsPath("../../test/data/extensions/")
+	extensionPath, err := global.CopyToTemp("TestStatesOk", "../../test/data/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	SetExtensionsPath(extensionPath)
 	req, err := http.NewRequest("GET", "/cr/v1/states?extension-name=state-handler-test", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -85,12 +94,17 @@ func TestStatesOk(t *testing.T) {
 		t.Errorf("handler returned unexpected body: got %v want %v",
 			rr.Body.String(), string(expected))
 	}
+	global.RemoveTemp("TestStatesOk")
 }
 
 func TestStateOk(t *testing.T) {
 	t.Log("Entering................. TestStateOk")
-	SetExtensionsPath("../../test/data/extensions/")
-	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	extensionPath, err := global.CopyToTemp("TestStateOk", "../../test/data/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	SetExtensionsPath(extensionPath)
+	SetExtensionsEmbeddedFile("../../test/data/extensions/test-extensions.yml")
 	req, err := http.NewRequest("GET", "/cr/v1/state/state1?extension-name=state-handler-test", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -123,18 +137,24 @@ func TestStateOk(t *testing.T) {
 		t.Errorf("handler returned unexpected body: got %v want %v",
 			rr.Body.String(), expected.String())
 	}
+	global.RemoveTemp("TestStateOk")
 }
 
 func TestInsertDeleteStateStates(t *testing.T) {
+	//log.SetLevel(log.DebugLevel)
 	t.Log("Entering................. TestInsertDeleteStateStates")
-	inFileData, err := ioutil.ReadFile("../../test/resource/ext-insert-delete-states-file.yml")
+	inFileData, err := ioutil.ReadFile("../../test/resource/ext-insert-delete-states-file-handler.yml")
 	t.Log(string(inFileData))
-	stateFile := "../../test/data/extensions/embedded/ext-insert-delete/states-file.yml"
+	extensionPath, err := global.CopyToTemp("TestInsertDeleteStateStates", "../../test/data/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	SetExtensionsPath(extensionPath)
+	stateFile := filepath.Join(extensionPath, "embedded/ext-insert-delete-handler/states-file.yml")
 	ioutil.WriteFile(stateFile, inFileData, 0644)
-	SetExtensionsPath("../../test/data/extensions/")
-	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsEmbeddedFile("../../test/data/extensions/test-extensions.yml")
 	addStateManager("ext-insert-delete")
-	req, err := http.NewRequest("PUT", "/cr/v1/states?extension-name=ext-insert-delete&action=insert&pos=1&before=true", strings.NewReader(stateJson))
+	req, err := http.NewRequest("PUT", "/cr/v1/states?extension-name=ext-insert-delete-handler&action=insert&pos=1&before=true", strings.NewReader(stateInsertDeleteJson))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -156,7 +176,7 @@ func TestInsertDeleteStateStates(t *testing.T) {
 	middleFileData, err := ioutil.ReadFile(stateFile)
 	t.Log(string(middleFileData))
 
-	req, err = http.NewRequest("PUT", "/cr/v1/states?extension-name=ext-insert-delete&action=delete&pos=1", strings.NewReader(stateJson))
+	req, err = http.NewRequest("PUT", "/cr/v1/states?extension-name=ext-insert-delete-handler&action=delete&pos=1", strings.NewReader(stateJson))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -180,15 +200,21 @@ func TestInsertDeleteStateStates(t *testing.T) {
 		t.Errorf("handler returned unexpected body: got %v want %v",
 			string(outFileData), string(inFileData))
 	}
+	global.RemoveTemp("TestInsertDeleteStateStates")
 }
+
 func TestSetEmptyStates(t *testing.T) {
-	t.Log("Entering................. TestInsertStateEmptyStates")
+	t.Log("Entering................. TestSetEmptyStates")
 	inFileData, err := ioutil.ReadFile("../../test/resource/ext-insert-delete-states-file.yml")
 	t.Log(string(inFileData))
-	stateFile := "../../test/data/extensions/embedded/ext-insert-delete/states-file.yml"
+	extensionPath, err := global.CopyToTemp("TestSetEmptyStates", "../../test/data/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	SetExtensionsPath(extensionPath)
+	stateFile := filepath.Join(extensionPath, "embedded/ext-insert-delete/states-file.yml")
 	ioutil.WriteFile(stateFile, inFileData, 0644)
-	SetExtensionsPath("../../test/data/extensions/")
-	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+	SetExtensionsEmbeddedFile("../../test/data/extensions/test-extensions.yml")
 	addStateManager("ext-insert-delete")
 	req, err := http.NewRequest("PUT", "/cr/v1/states?extension-name=ext-template", strings.NewReader(""))
 	if err != nil {
@@ -208,6 +234,7 @@ func TestSetEmptyStates(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusInternalServerError)
 	}
+	global.RemoveTemp("TestSetEmptyStates")
 
 }
 
@@ -216,13 +243,17 @@ func TestInsertDeleteStateStatesAutoLocation(t *testing.T) {
 	//log.SetLevel(log.DebugLevel)
 	inFileData, err := ioutil.ReadFile("../../test/resource/ext-insert-delete-states-file.yml")
 	t.Log("inFileData:\n" + string(inFileData))
-	stateFile := "../../test/data/extensions/embedded/ext-insert-delete-auto-location/states-file.yml"
+	extensionPath, err := global.CopyToTemp("TestInsertDeleteStateStatesAutoLocation", "../../test/data/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	SetExtensionsPath(extensionPath)
+	stateFile := filepath.Join(extensionPath, "embedded/ext-insert-delete-auto-location/states-file.yml")
 	ioutil.WriteFile(stateFile, inFileData, 0644)
-	SetExtensionsPath("../../test/data/extensions/")
 	SetExtensionsEmbeddedFile("../../test/data/extensions/test-extensions.yml")
 	addStateManager("ext-insert-delete-auto-location")
 
-	req, err := http.NewRequest("PUT", "/cr/v1/states?extension-name=ext-insert-delete-auto-location&insert-extension-name=ext-template&state-name=task1&action=insert&pos=0", nil)
+	req, err := http.NewRequest("PUT", "/cr/v1/states?extension-name=ext-insert-delete-auto-location&insert-extension-name=ext-template-auto&state-name=task1&action=insert&pos=0", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -244,7 +275,7 @@ func TestInsertDeleteStateStatesAutoLocation(t *testing.T) {
 
 	middleFileData, err := ioutil.ReadFile(stateFile)
 	t.Log(string(middleFileData))
-	req, err = http.NewRequest("PUT", "/cr/v1/states?extension-name=ext-insert-delete-auto-location&action=delete&state-name=ext-template&pos=0", strings.NewReader(stateJson))
+	req, err = http.NewRequest("PUT", "/cr/v1/states?extension-name=ext-insert-delete-auto-location&action=delete&state-name=ext-template-auto&pos=0", strings.NewReader(stateJson))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -269,6 +300,7 @@ func TestInsertDeleteStateStatesAutoLocation(t *testing.T) {
 		t.Errorf("handler returned unexpected body: got %v want %v",
 			string(outFileData), string(inFileData))
 	}
+	global.RemoveTemp("TestInsertDeleteStateStatesAutoLocation")
 }
 
 func TestInsertDeleteStateStatesByName(t *testing.T) {
@@ -276,13 +308,17 @@ func TestInsertDeleteStateStatesByName(t *testing.T) {
 	t.Log("Entering................. TestInsertDeleteStateStatesByName")
 	inFileData, err := ioutil.ReadFile("../../test/resource/ext-insert-delete-states-file.yml")
 	t.Log("inFileData:\n" + string(inFileData))
-	stateFile := "../../test/data/extensions/embedded/ext-insert-delete-by-name/states-file.yml"
+	extensionPath, err := global.CopyToTemp("TestInsertDeleteStateStatesByName", "../../test/data/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	SetExtensionsPath(extensionPath)
+	stateFile := filepath.Join(extensionPath, "embedded/ext-insert-delete-by-name/states-file.yml")
 	ioutil.WriteFile(stateFile, inFileData, 0644)
-	SetExtensionsPath("../../test/data/extensions/")
 	SetExtensionsEmbeddedFile("../../test/data/extensions/test-extensions.yml")
 	addStateManager("ext-insert-delete-by-name")
 
-	req, err := http.NewRequest("PUT", "/cr/v1/states?extension-name=ext-insert-delete-by-name&action=insert&pos=0&before=true&state-name=task1", strings.NewReader(stateJson))
+	req, err := http.NewRequest("PUT", "/cr/v1/states?extension-name=ext-insert-delete-by-name&action=insert&pos=0&before=true&state-name=task1", strings.NewReader(stateInsertDeleteJson))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -303,7 +339,7 @@ func TestInsertDeleteStateStatesByName(t *testing.T) {
 
 	middleFileData, err := ioutil.ReadFile(stateFile)
 	t.Log("middleFileData:\n" + string(middleFileData))
-	req, err = http.NewRequest("PUT", "/cr/v1/states?extension-name=ext-insert-delete-by-name&action=delete&pos=0&state-name=ext-template", strings.NewReader(stateJson))
+	req, err = http.NewRequest("PUT", "/cr/v1/states?extension-name=ext-insert-delete-by-name&action=delete&pos=0&state-name=ext-template-insert-delete-handler", strings.NewReader(stateInsertDeleteJson))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -327,6 +363,7 @@ func TestInsertDeleteStateStatesByName(t *testing.T) {
 		t.Errorf("handler returned unexpected body: got %v want %v",
 			string(outFileData), string(inFileData))
 	}
+	global.RemoveTemp("TestInsertDeleteStateStatesByName")
 }
 
 func TestStateNotMethodDELETE(t *testing.T) {
@@ -355,7 +392,11 @@ func TestStateNOk(t *testing.T) {
 	t.Log("Entering................. TestStateNOk")
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
-	SetExtensionsPath("../../test/data/extensions/")
+	extensionPath, err := global.CopyToTemp("TestStateNOk", "../../test/data/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	SetExtensionsPath(extensionPath)
 	req, err := http.NewRequest("GET", "/cr/v1/state/not-exists?extension-name=ext-template", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -374,11 +415,16 @@ func TestStateNOk(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotFound)
 	}
+	global.RemoveTemp("TestStateNOk")
 }
 
 func TestPutState(t *testing.T) {
 	t.Log("Entering................. TestPutState")
-	SetExtensionsPath("../../test/data/extensions/")
+	extensionPath, err := global.CopyToTemp("TestPutState", "../../test/data/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	SetExtensionsPath(extensionPath)
 	req, err := http.NewRequest("PUT", "/cr/v1/state/state1?extension-name=state-handler-reset&status=FAILED", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -437,12 +483,17 @@ func TestPutState(t *testing.T) {
 	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("Can not revert test")
 	}
+	global.RemoveTemp("TestPutState")
 
 }
 
 func TestStatusNotMethodPOST(t *testing.T) {
 	t.Log("Entering................. TestStatusNotMethodPOST")
-	SetExtensionsPath("../../test/data/extensions/")
+	extensionPath, err := global.CopyToTemp("TestStatusNotMethodPOST", "../../test/data/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	SetExtensionsPath(extensionPath)
 	req, err := http.NewRequest("POST", "/cr/v1/state/state1?extension-name=ext-template&status=TEST", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -461,11 +512,16 @@ func TestStatusNotMethodPOST(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusMethodNotAllowed)
 	}
+	global.RemoveTemp("TestStatusNotMethodPOST")
 }
 
 func TestStatusNotMethodDELETE(t *testing.T) {
 	t.Log("Entering................. TestStatusNotMethodDELETE")
-	SetExtensionsPath("../../test/data/extensions/")
+	extensionPath, err := global.CopyToTemp("TestStatusNotMethodDELETE", "../../test/data/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	SetExtensionsPath(extensionPath)
 	req, err := http.NewRequest("DELETE", "/cr/v1/state/state1?extension-name=ext-template&status=TEST", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -484,11 +540,16 @@ func TestStatusNotMethodDELETE(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusMethodNotAllowed)
 	}
+	global.RemoveTemp("TestStatusNotMethodDELETE")
 }
 
 func TestInvalidSubcommand(t *testing.T) {
 	t.Log("Entering................. TestInvalidSubcommand")
-	SetExtensionsPath("../../test/data/extensions/")
+	extensionPath, err := global.CopyToTemp("TestInvalidSubcommand", "../../test/data/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	SetExtensionsPath(extensionPath)
 	req, err := http.NewRequest("GET", "/cr/v1/state/state1/invalidsubcmd?extension-name=ext-template&status=TEST", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -507,12 +568,17 @@ func TestInvalidSubcommand(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusBadRequest)
 	}
+	global.RemoveTemp("TestInvalidSubcommand")
 }
 
 func TestAddStateManagerIBM(t *testing.T) {
 	//log.SetLevel(log.DebugLevel)
 	t.Log("Entering................. TestAddStateManagerIBM")
-	SetExtensionsPath("../../test/data/extensions/")
+	extensionPath, err := global.CopyToTemp("TestAddStateManagerIBM", "../../test/data/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	SetExtensionsPath(extensionPath)
 	SetExtensionsEmbeddedFile("../../test/data/extensions/test-extensions.yml")
 	//	global.SetExtensionResourcePath("../../test/resource/extensions/")
 	extension := "ext-template"
@@ -521,16 +587,21 @@ func TestAddStateManagerIBM(t *testing.T) {
 	if err != nil {
 		t.Error("Unable to retrieve state manager " + extension)
 	}
-	expected := "../../test/data/extensions/embedded/" + extension + "/states-file.yml"
+	expected := filepath.Join(extensionPath, "embedded", extension, "states-file.yml")
 	got := sm.StatesPath
 	if expected != got {
 		t.Error("Expecting " + expected + " and got " + got)
 	}
+	global.RemoveTemp("TestAddStateManagerIBM")
 }
 
 func TestStateLogOk(t *testing.T) {
 	t.Log("Entering................. TestStateLogOk")
-	SetExtensionsPath("../../test/data/extensions/")
+	extensionPath, err := global.CopyToTemp("TestStateLogOk", "../../test/data/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	SetExtensionsPath(extensionPath)
 	req, err := http.NewRequest("GET", "/cr/v1/state/state1/log?extension-name=state-handler-log", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -550,6 +621,7 @@ func TestStateLogOk(t *testing.T) {
 			status, http.StatusOK)
 	}
 	t.Log(rr.Body.String())
+	global.RemoveTemp("TestStateLogOk")
 }
 
 func TestStateLogNOk(t *testing.T) {
@@ -658,7 +730,11 @@ func TestStateLogNotMethodDELETE(t *testing.T) {
 
 func TestStateLogFromToOk(t *testing.T) {
 	t.Log("Entering................. TestStateLogFromToOk")
-	SetExtensionsPath("../../test/data/extensions/")
+	extensionPath, err := global.CopyToTemp("TestStateLogFromToOk", "../../test/data/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	SetExtensionsPath(extensionPath)
 	req, err := http.NewRequest("GET", "/cr/v1/state/state1/log?extension-name=state-handler-log&first-line=2&length=2", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -687,11 +763,16 @@ func TestStateLogFromToOk(t *testing.T) {
 		t.Error("Expecting 'state1' in reponse but gets:" + logData)
 	}
 	t.Log("Exiting................. TestStateLogFromToOk")
+	global.RemoveTemp("TestStateLogFromToOk")
 }
 
 func TestStateLogFromNotInteger(t *testing.T) {
 	t.Log("Entering................. TestStateLogFromNotInteger")
-	SetExtensionsPath("../../test/data/extensions/")
+	extensionPath, err := global.CopyToTemp("TestStateLogFromNotInteger", "../../test/data/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	SetExtensionsPath(extensionPath)
 	req, err := http.NewRequest("GET", "/cr/v1/state/state1/log?extension-name=state-handler-log&first-line=a", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -710,12 +791,16 @@ func TestStateLogFromNotInteger(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusInternalServerError)
 	}
+	global.RemoveTemp("TestStateLogFromNotInteger")
 }
 
 func TestStateLogToNotInteger(t *testing.T) {
 	t.Log("Entering................. TestStateLogToNotInteger")
-	SetExtensionsPath("../../test/data/extensions/")
-
+	extensionPath, err := global.CopyToTemp("TestStateLogToNotInteger", "../../test/data/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	SetExtensionsPath(extensionPath)
 	req, err := http.NewRequest("GET", "/cr/v1/state/state1/log?extension-name=state-handler-log&length=v", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -734,4 +819,5 @@ func TestStateLogToNotInteger(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusInternalServerError)
 	}
+	global.RemoveTemp("TestStateLogToNotInteger")
 }

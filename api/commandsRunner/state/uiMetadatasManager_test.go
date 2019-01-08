@@ -15,12 +15,17 @@ import (
 	"testing"
 
 	"github.com/olebedev/config"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 )
 
 func TestGetUIConfigsExtentionTest(t *testing.T) {
 	//log.SetLevel(log.DebugLevel)
 	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionsPath("../../test/resource/extensions/")
+	extensionPath, err := global.CopyToTemp("TestGetUIConfigsExtentionTest", "../../test/resource/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	SetExtensionsPath(extensionPath)
 	configuration, err := GetUIMetaDataConfigs("ext-template", false)
 	if err != nil {
 		t.Error(err.Error())
@@ -43,4 +48,5 @@ func TestGetUIConfigsExtentionTest(t *testing.T) {
 		t.Error(err.Error())
 	}
 	t.Log(string(out))
+	global.RemoveTemp("TestGetUIConfigsExtentionTest")
 }

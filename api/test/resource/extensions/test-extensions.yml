@@ -6,4 +6,6 @@ extensions:
   ext-template-auto-location:
   ext-insert-delete:
   ext-insert-delete-by-name:
-  
+  ext-insert-delete-handler:
+  ext-template-insert-delete-handler:
+  ext-template-states-run-success-with-extension:

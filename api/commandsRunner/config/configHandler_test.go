@@ -28,7 +28,11 @@ import (
 func TestSaveConfig(t *testing.T) {
 	t.Log("Entering................. TestSaveConfig")
 	SetConfigPath("../../test/resource/ConfigDir")
-	state.SetExtensionsPath("../../test/resource/extensions")
+	extensionPath, err := global.CopyToTemp("TestSaveConfig", "../../test/resource/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	state.SetExtensionsPath(extensionPath)
 	body, err := os.Open("../../test/resource/config-test-save.yml")
 	defer body.Close()
 	if err != nil {
@@ -55,13 +59,18 @@ func TestSaveConfig(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v: %v",
 			status, http.StatusOK, rr.Body)
 	}
+	global.RemoveTemp("TestSaveConfig")
 }
 
 func TestGetConfig(t *testing.T) {
 	t.Log("Entering................. TestSaveConfig")
 	//log.SetLevel(log.DebugLevel)
 	SetConfigPath("../../test/resource")
-	state.SetExtensionsPath("../../test/resource/extensions")
+	extensionPath, err := global.CopyToTemp("TestGetConfig", "../../test/resource/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	state.SetExtensionsPath(extensionPath)
 	bckConfigFileName := global.ConfigYamlFileName
 	SetConfigFileName("config-test-save.yml")
 
@@ -79,13 +88,18 @@ func TestGetConfig(t *testing.T) {
 			status, http.StatusOK, rr.Body)
 	}
 	SetConfigFileName(bckConfigFileName)
+	global.RemoveTemp("TestGetConfig")
 }
 
 func TestGetConfigProperty(t *testing.T) {
 	t.Log("Entering................. TestSaveConfig")
 	//log.SetLevel(log.DebugLevel)
 	SetConfigPath("../../test/resource")
-	state.SetExtensionsPath("../../test/resource/extensions")
+	extensionPath, err := global.CopyToTemp("TestGetConfigProperty", "../../test/resource/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	state.SetExtensionsPath(extensionPath)
 	bckConfigFileName := global.ConfigYamlFileName
 	SetConfigFileName("config-test-save.yml")
 
@@ -113,13 +127,18 @@ func TestGetConfigProperty(t *testing.T) {
 		t.Error("Expecting value1 but got " + p["value"].(string))
 	}
 	SetConfigFileName(bckConfigFileName)
+	global.RemoveTemp("TestGetConfigProperty")
 }
 
 func TestGetConfigCustomized(t *testing.T) {
 	t.Log("Entering................. TestGetConfigCustomized")
 	//log.SetLevel(log.DebugLevel)
 	SetConfigPath("../../test/resource")
-	state.SetExtensionsPath("../../test/resource/extensions")
+	extensionPath, err := global.CopyToTemp("TestGetConfigCustomized", "../../test/resource/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	state.SetExtensionsPath(extensionPath)
 	bckConfigFileName := global.ConfigYamlFileName
 	SetConfigFileName("uiconfig-test-save.yml")
 	bckConfigRootKey := global.ConfigRootKey
@@ -140,4 +159,5 @@ func TestGetConfigCustomized(t *testing.T) {
 	}
 	SetConfigFileName(bckConfigFileName)
 	SetConfigRootKey(bckConfigRootKey)
+	global.RemoveTemp("TestGetConfigCustomized")
 }

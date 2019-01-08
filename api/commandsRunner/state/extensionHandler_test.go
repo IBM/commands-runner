@@ -651,6 +651,15 @@ func TestListIBMExensions(t *testing.T) {
 	extension6 := &Extension{
 		Type: EmbeddedExtensions,
 	}
+	extension7 := &Extension{
+		Type: EmbeddedExtensions,
+	}
+	extension8 := &Extension{
+		Type: EmbeddedExtensions,
+	}
+	extension9 := &Extension{
+		Type: EmbeddedExtensions,
+	}
 
 	extensions.Extensions["ext-template"] = *extension1
 	extensions.Extensions["ext-template-v"] = *extension2
@@ -658,6 +667,10 @@ func TestListIBMExensions(t *testing.T) {
 	extensions.Extensions["ext-template-2"] = *extension4
 	extensions.Extensions["ext-insert-delete"] = *extension5
 	extensions.Extensions["ext-insert-delete-by-name"] = *extension6
+	extensions.Extensions["ext-template-insert-delete-handler"] = *extension7
+	extensions.Extensions["ext-insert-delete-handler"] = *extension8
+	extensions.Extensions["ext-template-states-run-success-with-extension"] = *extension9
+
 	expected, _ := json.MarshalIndent(&extensions, "", "  ")
 	//	expected := `{"extensions":{"extensionsIBM": ["IBM-extension1", "IBM-extension2"]}}`
 	log.Debug(expected)

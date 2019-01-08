@@ -15,13 +15,17 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 )
 
 func TestGetUIMetadatasConfigEndpointFailed(t *testing.T) {
 	t.Log("Entering................. TestGetUIConfigEndpointFailed")
 	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionsPath("../../test/resource/extensions/")
+	extensionPath, err := global.CopyToTemp("TestGetUIMetadatasConfigEndpointFailed", "../../test/data/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	SetExtensionsPath(extensionPath)
 	req, err := http.NewRequest("GET", "/cr/v1/uimetadatas?extension-name=does-not-exist&ui-metadata-name=hello", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -40,13 +44,18 @@ func TestGetUIMetadatasConfigEndpointFailed(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v, %v want %v",
 			status, rr.Body, http.StatusOK)
 	}
+	global.RemoveTemp("TestGetUIMetadatasConfigEndpointFailed")
 }
 
 func TestGetUIMetadatasConfigEndpointSuccess(t *testing.T) {
-	log.SetLevel(log.DebugLevel)
+	//log.SetLevel(log.DebugLevel)
 	t.Log("Entering................. TestGetUIConfigEndpointFailed")
 	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	SetExtensionsPath("../../test/resource/extensions/")
+	extensionPath, err := global.CopyToTemp("TestGetUIMetadatasConfigEndpointSuccess", "../../test/data/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	SetExtensionsPath(extensionPath)
 	req, err := http.NewRequest("GET", "/cr/v1/uimetadatas?extension-name=ext-template&ui-metadata-name=test-ui", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -66,13 +75,18 @@ func TestGetUIMetadatasConfigEndpointSuccess(t *testing.T) {
 			status, rr.Body, http.StatusOK)
 	}
 	t.Log(rr.Body)
+	global.RemoveTemp("TestGetUIMetadatasConfigEndpointSuccess")
 }
 
 func TestGetUIMetadatasAllConfigEndpointSuccess(t *testing.T) {
-	log.SetLevel(log.DebugLevel)
+	//log.SetLevel(log.DebugLevel)
 	t.Log("Entering................. TestGetUIConfigEndpointFailed")
 	SetExtensionsEmbeddedFile("../../test/data/extensions/test-extensions.yml")
-	SetExtensionsPath("../../test/data/extensions/")
+	extensionPath, err := global.CopyToTemp("TestGetUIMetadatasAllConfigEndpointSuccess", "../../test/data/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	SetExtensionsPath(extensionPath)
 	req, err := http.NewRequest("GET", "/cr/v1/uimetadatas?names-only=true", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -92,4 +106,5 @@ func TestGetUIMetadatasAllConfigEndpointSuccess(t *testing.T) {
 			status, rr.Body, http.StatusOK)
 	}
 	t.Log(rr.Body)
+	global.RemoveTemp("TestGetUIMetadatasAllConfigEndpointSuccess")
 }

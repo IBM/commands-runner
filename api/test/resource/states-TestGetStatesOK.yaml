@@ -104,5 +104,6 @@ states:
   execution_id: 0
   next_run: true
 extension_name: states-TestGetStatesOK
+parent_extension_name: ""
 executed_by_extension_name: ""
 execution_id: 0
