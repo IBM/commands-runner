@@ -6,6 +6,10 @@
 /api/test/resource/config.*
 /api/test/resource/dummy-extension.zip
 /api/test/data/extensions/embedded/ext-template/embedded/*
+/api/test/data/extensions/embedded/ext-template-auto/embedded/*
+/api/test/data/extensions/embedded/ext-template-insert-delete-handler/embedded/*
+/api/test/data/extensions/embedded/ext-template-states-run-success-with-extension/embedded/*
+/api/testFile
 api/commandsRunner/cm
 examples/data/*
 examples/_build

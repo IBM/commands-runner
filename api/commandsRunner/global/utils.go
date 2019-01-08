@@ -27,6 +27,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const testDir = "../../testFile/"
+
 //CopyRecursive copy one file (file or dir) to a destDir.
 //If the destDir doesn't exist, it will be created.
 func CopyRecursive(src, destDir string) error {
@@ -37,7 +39,8 @@ func CopyRecursive(src, destDir string) error {
 	os.MkdirAll(destDir, 0744)
 	err := filepath.Walk(src, func(path string, f os.FileInfo, err error) error {
 		log.Debug(path)
-		relPath := path[len(src)-1:]
+		cleanPath := filepath.Clean(src)
+		relPath := path[len(cleanPath):]
 		log.Debug("RelPath:" + relPath)
 		newPath := filepath.Join(destDir, relPath)
 		log.Debug("NewPath:" + newPath)
@@ -53,6 +56,8 @@ func CopyRecursive(src, destDir string) error {
 				return err
 			}
 			_, err = io.Copy(writer, reader)
+			reader.Close()
+			writer.Close()
 			if err != nil {
 				return err
 			}
@@ -158,4 +163,46 @@ func ForwardRequest(w http.ResponseWriter, req *http.Request, newURL string) {
 	w.Header().Del("Access-Control-Allow-Methods")
 	w.Header().Del("Access-Control-Allow-Headers")
 	proxy.ServeHTTP(w, req)
+}
+
+func CopyToTemp(tempDir string, fileName string) (string, error) {
+	err := os.MkdirAll(filepath.Join(testDir, tempDir), 0700)
+	if err != nil {
+		return "", err
+	}
+	fi, err := os.Stat(fileName)
+	if err != nil {
+		return "", err
+	}
+	switch mode := fi.Mode(); {
+	case mode.IsDir():
+		err = CopyRecursive(fileName, filepath.Join(testDir, tempDir, fi.Name()))
+		if err != nil {
+			return "", err
+		}
+		return filepath.Join(testDir, tempDir, fi.Name()), nil
+	case mode.IsRegular():
+		reader, err := os.OpenFile(fileName, os.O_RDONLY, 0666)
+		if err != nil {
+			return "", err
+		}
+		writer, err := os.OpenFile(filepath.Join(testDir, tempDir, fi.Name()), os.O_CREATE|os.O_WRONLY, fi.Mode())
+		if err != nil {
+			return "", err
+		}
+		_, err = io.Copy(writer, reader)
+		reader.Close()
+		writer.Close()
+		if err != nil {
+			return "", err
+		}
+		return filepath.Join(testDir, tempDir, fi.Name()), nil
+	default:
+		return "", errors.New("Can not detect file type " + fileName)
+	}
+}
+
+func RemoveTemp(fileName string) error {
+	log.Debug("fileName:" + filepath.Join(testDir, fileName))
+	return os.RemoveAll(filepath.Join(testDir, fileName))
 }

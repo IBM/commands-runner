@@ -230,7 +230,7 @@ func PutInsertStateStatesEndpoint(w http.ResponseWriter, req *http.Request) {
 	}
 	if _, err := os.Stat(sm.StatesPath); os.IsNotExist(err) {
 		logger.AddCallerField().Error(errors.New("State file " + sm.StatesPath + " doesn't exist"))
-		http.Error(w, errSM.Error(), http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	var pos int

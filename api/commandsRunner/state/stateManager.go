@@ -108,8 +108,7 @@ type State struct {
 	//NextStates List of next states, this determines the order in which the states will get executed. A topological sort is used to determine the order.
 	//If this attribute is not defined in any state of the states file then the NextStates for each state will be set by default to the next state in the states file.
 	NextStates []string `yaml:"next_states" json:"next_states"`
-	//ExecutedByExtensionName contains the name of the extension which launch the current extension as this extension could be a
-	//extension inserted into another extension
+	//ExecutedByExtensionName is set at execution time with the value of sm.ExecutedByExtensionName.
 	ExecutedByExtensionName string `yaml:"executed_by_extension_name" json:"executed_by_extension_name"`
 	//The execution sequence id for that specific launch
 	ExecutionID int `yaml:"execution_id" json:"execution_id"`
@@ -120,8 +119,12 @@ type State struct {
 type States struct {
 	StateArray    []State `yaml:"states" json:"states"`
 	ExtensionName string  `yaml:"extension_name" json:"extension_name"`
-	//ExecutedByExtensionName contains the name of the extension which launch the current extension as this extension could be a
-	//extension inserted into another extension
+	//Parent extension name, this is set when the extension is inserted into another extension.
+	//Empty if not inserted.
+	ParentExtensionName string `yaml:"parent_extension_name" json:"parent_extension_name"`
+	//ExecutedByExtensionName is set at execution time and contains the name of the extension which launch the current extension.
+	//If extension A contains extension B contains extension C then it contains extension A name.
+	//It is NOT the direct parent extension name.
 	ExecutedByExtensionName string `yaml:"executed_by_extension_name" json:"executed_by_extension_name"`
 	//The execution sequence id for that specific launch
 	ExecutionID int    `yaml:"execution_id" json:"execution_id"`
@@ -1042,7 +1045,46 @@ func (sm *States) setStateStatus(state State, status string, recursively bool) e
 		}
 	}
 	errStates := sm.writeStates()
-	return errStates
+	if errStates != nil {
+		return errStates
+	}
+	//if the state is set to ready and is part of an extension inserted in another extension
+	//then the caller state in the parent extension must be set to ready too
+	if sm.ParentExtensionName != "" && status == StateREADY {
+		err := sm.setParentStateStatus(StateREADY)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (sm *States) setParentStateStatus(status string) error {
+	//Update the parent extension name in the inserted extension state-file
+	stateManager, errStateManager := GetStatesManager(sm.ParentExtensionName)
+	if errStateManager != nil {
+		logger.AddCallerField().Error(errStateManager.Error())
+		return errStateManager
+	}
+	err := stateManager.readStates()
+	if err != nil {
+		return err
+	}
+	stateFound, errState := stateManager._getState(sm.ExtensionName)
+	if errState != nil {
+		return errState
+	}
+	if stateFound.Status != status {
+		stateFound.Status = status
+		err = stateManager.writeStates()
+		if err != nil {
+			return err
+		}
+		if stateManager.ParentExtensionName != "" {
+			return stateManager.setParentStateStatus(status)
+		}
+	}
+	return nil
 }
 
 func SetMock(mock bool) {
@@ -1172,28 +1214,6 @@ func (sm *States) SetState(state string, status string, reason string, script st
 	return nil
 }
 
-//setDependencyStatus Set the status and reason for each state referencing the currentState.
-// func (sm *States) setDependencyStatus(isStart bool, currentState string, status string, reason string) error {
-// 	log.Debugf("Entering in... setDependencyStatus")
-// 	for _, state := range sm.StateArray {
-// 		log.Debug("Check dependency for state:" + state.Name)
-// 		for _, rerunStateName := range state.StatesToRerun {
-// 			if rerunStateName == currentState {
-// 				log.Debug("Dependency " + rerunStateName + " found")
-// 				log.Debug("Current dependency state: " + state.Name + " status " + state.Status)
-// 				if state.Status != StateSKIP {
-// 					log.Debug("set to status " + status + " State: " + rerunStateName)
-// 					err := sm.setStateStatusWithTimeStamp(isStart, state.Name, status, reason)
-// 					if err != nil {
-// 						return err
-// 					}
-// 				}
-// 			}
-// 		}
-// 	}
-// 	return nil
-// }
-
 func (sm *States) setExecutionID(state string, callerState *State) (*State, error) {
 	log.Debugf("Entering in... setExecutionID")
 	stateFound, errState := sm._getState(state)
@@ -1283,8 +1303,11 @@ func (sm *States) InsertStateFromExtensionName(extensionName string, pos int, st
 		return err
 	}
 	log.Debug("call_state: " + stateString)
-	return sm.InsertStateFromString(stateString, pos, stateName, before)
-
+	err = sm.InsertStateFromString(stateString, pos, stateName, before)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 //InsertStateFromString Insert state at a given position, before or after a given state.
@@ -1321,14 +1344,12 @@ func (sm *States) InsertState(state State, pos int, stateName string, before boo
 		log.Debug(err.Error())
 		return err
 	}
-	if !valid {
-		err = errors.New("The state name " + state.Name + " is not a valid extension")
-		log.Debug(err.Error())
-		return errors.New(err.Error())
-	}
-	registered := IsExtensionRegistered(state.Name)
-	if !registered {
-		return errors.New("The state name " + state.Name + " is not registered")
+	//We are inserting an extension and so the extension must be registered
+	if valid {
+		registered := IsExtensionRegistered(state.Name)
+		if !registered {
+			return errors.New("The state name " + state.Name + " is not registered")
+		}
 	}
 	if sm.isRunning() {
 		return errors.New("Insert can not be executed while a deployment is running")
@@ -1393,7 +1414,28 @@ func (sm *States) InsertState(state State, pos int, stateName string, before boo
 			return err
 		}
 		sm.setDefaultValues()
-		return sm.writeStates()
+		err = sm.writeStates()
+		if err != nil {
+			return err
+		}
+		//We are inserting an extension
+		if valid {
+			//Update the parent extension name in the inserted extension state-file
+			stateManager, errStateManager := GetStatesManager(state.Name)
+			if errStateManager != nil {
+				logger.AddCallerField().Error(errStateManager.Error())
+				return errStateManager
+			}
+			err = stateManager.readStates()
+			if err != nil {
+				return err
+			}
+			stateManager.ParentExtensionName = sm.ExtensionName
+			log.Debug("Parent Extension name:" + sm.ExtensionName)
+			return stateManager.writeStates()
+		} else {
+			return nil
+		}
 	}
 }
 
@@ -1428,6 +1470,7 @@ func (sm *States) DeleteState(pos int, stateName string) error {
 	if sm.StateArray[arrayPos].Protected {
 		return errors.New("The state " + sm.StateArray[arrayPos].Name + " is protected and can not be deleted")
 	}
+	stateNameAux := sm.StateArray[arrayPos].Name
 	copy(sm.StateArray[arrayPos:], sm.StateArray[arrayPos+1:])
 	sm.StateArray[len(sm.StateArray)-1] = State{} // or the zero value of T
 	sm.StateArray = sm.StateArray[:len(sm.StateArray)-1]
@@ -1435,7 +1478,30 @@ func (sm *States) DeleteState(pos int, stateName string) error {
 	if err != nil {
 		return err
 	}
-	return sm.writeStates()
+	err = sm.writeStates()
+	if err != nil {
+		return err
+	}
+	//Update the parent extension name in the inserted extension state-file
+	valid, err := IsExtension(stateNameAux)
+	if err != nil {
+		log.Debug(err.Error())
+		return err
+	}
+	if valid {
+		stateManager, errStateManager := GetStatesManager(stateNameAux)
+		if errStateManager != nil {
+			logger.AddCallerField().Error(errStateManager.Error())
+			return errStateManager
+		}
+		err = stateManager.readStates()
+		if err != nil {
+			return err
+		}
+		stateManager.ParentExtensionName = ""
+		return stateManager.writeStates()
+	}
+	return nil
 }
 
 //getLogPath Search logPath for a given state in states structure
@@ -1828,21 +1894,21 @@ func (sm *States) executeState(state State, callerState *State, callerOutFile *o
 	}
 	defer outfile.Close()
 	//Update states to be rerun
-	for _, stateName := range state.StatesToRerun {
-		stateToReRun, err := sm._getState(stateName)
-		if err != nil {
-			log.Debug("WARNING: State to rerun " + stateName + " not found in states_to_rerun attribute of " + state.Name + ":" + err.Error())
-		} else {
-			if stateToReRun.Status != StateSKIP {
-				err := sm.setStateStatus(*stateToReRun, StateREADY, true)
-				if err != nil {
-					logger.AddCallerField().Error(err)
-					return errors.New("State to rerun " + stateToReRun.Name + " not found in states_to_rerun attribute of " + state.Name + ":" + err.Error())
-				}
-				log.Debug("Reset to READY state " + stateToReRun.Name)
-			}
-		}
-	}
+	// for _, stateName := range state.StatesToRerun {
+	// 	stateToReRun, err := sm._getState(stateName)
+	// 	if err != nil {
+	// 		log.Debug("WARNING: State to rerun " + stateName + " not found in states_to_rerun attribute of " + state.Name + ":" + err.Error())
+	// 	} else {
+	// 		if stateToReRun.Status != StateSKIP {
+	// 			err := sm.setStateStatus(*stateToReRun, StateREADY, true)
+	// 			if err != nil {
+	// 				logger.AddCallerField().Error(err)
+	// 				return errors.New("State to rerun " + stateToReRun.Name + " not found in states_to_rerun attribute of " + state.Name + ":" + err.Error())
+	// 			}
+	// 			log.Debug("Reset to READY state " + stateToReRun.Name)
+	// 		}
+	// 	}
+	// }
 	var errExec error
 	isExtension, errExt := IsExtension(state.Name)
 	if errExt != nil {

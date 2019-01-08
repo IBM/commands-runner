@@ -18,12 +18,10 @@ import (
 	"testing"
 
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
-
-	log "github.com/sirupsen/logrus"
 )
 
 func TestGetSettings(t *testing.T) {
-	log.SetLevel(log.DebugLevel)
+	//log.SetLevel(log.DebugLevel)
 	global.DefaultExtensionName = "test-extension"
 	global.ConfigRootKey = "myconfig"
 

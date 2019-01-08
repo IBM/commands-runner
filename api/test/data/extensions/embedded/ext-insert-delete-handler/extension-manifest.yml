@@ -11,20 +11,15 @@ states:
   script_timeout: 10
   protected: false
   deleted: false
-  prerequisite_states: []
   states_to_rerun: []
-  rerun_on_run_of_states: []
   previous_states: []
   next_states:
   - task2
-  executed_by_extension_name: ""
-  execution_id: 0
-  next_run: false
 - name: task2
   phase: ""
   label: Task 2
   log_path: /tmp/task.log
-  status: SKIP
+  status: READY
   start_time: ""
   end_time: ""
   reason: ""
@@ -32,15 +27,11 @@ states:
   script_timeout: 10
   protected: false
   deleted: false
-  prerequisite_states: []
   states_to_rerun: []
-  rerun_on_run_of_states: []
-  previous_states: []
+  previous_states:
+  - task1
   next_states:
   - task3
-  executed_by_extension_name: ""
-  execution_id: 0
-  next_run: false
 - name: task3
   phase: ""
   label: Task 3
@@ -53,15 +44,7 @@ states:
   script_timeout: 10
   protected: false
   deleted: false
-  prerequisite_states: []
   states_to_rerun: []
-  rerun_on_run_of_states: []
-  previous_states: []
+  previous_states:
+  - task2
   next_states: []
-  executed_by_extension_name: ""
-  execution_id: 0
-  next_run: false
-extension_name: TestEngineReset
-parent_extension_name: ""
-executed_by_extension_name: ""
-execution_id: 0

@@ -15,6 +15,8 @@ import (
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 )
 
 func TestEngineStartPUT(t *testing.T) {
@@ -22,7 +24,11 @@ func TestEngineStartPUT(t *testing.T) {
 	t.Log("Entering................. TestEngineStartPUT")
 	// addStateManager("TestEngineStartPUT", "../../test/resource/engine-run-success.yaml")
 	addStateManager("TestEngineStartPUT")
-	SetExtensionsPath("../../test/data/extensions/")
+	extensionPath, err := global.CopyToTemp("TestEngineStartPUT", "../../test/data/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	SetExtensionsPath(extensionPath)
 	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
@@ -95,13 +101,17 @@ func TestEngineStartPUT(t *testing.T) {
 			status, http.StatusOK)
 	}
 
+	global.RemoveTemp("TestEngineStartPUT")
 }
 
 func TestEngineStartExtensonPUT(t *testing.T) {
 	//log.SetLevel(log.DebugLevel)
 	t.Log("Entering................. TestEngineStartExtensonPUT")
-	SetExtensionsPath("../../test/data/extensions/")
-	//	global.SetExtensionResourcePath("api/test/resource/extensions/")
+	extensionPath, err := global.CopyToTemp("TestEngineStartExtensonPUT", "../../test/data/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	SetExtensionsPath(extensionPath)
 	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
 	extension := "ext-template"
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
@@ -174,12 +184,17 @@ func TestEngineStartExtensonPUT(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusOK)
 	}
+	global.RemoveTemp("TestEngineStartExtensonPUT")
 }
 
 func TestEnginePUTRunning(t *testing.T) {
 	t.Log("Entering................. TestEnginePUTRunning")
 	// addStateManager("TestEnginePUTRunning", "../../test/resource/engine-run-running.yaml")
-	SetExtensionsPath("../../test/data/extensions/")
+	extensionPath, err := global.CopyToTemp("TestEnginePUTRunning", "../../test/data/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	SetExtensionsPath(extensionPath)
 	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
 	addStateManager("TestEnginePUTRunning")
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
@@ -222,13 +237,17 @@ func TestEnginePUTRunning(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusCreated)
 	}
-
+	global.RemoveTemp("TestEnginePUTRunning")
 }
 
 func TestEngineResetRunning(t *testing.T) {
 	t.Log("Entering................. TestEngineResetRunning")
 	// addStateManager("TestEngineResetRunning", "../../test/resource/states-reset.yaml")
-	SetExtensionsPath("../../test/data/extensions/")
+	extensionPath, err := global.CopyToTemp("TestEngineResetRunning", "../../test/data/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	SetExtensionsPath(extensionPath)
 	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
 	addStateManager("TestEngineResetRunning")
 
@@ -246,7 +265,7 @@ func TestEngineResetRunning(t *testing.T) {
 
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
-	req, err := http.NewRequest("PUT", "/cr/v1/engine?action=reset&extension-name=TestEngineResetRunning", nil)
+	req, err = http.NewRequest("PUT", "/cr/v1/engine?action=reset&extension-name=TestEngineResetRunning", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -264,12 +283,17 @@ func TestEngineResetRunning(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusInternalServerError)
 	}
+	global.RemoveTemp("TestEngineResetRunning")
 }
 
 func TestEngineReset(t *testing.T) {
 	t.Log("Entering................. TestEngineReset")
 	// addStateManager("TestEngineReset", "../../test/resource/states-reset.yaml")
-	SetExtensionsPath("../../test/data/extensions/")
+	extensionPath, err := global.CopyToTemp("TestEngineReset", "../../test/data/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	SetExtensionsPath(extensionPath)
 	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
 	addStateManager("TestEngineReset")
 
@@ -307,7 +331,7 @@ func TestEngineReset(t *testing.T) {
 
 	// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
 	// pass 'nil' as the third parameter.
-	req, err := http.NewRequest("PUT", "/cr/v1/engine?action=reset&extension-name=TestEngineReset", nil)
+	req, err = http.NewRequest("PUT", "/cr/v1/engine?action=reset&extension-name=TestEngineReset", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -325,4 +349,5 @@ func TestEngineReset(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusOK)
 	}
+	global.RemoveTemp("TestEngineReset")
 }
