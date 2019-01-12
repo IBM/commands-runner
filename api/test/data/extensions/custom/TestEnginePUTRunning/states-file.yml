@@ -48,3 +48,4 @@ states:
   previous_states:
   - task2
   next_states: []
+running: true

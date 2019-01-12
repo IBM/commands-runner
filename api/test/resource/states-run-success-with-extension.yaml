@@ -15,7 +15,8 @@ states:
   states_to_rerun: []
   rerun_on_run_of_states: []
   previous_states: []
-  next_states: []
+  next_states:
+  - ext-template-states-run-success-with-extension
   executed_by_extension_name: ""
   execution_id: 0
   next_run: false
@@ -34,7 +35,8 @@ states:
   prerequisite_states: []
   states_to_rerun: []
   rerun_on_run_of_states: []
-  previous_states: []
+  previous_states:
+  - task1
   next_states:
   - task3
   executed_by_extension_name: ""
@@ -65,3 +67,6 @@ extension_name: states-run-success-with-extension
 parent_extension_name: ""
 executed_by_extension_name: ""
 execution_id: 0
+start_time: ""
+end_time: ""
+running: false

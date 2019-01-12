@@ -49,8 +49,12 @@ tag::
 	@echo "TAG_VERSION:$(TAG_VERSION)"
 
 .PHONY: all
-all:: pre-req copyright-check go-test server client code
+all:: clean pre-req copyright-check go-test server client code
 
+.PHONY: clean
+clean::
+	rm -rf api/testFile
+	
 #This requires Graphitz and    ''
 .PHONY: dependency-graph-text
 dependency-graph-text:

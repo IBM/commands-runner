@@ -57,6 +57,7 @@ func CopyRecursive(src, destDir string) error {
 			}
 			_, err = io.Copy(writer, reader)
 			reader.Close()
+			writer.Sync()
 			writer.Close()
 			if err != nil {
 				return err
@@ -192,6 +193,7 @@ func CopyToTemp(tempDir string, fileName string) (string, error) {
 		}
 		_, err = io.Copy(writer, reader)
 		reader.Close()
+		writer.Sync()
 		writer.Close()
 		if err != nil {
 			return "", err

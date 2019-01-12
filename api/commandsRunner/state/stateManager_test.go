@@ -1440,8 +1440,9 @@ func TestEngineSuccessFromFailure(t *testing.T) {
 }
 
 func TestEngineSuccessWithExtension(t *testing.T) {
-	//log.SetLevel(log.DebugLevel)
-	t.Log("Entering...TestEngineSuccess")
+	// log.SetLevel(log.DebugLevel)
+	t.Log("Entering...TestEngineSuccessWithExtension")
+	//global.DefaultExtensionName = "states-run-success-with-extension"
 	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
 	extensionPath, err := global.CopyToTemp("TestEngineSuccessWithExtension", "../../test/data/extensions/")
 	if err != nil {
@@ -1449,7 +1450,6 @@ func TestEngineSuccessWithExtension(t *testing.T) {
 	}
 	SetExtensionsPath(extensionPath)
 	statesPath := "../../test/resource/states-run-success-with-extension.yaml"
-	// sm, err := newStateManager(statesPath)
 	smExt, err := GetStatesManager("ext-template-states-run-success-with-extension")
 	if err != nil {
 		t.Error(err.Error())

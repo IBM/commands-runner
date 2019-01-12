@@ -16,11 +16,13 @@ import (
 	"testing"
 	"time"
 
+	//	log "github.com/sirupsen/logrus"
+
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 )
 
 func TestEngineStartPUT(t *testing.T) {
-	// log.SetLevel(log.DebugLevel)
+	//log.SetLevel(log.DebugLevel)
 	t.Log("Entering................. TestEngineStartPUT")
 	// addStateManager("TestEngineStartPUT", "../../test/resource/engine-run-success.yaml")
 	addStateManager("TestEngineStartPUT")
@@ -100,7 +102,6 @@ func TestEngineStartPUT(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusOK)
 	}
-
 	global.RemoveTemp("TestEngineStartPUT")
 }
 
@@ -188,6 +189,7 @@ func TestEngineStartExtensonPUT(t *testing.T) {
 }
 
 func TestEnginePUTRunning(t *testing.T) {
+	//	log.SetLevel(log.DebugLevel)
 	t.Log("Entering................. TestEnginePUTRunning")
 	// addStateManager("TestEnginePUTRunning", "../../test/resource/engine-run-running.yaml")
 	extensionPath, err := global.CopyToTemp("TestEnginePUTRunning", "../../test/data/extensions/")

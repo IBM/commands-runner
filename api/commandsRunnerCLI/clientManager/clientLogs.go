@@ -107,6 +107,49 @@ func (crc *CommandsRunnerClient) follow(extensionName string, position int64, st
 	return errLog
 }
 
+func isStatePartOfTheCurrentRun(currentState state.State, states state.States) bool {
+	return currentState.ExecutedByExtensionName != "" &&
+		currentState.ExecutedByExtensionName == states.ExecutedByExtensionName &&
+		currentState.ExecutionID != 0 &&
+		currentState.ExecutionID == states.ExecutionID
+}
+
+func (crc *CommandsRunnerClient) searchNextStatePartOfTheCurrentRun(extensionName string, states state.States, startStateIndex int, endStateIndex int) (*state.State, int, error) {
+	var nextState *state.State
+	statesAux := states
+	nextStateIndex := -1
+	// fmt.Println("startStateIndex:" + strconv.Itoa(startStateIndex))
+	for {
+		for index, stateAux := range statesAux.StateArray[startStateIndex:endStateIndex] {
+			// fmt.Println("Index:" + strconv.Itoa(index))
+			if isStatePartOfTheCurrentRun(stateAux, statesAux) {
+				nextState = &stateAux
+				nextStateIndex = index + startStateIndex
+				// fmt.Println("nextStateIndex:" + strconv.Itoa(nextStateIndex))
+				break
+			}
+		}
+		if nextState != nil {
+			break
+		}
+		// fmt.Println("states.EndTime:" + statesAux.EndTime)
+		if statesAux.EndTime != "" {
+			return nil, -1, nil
+		}
+		time.Sleep(5 * time.Second)
+		//Retrieve list of states and unmarshal
+		data, err := crc.getRestStates(extensionName, "", false, false)
+		if err != nil {
+			return nil, -1, err
+		}
+		errUnMarshal := json.Unmarshal([]byte(data), &statesAux)
+		if errUnMarshal != nil {
+			return nil, -1, errUnMarshal
+		}
+	}
+	return nextState, nextStateIndex, nil
+}
+
 //GetLogs returns the logs of a given state, if state not provided will retrieve logs from the first state.
 // if follow = true the method will loop for new data in the log
 // if quiet = true then log are not displayed but the method will wait until the deploy is done.
@@ -148,17 +191,11 @@ func (crc *CommandsRunnerClient) GetLogs(extensionName string, stateName string,
 		for {
 			statesStarted := false
 			for _, stateAux := range states.StateArray[startStateIndex:endStateIndex] {
-				if stateAux.ExecutedByExtensionName == "" ||
-					stateAux.ExecutionID == 0 ||
-					stateAux.ExecutedByExtensionName != states.ExecutedByExtensionName ||
-					stateAux.ExecutionID != states.ExecutionID {
+				if !isStatePartOfTheCurrentRun(stateAux, states) {
 					continue
 				}
-				if stateAux.Status != state.StateREADY &&
-					stateAux.Status != state.StateSKIP {
-					statesStarted = true
-					break
-				}
+				statesStarted = true
+				break
 			}
 			if statesStarted {
 				break
@@ -178,34 +215,22 @@ func (crc *CommandsRunnerClient) GetLogs(extensionName string, stateName string,
 	var pos int64
 	var currentIndex int
 	//display the existing logs for all states
-	for index, stateAux := range states.StateArray[startStateIndex:endStateIndex] {
+	for index, currentState := range states.StateArray[startStateIndex:endStateIndex] {
+		//Check if this state is not part of the current execution.
+		if !isStatePartOfTheCurrentRun(currentState, states) {
+			continue
+		}
 		//Get last status
-		status, err := crc.getStateStatus(extensionName, stateAux.Name)
+		status, err := crc.getStateStatus(extensionName, currentState.Name)
 		if err != nil {
 			return err
-		}
-		if status == state.StateREADY {
-			//Sleep to make sure the state changed
-			time.Sleep(5 * time.Second)
-			//Get last status
-			status, err = crc.getStateStatus(extensionName, stateAux.Name)
-			if err != nil {
-				return err
-			}
-		}
-		//Check if this state is part of the current execution.
-		if stateAux.ExecutedByExtensionName == "" ||
-			stateAux.ExecutionID == 0 ||
-			stateAux.ExecutedByExtensionName != states.ExecutedByExtensionName ||
-			stateAux.ExecutionID != states.ExecutionID {
-			continue
 		}
 		// display logs for status succeed, running and failed
 		if status == state.StateSUCCEEDED ||
 			status == state.StateRUNNING ||
 			status == state.StateFAILED {
 			currentIndex = index
-			pos, err = crc.getLogs(extensionName, 0, stateAux.Name)
+			pos, err = crc.getLogs(extensionName, 0, currentState.Name)
 			if err != nil {
 				return err
 			}
@@ -215,7 +240,7 @@ func (crc *CommandsRunnerClient) GetLogs(extensionName string, stateName string,
 			break
 		}
 		if status == state.StateFAILED {
-			return errors.New("\nDeployment of " + extensionName + " failed, state: " + stateAux.Name)
+			return errors.New("\nDeployment of " + extensionName + " failed, state: " + currentState.Name)
 		}
 	}
 	currentIndex += startStateIndex
@@ -223,60 +248,26 @@ func (crc *CommandsRunnerClient) GetLogs(extensionName string, stateName string,
 	if follow {
 		// manage the remaning logs
 		//		previousEndTime := time.Now()
-		for _, stateAux := range states.StateArray[currentIndex:endStateIndex] {
-			//wait to make sure the status is up to date.
-			//Get last status
-			newStateString, err := crc.getState(extensionName, stateAux.Name)
+		for {
+			var newState *state.State
+			// fmt.Println("Before currentIndex:" + strconv.Itoa(currentIndex))
+			newState, currentIndex, err = crc.searchNextStatePartOfTheCurrentRun(extensionName, states, currentIndex, endStateIndex)
+			// fmt.Println("After currentIndex:" + strconv.Itoa(currentIndex))
 			if err != nil {
 				return err
 			}
-			var newState state.State
-			jsonErr := json.Unmarshal([]byte(newStateString), &newState)
-			// status, err := crc.getStateStatus(extensionName, state.Name)
-			if jsonErr != nil {
-				return err
+			if currentIndex == -1 {
+				break
 			}
-			if newState.Status == state.StateSKIP {
-				continue
-			}
-			if newState.Status == state.StateREADY ||
+			if newState.Status == state.StateSUCCEEDED ||
+				newState.Status == state.StateRUNNING ||
 				newState.Status == state.StateFAILED {
-				time.Sleep(5 * time.Second)
-				newStateString, err = crc.getState(extensionName, stateAux.Name)
-				//				status, err = crc.getStateStatus(extensionName, state.Name)
-				if err != nil {
-					return err
-				}
-				jsonErr = json.Unmarshal([]byte(newStateString), &newState)
-				// status, err := crc.getStateStatus(extensionName, state.Name)
-				if jsonErr != nil {
-					return err
-				}
-			}
-			//Display RUNNING and failed status.
-			// startTime, errTimeComv := time.Parse(time.UnixDate, newState.EndTime)
-			// if errTimeComv != nil ||
-			// 	(newState.Status == state.StateSUCCEEDED && startTime.After(previousEndTime)) ||
-			// 	newState.Status == state.StateRUNNING ||
-			// 	newState.Status == state.StateFAILED {
-			// 	err := crc.follow(extensionName, pos, stateAux.Name, quiet)
-			// 	if err != nil {
-			// 		return err
-			// 	}
-			// }
-
-			if newState.ExecutedByExtensionName != "" &&
-				newState.ExecutedByExtensionName == states.ExecutedByExtensionName &&
-				newState.ExecutionID != 0 &&
-				newState.ExecutionID == states.ExecutionID &&
-				(newState.Status == state.StateSUCCEEDED ||
-					newState.Status == state.StateRUNNING ||
-					newState.Status == state.StateFAILED) {
-				err := crc.follow(extensionName, pos, stateAux.Name, quiet)
+				err := crc.follow(extensionName, pos, newState.Name, quiet)
 				if err != nil {
 					return err
 				}
 			}
+			currentIndex = currentIndex + 1
 			pos = 0
 		}
 	}

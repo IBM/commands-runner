@@ -127,9 +127,15 @@ type States struct {
 	//It is NOT the direct parent extension name.
 	ExecutedByExtensionName string `yaml:"executed_by_extension_name" json:"executed_by_extension_name"`
 	//The execution sequence id for that specific launch
-	ExecutionID int    `yaml:"execution_id" json:"execution_id"`
-	StatesPath  string `yaml:"-" json:"-"`
-	mux         *sync.Mutex
+	ExecutionID int `yaml:"execution_id" json:"execution_id"`
+	//StartTime If not empty, it contains the last time when the state was executed
+	StartTime string `yaml:"start_time" json:"start_time"`
+	//EndTime if not empty, it contains the last end execution time of the state
+	EndTime string `yaml:"end_time" json:"end_time"`
+	//Running If true the engine is running
+	Running    bool   `yaml:"running" json:"running"`
+	StatesPath string `yaml:"-" json:"-"`
+	mux        *sync.Mutex
 }
 
 var pcmLogTempFile *os.File
@@ -204,6 +210,10 @@ func newStateManager(extensionName string) *States {
 		ExtensionName:           extensionName,
 		ExecutedByExtensionName: "",
 		ExecutionID:             0,
+		StartTime:               "",
+		EndTime:                 "",
+		Running:                 false,
+		ParentExtensionName:     "",
 		StatesPath:              "",
 		mux:                     &sync.Mutex{},
 	}
@@ -426,6 +436,10 @@ func (sm *States) GetStates(status string, extensionsOnly bool, recursive bool) 
 		ExtensionName:           sm.ExtensionName,
 		ExecutedByExtensionName: sm.ExecutedByExtensionName,
 		ExecutionID:             sm.ExecutionID,
+		StartTime:               sm.StartTime,
+		EndTime:                 sm.EndTime,
+		Running:                 sm.Running,
+		ParentExtensionName:     sm.ParentExtensionName,
 		mux:                     &sync.Mutex{},
 	}
 	statuses, err := sm.CalculateStatesToRun(FirstState, LastState)
@@ -996,7 +1010,7 @@ func (sm *States) IsRunning() (bool, error) {
 }
 
 //Check if a status is Running in the current states
-func (sm *States) isRunning() bool {
+func (sm *States) isResetRunning() bool {
 	for i := 0; i < len(sm.StateArray); i++ {
 		state := sm.StateArray[i]
 		if state.Status == StateRUNNING {
@@ -1004,6 +1018,11 @@ func (sm *States) isRunning() bool {
 		}
 	}
 	return false
+}
+
+//Check if states engine is running
+func (sm *States) isRunning() bool {
+	return sm.Running
 }
 
 //setStateStatus Set the status of a given states. I
@@ -1109,7 +1128,7 @@ func (sm *States) ResetEngine() error {
 	}
 	log.Debug("ResetEngine... states has been read")
 	//Check if states running
-	if sm.isRunning() {
+	if sm.isResetRunning() {
 		err := errors.New("Deployment is running, can not proceed")
 		log.Debug(err.Error())
 		return err
@@ -1121,6 +1140,9 @@ func (sm *States) ResetEngine() error {
 			return err
 		}
 	}
+	sm.StartTime = ""
+	sm.EndTime = ""
+	sm.Running = false
 	//Write states
 	errStates = sm.writeStates()
 	return errStates
@@ -1770,18 +1792,79 @@ func (sm *States) preprocessingExecute(fromState string, toState string) error {
 	return nil
 }
 
+func (sm *States) setStatesExecutionID(callerState *State) error {
+	errStates := sm.readStates()
+	if errStates != nil {
+		log.Debug(errStates.Error())
+		return errStates
+	}
+	if sm.isRunning() {
+		err := errors.New("Already running")
+		log.Debug(err.Error())
+		return err
+	}
+	if callerState == nil {
+		sm.ExecutedByExtensionName = sm.ExtensionName
+		sm.ExecutionID = sm.ExecutionID + 1
+	} else {
+		sm.ExecutedByExtensionName = callerState.ExecutedByExtensionName
+		sm.ExecutionID = callerState.ExecutionID
+	}
+	errStates = sm.writeStates()
+	if errStates != nil {
+		log.Debug(errStates.Error())
+		return errStates
+	}
+	return nil
+}
+
+func (sm *States) setExecutionTimes(isStart bool) error {
+	errStates := sm.readStates()
+	if errStates != nil {
+		log.Debug(errStates.Error())
+		return errStates
+	}
+	timeNow := time.Now().UTC().Format(time.UnixDate)
+	if isStart {
+		sm.StartTime = timeNow
+		sm.EndTime = ""
+		sm.Running = true
+	} else {
+		sm.EndTime = timeNow
+		sm.Running = false
+	}
+	errStates = sm.writeStates()
+	if errStates != nil {
+		log.Debug(errStates.Error())
+		return errStates
+	}
+	return nil
+}
+
 //Execute states from state 'fromState' to state 'toState'
 func (sm *States) Execute(fromState string, toState string, callerState *State, callerOutFile *os.File) error {
 	log.Debug("Enterring... Execute from " + fromState + " to " + toState)
 	log.Debug("State:" + sm.StatesPath)
 	log.Debug("From state:" + fromState)
 	log.Debug("To   state:" + toState)
-	err := sm.preprocessingExecute(fromState, toState)
+	err := sm.setStatesExecutionID(callerState)
+	//Init executionBy and ID, for the time being it is set to the sm.ExecutionName but later it could be set to the calling extension name
+	err = sm.preprocessingExecute(fromState, toState)
 	if err != nil {
 		log.Debug(err.Error())
 		return err
 	}
+	errStartTime := sm.setExecutionTimes(true)
+	if errStartTime != nil {
+		log.Debug(errStartTime.Error())
+		return errStartTime
+	}
 	err = sm.executeStates(fromState, toState, callerState, callerOutFile)
+	errStopTime := sm.setExecutionTimes(false)
+	if errStopTime != nil {
+		log.Debug(errStopTime.Error())
+		return errStopTime
+	}
 	if err != nil {
 		log.Debug(err.Error())
 		return err
@@ -1791,14 +1874,10 @@ func (sm *States) Execute(fromState string, toState string, callerState *State, 
 
 //Execute states
 func (sm *States) executeStates(fromState string, toState string, callerState *State, callerOutFile *os.File) error {
-	//Init executionBy and ID, for the time being it is set to the sm.ExecutionName but later it could be set to the calling extension name
-	if callerState == nil {
-		sm.ExecutedByExtensionName = sm.ExtensionName
-		sm.ExecutionID = sm.ExecutionID + 1
-	} else {
-		sm.ExecutedByExtensionName = callerState.ExecutedByExtensionName
-		sm.ExecutionID = callerState.ExecutionID
-	}
+	// if callerState != nil {
+	// 	sm.ExecutedByExtensionName = callerState.ExecutedByExtensionName
+	// 	sm.ExecutionID = callerState.ExecutionID
+	// }
 	toExecute := false || fromState == FirstState
 	for i := 0; i < len(sm.StateArray); i++ {
 		state := sm.StateArray[i]
@@ -1932,7 +2011,8 @@ func (sm *States) executeState(state State, callerState *State, callerOutFile *o
 		//Build the command line
 		script := state.Script
 		if global.Mock {
-			script = "echo \"Mock mode: script for state " + state.Name + " is skipped!\""
+			timeNow := time.Now().UTC().Format(time.UnixDate)
+			script = "echo \"Mock mode: " + timeNow + " extension name: " + sm.ExtensionName + " script for state " + state.Name + " is skipped!\""
 		}
 		parts := strings.Fields(script)
 		var cmd *exec.Cmd

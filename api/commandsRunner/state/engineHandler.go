@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -111,6 +112,7 @@ func PutStartEngineEndpoint(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	if running {
+		logger.AddCallerField().Error("Engine Running")
 		w.WriteHeader(http.StatusConflict)
 		return
 	}
@@ -127,7 +129,25 @@ func PutStartEngineEndpoint(w http.ResponseWriter, req *http.Request) {
 		log.Debugf("To State:%s", toFound)
 		toState = toFound[0]
 	}
+	timeNow := time.Now().UTC()
+	time.Sleep(1 * time.Second)
 	go sm.Execute(fromState, toState, nil, nil)
+	for {
+		if sm.StartTime != "" {
+			timeStart, errTime := time.Parse(time.UnixDate, sm.StartTime)
+			if errTime != nil {
+				logger.AddCallerField().Error(errTime.Error())
+				http.Error(w, errTime.Error(), http.StatusBadRequest)
+				return
+			}
+			log.Debug("Waiting sm.StartTime:" + sm.StartTime)
+			log.Debug("Waiting timeNow:" + timeNow.Format(time.UnixDate))
+			if timeStart.After(timeNow) {
+				break
+			}
+		}
+		time.Sleep(5 * time.Second)
+	}
 }
 
 /*
