@@ -132,8 +132,8 @@ type States struct {
 	StartTime string `yaml:"start_time" json:"start_time"`
 	//EndTime if not empty, it contains the last end execution time of the state
 	EndTime string `yaml:"end_time" json:"end_time"`
-	//Running If true the engine is running
-	Running    bool   `yaml:"running" json:"running"`
+	//Status states status
+	Status     string `yaml:"status" json:"status`
 	StatesPath string `yaml:"-" json:"-"`
 	mux        *sync.Mutex
 }
@@ -212,7 +212,7 @@ func newStateManager(extensionName string) *States {
 		ExecutionID:             0,
 		StartTime:               "",
 		EndTime:                 "",
-		Running:                 false,
+		Status:                  "",
 		ParentExtensionName:     "",
 		StatesPath:              "",
 		mux:                     &sync.Mutex{},
@@ -438,7 +438,7 @@ func (sm *States) GetStates(status string, extensionsOnly bool, recursive bool) 
 		ExecutionID:             sm.ExecutionID,
 		StartTime:               sm.StartTime,
 		EndTime:                 sm.EndTime,
-		Running:                 sm.Running,
+		Status:                  sm.Status,
 		ParentExtensionName:     sm.ParentExtensionName,
 		mux:                     &sync.Mutex{},
 	}
@@ -1022,7 +1022,7 @@ func (sm *States) isResetRunning() bool {
 
 //Check if states engine is running
 func (sm *States) isRunning() bool {
-	return sm.Running
+	return sm.Status == StateRUNNING
 }
 
 //setStateStatus Set the status of a given states. I
@@ -1142,7 +1142,7 @@ func (sm *States) ResetEngine() error {
 	}
 	sm.StartTime = ""
 	sm.EndTime = ""
-	sm.Running = false
+	sm.Status = ""
 	//Write states
 	errStates = sm.writeStates()
 	return errStates
@@ -1828,10 +1828,10 @@ func (sm *States) setExecutionTimes(isStart bool) error {
 	if isStart {
 		sm.StartTime = timeNow
 		sm.EndTime = ""
-		sm.Running = true
+		sm.Status = StateRUNNING
 	} else {
 		sm.EndTime = timeNow
-		sm.Running = false
+		sm.Status = ""
 	}
 	errStates = sm.writeStates()
 	if errStates != nil {
