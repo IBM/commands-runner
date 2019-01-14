@@ -58,6 +58,7 @@ const StateFAILED = "FAILED"
 const StateSUCCEEDED = "SUCCEEDED"
 const StateRUNNING = "RUNNING"
 const StateSKIP = "SKIP"
+const StatePREPROCESSING = "PREPROCESSING"
 
 const StatesFileErrorMessagePattern = "STATES_FILE_ERROR_MESSAGE:"
 
@@ -132,8 +133,8 @@ type States struct {
 	StartTime string `yaml:"start_time" json:"start_time"`
 	//EndTime if not empty, it contains the last end execution time of the state
 	EndTime string `yaml:"end_time" json:"end_time"`
-	//Running If true the engine is running
-	Running    bool   `yaml:"running" json:"running"`
+	//Status states status
+	Status     string `yaml:"status" json:"status`
 	StatesPath string `yaml:"-" json:"-"`
 	mux        *sync.Mutex
 }
@@ -212,7 +213,7 @@ func newStateManager(extensionName string) *States {
 		ExecutionID:             0,
 		StartTime:               "",
 		EndTime:                 "",
-		Running:                 false,
+		Status:                  "",
 		ParentExtensionName:     "",
 		StatesPath:              "",
 		mux:                     &sync.Mutex{},
@@ -438,7 +439,7 @@ func (sm *States) GetStates(status string, extensionsOnly bool, recursive bool) 
 		ExecutionID:             sm.ExecutionID,
 		StartTime:               sm.StartTime,
 		EndTime:                 sm.EndTime,
-		Running:                 sm.Running,
+		Status:                  sm.Status,
 		ParentExtensionName:     sm.ParentExtensionName,
 		mux:                     &sync.Mutex{},
 	}
@@ -1022,7 +1023,7 @@ func (sm *States) isResetRunning() bool {
 
 //Check if states engine is running
 func (sm *States) isRunning() bool {
-	return sm.Running
+	return sm.Status == StateRUNNING
 }
 
 //setStateStatus Set the status of a given states. I
@@ -1142,7 +1143,7 @@ func (sm *States) ResetEngine() error {
 	}
 	sm.StartTime = ""
 	sm.EndTime = ""
-	sm.Running = false
+	sm.Status = ""
 	//Write states
 	errStates = sm.writeStates()
 	return errStates
@@ -1810,6 +1811,7 @@ func (sm *States) setStatesExecutionID(callerState *State) error {
 		sm.ExecutedByExtensionName = callerState.ExecutedByExtensionName
 		sm.ExecutionID = callerState.ExecutionID
 	}
+	sm.Status = StatePREPROCESSING
 	errStates = sm.writeStates()
 	if errStates != nil {
 		log.Debug(errStates.Error())
@@ -1818,21 +1820,20 @@ func (sm *States) setStatesExecutionID(callerState *State) error {
 	return nil
 }
 
-func (sm *States) setExecutionTimes(isStart bool) error {
+func (sm *States) setExecutionTimesAndStatesStatus(status string) error {
 	errStates := sm.readStates()
 	if errStates != nil {
 		log.Debug(errStates.Error())
 		return errStates
 	}
 	timeNow := time.Now().UTC().Format(time.UnixDate)
-	if isStart {
+	if status == StateRUNNING {
 		sm.StartTime = timeNow
 		sm.EndTime = ""
-		sm.Running = true
 	} else {
 		sm.EndTime = timeNow
-		sm.Running = false
 	}
+	sm.Status = status
 	errStates = sm.writeStates()
 	if errStates != nil {
 		log.Debug(errStates.Error())
@@ -1854,13 +1855,17 @@ func (sm *States) Execute(fromState string, toState string, callerState *State, 
 		log.Debug(err.Error())
 		return err
 	}
-	errStartTime := sm.setExecutionTimes(true)
+	errStartTime := sm.setExecutionTimesAndStatesStatus(StateRUNNING)
 	if errStartTime != nil {
 		log.Debug(errStartTime.Error())
 		return errStartTime
 	}
 	err = sm.executeStates(fromState, toState, callerState, callerOutFile)
-	errStopTime := sm.setExecutionTimes(false)
+	status := StateSUCCEEDED
+	if err != nil {
+		status = StateFAILED
+	}
+	errStopTime := sm.setExecutionTimesAndStatesStatus(status)
 	if errStopTime != nil {
 		log.Debug(errStopTime.Error())
 		return errStopTime

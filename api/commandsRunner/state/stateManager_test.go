@@ -1362,7 +1362,13 @@ func TestEngineSuccess(t *testing.T) {
 		t.Error(err.Error())
 	}
 	t.Log("Execute states file")
-	sm.Execute("task1", "task3", nil, nil)
+	err = sm.Execute("task1", "task3", nil, nil)
+	if err != nil {
+		t.Error("Expected no error but got " + err.Error())
+	}
+	if sm.Status != StateSUCCEEDED {
+		t.Error("Expected status SUCCEEDED but got " + sm.Status)
+	}
 	t.Log("Get Failed states")
 	states, errStates := sm.GetStates(StateFAILED, false, false)
 	if errStates != nil {
@@ -1697,6 +1703,9 @@ func TestEngineFailure(t *testing.T) {
 	err = sm.Execute("task1", "task3", nil, nil)
 	if err == nil {
 		t.Error("Expecting error as the execution should fail")
+	}
+	if sm.Status != StateFAILED {
+		t.Error("Expecting status FAILED as the execution should fail. Status:" + sm.Status)
 	}
 	time.Sleep(10 * time.Second)
 	t.Log("Get Failed states")
