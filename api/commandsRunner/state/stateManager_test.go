@@ -1385,9 +1385,75 @@ func TestEngineSuccess(t *testing.T) {
 	global.RemoveTemp("TestEngineSuccess")
 }
 
+func TestEngineFailureScriptBeNotAnExecutable(t *testing.T) {
+	//	log.SetLevel(log.DebugLevel)
+	t.Log("Entering...TestEngineFailureScriptBeNotAnExecutable")
+	SetExtensionsEmbeddedFile("../../test/data/extensions/test-extensions.yml")
+	extensionPath, err := global.CopyToTemp("TestEngineFailureScriptBeNotAnExecutable", "../../test/data/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	SetExtensionsPath(extensionPath)
+	statesPath := "../../test/resource/states-run-script-not-executable.yaml"
+	// sm, err := newStateManager(statesPath)
+	sm := newStateManager("states-run-script-not-executable")
+	sm.StatesPath = statesPath
+	t.Log("Reset States file")
+	err = sm.ResetEngine()
+	if err != nil {
+		t.Error(err.Error())
+	}
+	t.Log("Execute states file")
+	err = sm.Execute(FirstState, LastState, nil, nil)
+	if err == nil {
+		t.Error("Got no error but expected fork/exec ../../test/scripts/not-executable.sh: permission denied")
+	} else {
+		t.Log(err.Error())
+	}
+	sm.ResetEngineExecutionInfo()
+	err = sm.ResetEngine()
+	if err != nil {
+		t.Error(err.Error())
+	}
+	global.RemoveTemp("TestEngineFailureScriptBeNotAnExecutable")
+}
+
+func TestEngineFailureScriptBeNoBinSh(t *testing.T) {
+	//	log.SetLevel(log.DebugLevel)
+	t.Log("Entering...TestEngineFailureScriptBeNoBinSh")
+	SetExtensionsEmbeddedFile("../../test/data/extensions/test-extensions.yml")
+	extensionPath, err := global.CopyToTemp("TestEngineFailureScriptBeNoBinSh", "../../test/data/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	SetExtensionsPath(extensionPath)
+	statesPath := "../../test/resource/states-run-script-no-bin-sh.yaml"
+	// sm, err := newStateManager(statesPath)
+	sm := newStateManager("states-run-script-not-executable")
+	sm.StatesPath = statesPath
+	t.Log("Reset States file")
+	err = sm.ResetEngine()
+	if err != nil {
+		t.Error(err.Error())
+	}
+	t.Log("Execute states file")
+	err = sm.Execute(FirstState, LastState, nil, nil)
+	if err == nil {
+		t.Error("Got no error but expected fork/exec ../../test/scripts/no-bin-sh-comment.sh: exec format error")
+	} else {
+		t.Log(err.Error())
+	}
+	sm.ResetEngineExecutionInfo()
+	err = sm.ResetEngine()
+	if err != nil {
+		t.Error(err.Error())
+	}
+	global.RemoveTemp("TestEngineFailureScriptBeNoBinSh")
+}
+
 func TestEngineSuccessFromFailure(t *testing.T) {
 	//	log.SetLevel(log.DebugLevel)
-	t.Log("Entering...TestEngineSuccess")
+	t.Log("Entering...TestEngineSuccessFromFailure")
 	SetExtensionsEmbeddedFile("../../test/data/extensions/test-extensions.yml")
 	extensionPath, err := global.CopyToTemp("TestEngineSuccessFromFailure", "../../test/data/extensions/")
 	if err != nil {
