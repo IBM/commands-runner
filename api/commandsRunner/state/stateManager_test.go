@@ -1385,6 +1385,39 @@ func TestEngineSuccess(t *testing.T) {
 	global.RemoveTemp("TestEngineSuccess")
 }
 
+func TestEngineFailureScriptBeNotAnExecutable(t *testing.T) {
+	//	log.SetLevel(log.DebugLevel)
+	t.Log("Entering...TestEngineSuccess")
+	SetExtensionsEmbeddedFile("../../test/data/extensions/test-extensions.yml")
+	extensionPath, err := global.CopyToTemp("TestEngineFailureScriptBeNotAnExecutable", "../../test/data/extensions/")
+	if err != nil {
+		t.Fatal(err)
+	}
+	SetExtensionsPath(extensionPath)
+	statesPath := "../../test/resource/states-run-script-not-executable.yaml"
+	// sm, err := newStateManager(statesPath)
+	sm := newStateManager("states-run-script-not-executable")
+	sm.StatesPath = statesPath
+	t.Log("Reset States file")
+	err = sm.ResetEngine()
+	if err != nil {
+		t.Error(err.Error())
+	}
+	t.Log("Execute states file")
+	err = sm.Execute(FirstState, LastState, nil, nil)
+	if err == nil {
+		t.Error("Got no error but expected fork/exec ../../test/scripts/not-executable.sh: permission denied")
+	} else {
+		t.Log(err.Error())
+	}
+	sm.ResetEngineExecutionInfo()
+	err = sm.ResetEngine()
+	if err != nil {
+		t.Error(err.Error())
+	}
+	global.RemoveTemp("TestEngineSuccess")
+}
+
 func TestEngineSuccessFromFailure(t *testing.T) {
 	//	log.SetLevel(log.DebugLevel)
 	t.Log("Entering...TestEngineSuccess")

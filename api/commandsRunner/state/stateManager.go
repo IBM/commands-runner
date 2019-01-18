@@ -2042,22 +2042,24 @@ func (sm *States) executeState(state State, callerState *State, callerOutFile *o
 		cmd.Stdout = multiWriter
 		cmd.Stderr = multiWriter
 		errExec = cmd.Start()
-		done := make(chan error, 1)
-		//Wait signal from channel
-		go func() {
-			done <- cmd.Wait()
-		}()
-		select {
-		case <-time.After(time.Duration(state.ScriptTimeout) * time.Minute):
-			if state.ScriptTimeout != 0 {
-				if err := cmd.Process.Kill(); err != nil {
-					log.Fatal("failed to kill: ", err)
+		if errExec == nil {
+			done := make(chan error, 1)
+			//Wait signal from channel
+			go func() {
+				done <- cmd.Wait()
+			}()
+			select {
+			case <-time.After(time.Duration(state.ScriptTimeout) * time.Minute):
+				if state.ScriptTimeout != 0 {
+					if err := cmd.Process.Kill(); err != nil {
+						log.Fatal("failed to kill: ", err)
+					}
+					errExec = errors.New("State " + state.Name + " killed as timeout reached")
 				}
-				errExec = errors.New("State " + state.Name + " killed as timeout reached")
-			}
-		case err := <-done:
-			if err != nil {
-				errExec = errors.New("process done with error = " + err.Error())
+			case err := <-done:
+				if err != nil {
+					errExec = errors.New("process done with error = " + err.Error())
+				}
 			}
 		}
 		if callerOutFile != nil {
