@@ -32,8 +32,9 @@ glide-install::
 
 .PHONY: pre-req
 pre-req::
-	
+	go get -v github.com/jteeuwen/go-bindata/...
 	dep ensure -v
+	go-bindata -pkg i18nBinData -o api/i18n/i18nBinData/i18nTranslations.go -prefix api/i18n/resources api/i18n/resources/*
 
 .PHONY: go-test
 go-test:: 
@@ -81,3 +82,8 @@ client:
 code:
 	mkdir -p examples/_build
 	go build -o examples/_build/cr-code  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/examples/code
+
+.PHONY: migration
+code:
+	mkdir -p migrationTools/_build
+	go build -o migrationTools/_build/localization  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/migrationTools/convertUIMetadataLocalization

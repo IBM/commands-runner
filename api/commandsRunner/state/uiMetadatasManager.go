@@ -13,24 +13,25 @@ package state
 import (
 	"errors"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
-
 	log "github.com/sirupsen/logrus"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/i18n/i18nUtils"
 
 	"github.com/olebedev/config"
 )
 
-func GetUIMetaDataConfigs(extensionName string, namesOnly bool) ([]byte, error) {
+func GetUIMetaDataConfigs(extensionName string, namesOnly bool, langs []string) ([]byte, error) {
 	log.Debug("Entering in... GetUIMetaDataConfig")
 	log.Debugf("extensionName=%s", extensionName)
 	var raw []byte
 	var e error
 	if extensionName == "" {
-		raw, e = getUIMetadataAllConfigs(namesOnly)
+		raw, e = getUIMetadataAllConfigs(namesOnly, langs)
 	} else {
-		raw, e = getUIMetadataConfigs(extensionName, namesOnly)
+		raw, e = getUIMetadataConfigs(extensionName, namesOnly, langs)
 	}
 	if e != nil {
 		return nil, e
@@ -38,17 +39,17 @@ func GetUIMetaDataConfigs(extensionName string, namesOnly bool) ([]byte, error) 
 	return raw, nil
 }
 
-func getUIMetadataAllConfigs(namesOnly bool) ([]byte, error) {
+func getUIMetadataAllConfigs(namesOnly bool, langs []string) ([]byte, error) {
 	log.Debug("Entering in... getUIMetadataAllConfigs")
 	uiConfigFileCfg, errUIConfigFileCfg := config.ParseYaml("ui_metadata:")
 	if errUIConfigFileCfg != nil {
 		return nil, errUIConfigFileCfg
 	}
-	cfg, err := getUIMetadataAllConfigsCFg(namesOnly)
+	cfg, err := getUIMetadataAllConfigsCFg(namesOnly, langs)
 	if err == nil {
 		errUIConfigFileCfg = config.Set(uiConfigFileCfg.Root, "ui_metadata", cfg.Root)
 		if errUIConfigFileCfg != nil {
-			return nil, err
+			return nil, errUIConfigFileCfg
 		}
 		out, err := config.RenderJson(uiConfigFileCfg.Root)
 		if err != nil {
@@ -56,19 +57,19 @@ func getUIMetadataAllConfigs(namesOnly bool) ([]byte, error) {
 		}
 		return []byte(out), nil
 	}
-	return nil, errors.New("No ui configuration available")
+	return nil, err
 }
 
-func getUIMetadataConfigs(extensionName string, namesOnly bool) ([]byte, error) {
+func getUIMetadataConfigs(extensionName string, namesOnly bool, langs []string) ([]byte, error) {
 	log.Debug("Entering in... getUIMetadataConfigs")
 	uiConfigFileCfg, errUIConfigFileCfg := config.ParseYaml("ui_metadata:")
 	if errUIConfigFileCfg != nil {
 		return nil, errUIConfigFileCfg
 	}
-	cfg, err := getUIMetadataConfigsCfg(extensionName, namesOnly)
+	cfg, err := getUIMetadataConfigsCfg(extensionName, namesOnly, langs)
 	if err == nil && cfg != nil {
-		errUIConfigFileCfg = uiConfigFileCfg.Set("ui_metadata", cfg.Root)
-		if errUIConfigFileCfg != nil {
+		err = uiConfigFileCfg.Set("ui_metadata", cfg.Root)
+		if err != nil {
 			return nil, err
 		}
 		out, err := config.RenderJson(uiConfigFileCfg.Root)
@@ -77,10 +78,13 @@ func getUIMetadataConfigs(extensionName string, namesOnly bool) ([]byte, error) 
 		}
 		return []byte(out), nil
 	}
-	return nil, errors.New("No ui configuration available for " + extensionName)
+	if cfg == nil {
+		err = errors.New("No ui configuration available for " + extensionName)
+	}
+	return nil, err
 }
 
-func getUIMetadataAllConfigsCFg(namesOnly bool) (*config.Config, error) {
+func getUIMetadataAllConfigsCFg(namesOnly bool, langs []string) (*config.Config, error) {
 	log.Debug("Entering in... getUIMetadataAllConfigsCFg")
 	uiConfigFileCfg, errUIConfigFileCfg := config.ParseYaml("dummy:")
 	if errUIConfigFileCfg != nil {
@@ -92,7 +96,7 @@ func getUIMetadataAllConfigsCFg(namesOnly bool) (*config.Config, error) {
 	}
 	for key := range extensions.Extensions {
 		log.Debug("extension-name:" + key)
-		cfg, err := getUIMetadataConfigsCfg(key, namesOnly)
+		cfg, err := getUIMetadataConfigsCfg(key, namesOnly, langs)
 		log.Debug(cfg)
 		if err != nil {
 			if cfg == nil {
@@ -119,9 +123,9 @@ func getUIMetadataAllConfigsCFg(namesOnly bool) (*config.Config, error) {
 	return uiConfigFileCfg.Get("ui_metadata")
 }
 
-func getUIMetadataConfigsCfg(extensionName string, namesOnly bool) (*config.Config, error) {
+func getUIMetadataConfigsCfg(extensionName string, namesOnly bool, langs []string) (*config.Config, error) {
 	log.Debug("Entering in... getUIMetadataConfigsCfg")
-	cfg, err := getUIMetadataParseConfigs(extensionName)
+	cfg, err := getUIMetadataParseConfigs(extensionName, langs)
 	log.Debug("")
 	if err == nil {
 		log.Debug("No ERROR")
@@ -138,25 +142,179 @@ func getUIMetadataConfigsCfg(extensionName string, namesOnly bool) (*config.Conf
 	return cfg, err
 }
 
-func getUIMetadataParseConfigs(extensionName string) (cfg *config.Config, err error) {
+func getUIMetadataParseConfigs(extensionName string, langs []string) (cfg *config.Config, err error) {
 	log.Debug("Entering in... getUIMetadataParseConfigs")
-	filePath := filepath.Join(global.ConfigDirectory, "/extension-manifest.yml")
 	rootPath := GetExtensionsPathCustom()
 	embeddedExtension, _ := IsEmbeddedExtension(extensionName)
 	if embeddedExtension {
 		rootPath = GetExtensionsPathEmbedded()
 	}
-	filePath = filepath.Join(rootPath, extensionName, "/extension-manifest.yml")
+	cfg, err = getUIMetadataTranslated(filepath.Join(rootPath, extensionName), langs)
+	return cfg, err
+}
+
+func getUIMetadataTranslated(extensionPath string, langs []string) (cfg *config.Config, err error) {
+	log.Debug("Entering in... getUIMetadataTranslated")
+	var supportedLang string
+	for _, lang := range langs {
+		log.Debug("Processing lang:" + lang)
+		translatedFileName := filepath.Join(extensionPath, "ui_metadata."+lang+".yml")
+		log.Debug("Check if file exists:" + translatedFileName)
+		if _, err := os.Stat(translatedFileName); err == nil {
+			log.Debug("File exists:" + translatedFileName)
+			uimetadata, err := ioutil.ReadFile(translatedFileName)
+			if err != nil {
+				return nil, err
+			}
+			cfg, err = config.ParseYaml(string(uimetadata))
+			if err != nil {
+				return nil, err
+			}
+			cfg, err = cfg.Get("ui_metadata")
+			return cfg, err
+		}
+		if i18nUtils.IsSupportedLanguage(lang) {
+			supportedLang = lang
+			log.Debug(lang + " is supported but the file doesn't exist yet")
+			//The language is supported but the file doesn't exist yet.
+			break
+		}
+	}
+	//File doesn't exist yet, needs to be created
+	filePath := filepath.Join(extensionPath, global.DefaultExtenstionManifestFile)
+	log.Debug("Read file:" + filePath)
 	manifest, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		return nil, err
 	}
+	log.Debug("Parse:" + string(manifest))
 	cfg, err = config.ParseYaml(string(manifest))
 	if err != nil {
 		return nil, err
 	}
+	log.Debug("Get ui_metadata")
 	cfg, err = cfg.Get("ui_metadata")
+	if err != nil {
+		return nil, err
+	}
+	err = translateUIMetadata(cfg, supportedLang)
+	if err != nil {
+		return nil, err
+	}
+	log.Debug("Set ui_metadata")
+	uiConfigFileCfg, errUIConfigFileCfg := config.ParseYaml("ui_metadata:")
+	if errUIConfigFileCfg != nil {
+		return nil, errUIConfigFileCfg
+	}
+	errUIConfigFileCfg = config.Set(uiConfigFileCfg.Root, "ui_metadata", cfg.Root)
+	if errUIConfigFileCfg != nil {
+		return nil, errUIConfigFileCfg
+	}
+	out, err := config.RenderYaml(uiConfigFileCfg.Root)
+	if err != nil {
+		return nil, err
+	}
+	translatedFileName := filepath.Join(extensionPath, "ui_metadata."+langs[0]+".yml")
+	log.Debug("Translate into file:" + translatedFileName)
+	err = ioutil.WriteFile(translatedFileName, []byte(out), 0644)
+	if err != nil {
+		return nil, err
+	}
+	log.Debug("Translated file written: " + translatedFileName)
 	return cfg, err
+}
+
+func translateUIMetadata(cfg *config.Config, lang string) error {
+	var path string
+	uiMetadataNames, err := cfg.Map("")
+	if err != nil {
+		return err
+	}
+	for _, val := range uiMetadataNames {
+		uiMetadataNameMap := val.(map[string]interface{})
+		if uiMetadataNameLabel, ok := uiMetadataNameMap["label"]; ok {
+			uiMetadataNameMap["label"], _ = i18nUtils.Translate(uiMetadataNameLabel.(string), uiMetadataNameLabel.(string), []string{lang})
+		}
+		groups := uiMetadataNameMap["groups"].([]interface{})
+		for _, group := range groups {
+			groupMap, ok := group.(map[string]interface{})
+			if !ok {
+				return errors.New("Expect a map[string]interface{} under groups")
+			}
+			if groupLabel, ok := groupMap["label"]; ok {
+				groupMap["label"], _ = i18nUtils.Translate(groupLabel.(string), groupLabel.(string), []string{lang})
+			}
+			if properties, ok := groupMap["properties"]; ok {
+				propertiesList, ok := properties.([]interface{})
+				if !ok {
+					return errors.New("Expect a []interface{} under properties")
+				}
+				err = translateProperties(propertiesList, true, nil, path, lang)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func translateProperties(properties []interface{}, first bool, parentProperty map[string]interface{}, path string, lang string) error {
+	for _, property := range properties {
+		log.Debugf("property=%v", property)
+		p, ok := property.(map[string]interface{})
+		if !ok {
+			return errors.New("Expect a map[string]interface{} at path " + path)
+		}
+		currentPropertyName, ok := p["name"]
+		if !ok {
+			return errors.New("Property name missing at path " + path)
+		}
+		log.Debug("path=" + path)
+		translateProperty(p, first, parentProperty, path, lang)
+		first = false
+		if val, ok := p["properties"]; ok {
+			log.Debugf("List of properties found %v", val)
+			newProperties, ok := val.([]interface{})
+			if !ok {
+				return errors.New("Expect an []interface{} at path: " + path)
+			}
+			first := false
+			newPath := path
+			if newPath == "" {
+				newPath = currentPropertyName.(string)
+			} else {
+				newPath = path + "." + currentPropertyName.(string)
+				if val, ok := p["type"]; ok {
+					if val.(string) == "array" {
+						first = true
+					}
+				}
+			}
+			err := translateProperties(newProperties, first, p, newPath, lang)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func translateProperty(property map[string]interface{}, first bool, parentProperty map[string]interface{}, path string, lang string) {
+	if val, ok := property["description"]; ok {
+		property["description"], _ = i18nUtils.Translate(val.(string), val.(string), []string{lang})
+	}
+	if val, ok := property["label"]; ok {
+		property["label"], _ = i18nUtils.Translate(val.(string), val.(string), []string{lang})
+	}
+	if val, ok := property["sample_value"]; ok {
+		switch val.(type) {
+		case string:
+			property["sample_value"], _ = i18nUtils.Translate(val.(string), val.(string), []string{lang})
+		default:
+		}
+	}
+
 }
 
 func getUIMetadataNameOnly(cfg *config.Config) (*config.Config, error) {

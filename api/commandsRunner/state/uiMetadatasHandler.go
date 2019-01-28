@@ -17,6 +17,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/logger"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/i18n/i18nUtils"
 )
 
 //handle BMXCOnfig rest api requests
@@ -35,6 +36,7 @@ Method: GET
 */
 func getUIMetadatasEndpoint(w http.ResponseWriter, req *http.Request) {
 	log.Debug("Entering in getUIMetadatasEndpoint")
+	langs := i18nUtils.GetLangs(req)
 	extensionName, m, err := global.GetExtensionNameFromRequest(req)
 	// Don't test because if extension_name not present we will return all configuration names for all extensions.
 	// if err != nil {
@@ -56,7 +58,7 @@ func getUIMetadatasEndpoint(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 	//Retrieve the property name
-	config, err := GetUIMetaDataConfigs(extensionName, namesOnly)
+	config, err := GetUIMetaDataConfigs(extensionName, namesOnly, langs)
 	if err == nil {
 		w.Write(config)
 	} else {

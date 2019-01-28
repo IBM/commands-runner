@@ -20,7 +20,7 @@ var ConfigYamlFileName = "config.yml"
 var ConfigRootKey = "config"
 
 //Deployment name, mainly use by the UI
-var DeploymentName string
+//var DeploymentName string
 
 //DefaultExtensionName default extension name.
 var DefaultExtensionName string

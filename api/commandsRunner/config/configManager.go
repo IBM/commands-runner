@@ -49,7 +49,7 @@ func init() {
  */
 func SearchUIConfigProperty(extensionName, uiMetaDataName string, name string) (*config.Config, error) {
 	log.Debug("Entering... searchUIConfigProperty:" + name)
-	b, err := state.GetUIMetaDataConfig(extensionName, uiMetaDataName)
+	b, err := state.GetUIMetaDataConfig(extensionName, uiMetaDataName, []string{global.DefaultLanguage})
 	if err != nil {
 		return nil, err
 	}

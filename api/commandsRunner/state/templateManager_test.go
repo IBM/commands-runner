@@ -13,10 +13,14 @@ package state
 import (
 	"bytes"
 	"fmt"
+	"path/filepath"
 	"testing"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/olebedev/config"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/i18n/i18nUtils"
 )
 
 func TestTraverseProperties(t *testing.T) {
@@ -84,14 +88,17 @@ param4: "Eg: sample_value 4"
 }
 
 func TestGetUIMetadataTemplate(t *testing.T) {
-	//log.SetLevel(log.DebugLevel)
+	log.SetLevel(log.DebugLevel)
 	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	extensionPath, err := global.CopyToTemp("TestGetUIMetadataTemplate", "../../test/data/extensions/")
+	extensionsPath, err := global.CopyToTemp("TestGetUIMetadataTemplate", "../../test/data/extensions")
+	//As for test the extension are not really registered, we need to load the translation manually
+	i18nUtils.LoadTranslationFilesFromDir(filepath.Join(extensionsPath, "embedded", "ext-template", i18nUtils.I18nDirectory))
+	t.Log(extensionsPath)
 	if err != nil {
 		t.Fatal(err)
 	}
-	SetExtensionsPath(extensionPath)
-	data, err := getUIMetadataTemplate("ext-template", "test-ui")
+	SetExtensionsPath(extensionsPath)
+	data, err := getUIMetadataTemplate("ext-template", "test-ui", []string{global.DefaultLanguage})
 	if err != nil {
 		t.Logf("\n%s", data)
 		t.Error(err.Error())

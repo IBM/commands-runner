@@ -31,6 +31,7 @@ import (
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/properties"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/state"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/status"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/i18n/i18nUtils"
 )
 
 const COPYRIGHT string = `###############################################################################
@@ -125,9 +126,10 @@ func readCommandsRunnerConfig(configDir string) error {
 		if val, ok := properties["default_extension_name"]; ok {
 			commandsRunner.SetDefaultExtensionName(val.(string))
 		}
-		if val, ok := properties["default_deployment_name"]; ok {
-			commandsRunner.SetDeploymentName(val.(string))
-		}
+		//Move in the i18N file
+		// if val, ok := properties["default_deployment_name"]; ok {
+		// 	commandsRunner.SetDeploymentName(val.(string))
+		// }
 		if val, ok := properties["extension_embedded_file"]; ok {
 			state.SetExtensionsEmbeddedFile(val.(string))
 		}
@@ -254,22 +256,31 @@ func ServerStart(preInit InitFunc, postInit InitFunc, preStart InitFunc, postSta
 				}
 				level, err := log.ParseLevel(logLevel)
 				if err != nil {
-					log.Fatal(err.Error())
+					logger.AddCallerField().Fatal(err.Error())
 				}
 				log.SetLevel(level)
+				//Restore I18N files
+				log.Info("Install i18n files")
+				err = i18nUtils.RestoreFiles()
+				if err != nil {
+					logger.AddCallerField().Fatal(err.Error())
+				}
+				err = i18nUtils.LoadMessageFiles()
+				if err != nil {
+					logger.AddCallerField().Fatal(err.Error())
+				}
 				log.Info("Starting cm server")
 				if configDir == "" {
 					logger.AddCallerField().Error("Missing option -c to specif the directory where the config must be stored")
 					return errors.New("Missing option -c to specif the directory where the config must be stored")
 				}
-
 				//check if path absolute
 				if !filepath.IsAbs(configDir) {
-					log.Fatal("The path of config must be absolute: " + configDir)
+					logger.AddCallerField().Fatal("The path of config must be absolute: " + configDir)
 				}
 				err = readCommandsRunnerConfig(configDir)
 				if err != nil {
-					log.Fatal(err.Error())
+					logger.AddCallerField().Fatal(err.Error())
 				}
 				if preInit != nil {
 					preInit(port, portSSL, configDir, filepath.Join(configDir, global.SSLCertFileName), filepath.Join(configDir, global.SSLKeyFileName))
@@ -280,7 +291,7 @@ func ServerStart(preInit InitFunc, postInit InitFunc, preStart InitFunc, postSta
 				}
 				err = state.RegisterEmbededExtensions(true)
 				if err != nil {
-					log.Fatal(err)
+					logger.AddCallerField().Fatal(err.Error())
 				}
 				if preStart != nil {
 					preStart(port, portSSL, configDir, filepath.Join(configDir, global.SSLCertFileName), filepath.Join(configDir, global.SSLKeyFileName))

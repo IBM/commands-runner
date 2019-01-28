@@ -17,6 +17,7 @@ import (
 	"regexp"
 
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/i18n/i18nUtils"
 
 	log "github.com/sirupsen/logrus"
 
@@ -75,7 +76,8 @@ func GetLogLevelEndpoint(w http.ResponseWriter, req *http.Request) {
 }
 
 func GetSettingsEndpoint(w http.ResponseWriter, req *http.Request) {
-	settings := GetSettings()
+	langs := i18nUtils.GetLangs(req)
+	settings := GetSettings(langs)
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
 	err := enc.Encode(settings)

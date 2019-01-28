@@ -24,7 +24,7 @@ import (
 
 type TraversePropertiesCallBack func(property map[string]interface{}, first bool, mandatory bool, parentProperty map[string]interface{}, path string, input interface{}) (err error)
 
-func GenerateUIMetaDataTemplate(extensionName string, uiMetadataName string) ([]byte, error) {
+func GenerateUIMetaDataTemplate(extensionName string, uiMetadataName string, langs []string) ([]byte, error) {
 	log.Debug("Entering in... GenerateUIMetaDataTemplate")
 	log.Debugf("extensionName=%s", extensionName)
 	log.Debugf("uiMetadataName=%s", uiMetadataName)
@@ -32,16 +32,16 @@ func GenerateUIMetaDataTemplate(extensionName string, uiMetadataName string) ([]
 		uiMetadataName = global.DefaultUIMetaDataName
 	}
 	log.Debugf("uiMetadataName=%s", uiMetadataName)
-	raw, e := getUIMetadataTemplate(extensionName, uiMetadataName)
+	raw, e := getUIMetadataTemplate(extensionName, uiMetadataName, langs)
 	if e != nil {
 		return nil, e
 	}
 	return raw, nil
 }
 
-func getUIMetadataTemplate(extensionName string, uiMetadataName string) ([]byte, error) {
+func getUIMetadataTemplate(extensionName string, uiMetadataName string, langs []string) ([]byte, error) {
 	log.Debug("Entering in... getUIMetadataTemplate")
-	cfg, err := getUIMetadataParseConfig(extensionName, uiMetadataName)
+	cfg, err := getUIMetadataParseConfig(extensionName, uiMetadataName, langs)
 	if err != nil {
 		return nil, err
 	}

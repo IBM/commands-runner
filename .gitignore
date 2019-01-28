@@ -1,4 +1,4 @@
-/api/commandsRunner/resourceManager
+/api/i18n/i18nBinData
 /api/test/resource/extensions/custom-extension
 /api/test/resource/out-test*
 /api/test/resource/extensions/custom/out*/*
@@ -13,6 +13,7 @@
 api/commandsRunner/cm
 examples/data/*
 examples/_build
+migrationTools/_build
 .idea
 vendor
 _vendor*

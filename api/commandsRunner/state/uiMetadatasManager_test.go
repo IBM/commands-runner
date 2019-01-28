@@ -26,7 +26,7 @@ func TestGetUIConfigsExtentionTest(t *testing.T) {
 		t.Fatal(err)
 	}
 	SetExtensionsPath(extensionPath)
-	configuration, err := GetUIMetaDataConfigs("ext-template", false)
+	configuration, err := GetUIMetaDataConfigs("ext-template", false, []string{global.DefaultLanguage})
 	if err != nil {
 		t.Error(err.Error())
 	}

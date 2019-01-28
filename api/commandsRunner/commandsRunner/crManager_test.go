@@ -32,5 +32,20 @@ func TestLevel(t *testing.T) {
 	if level != log.ErrorLevel.String() {
 		t.Error("Expect " + log.ErrorLevel.String() + " and got " + level)
 	}
-
+}
+func TestSettings(t *testing.T) {
+	//log.SetLevel(log.DebugLevel)
+	// err := i18nUtils.RestoreFiles()
+	// if err != nil {
+	// 	t.Error(err.Error())
+	// }
+	// err = i18nUtils.LoadMessageFiles()
+	// if err != nil {
+	// 	t.Error(err.Error())
+	// }
+	settings := GetSettings([]string{"jp"})
+	if settings.DeploymentName != "Deployment tool" {
+		t.Error("Expect: 'Deployment tool' and got " + settings.DeploymentName)
+	}
+	t.Log("deployment name: " + settings.DeploymentName)
 }

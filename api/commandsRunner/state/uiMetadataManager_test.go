@@ -27,7 +27,7 @@ func TestGetUIConfigExtentionTest(t *testing.T) {
 		t.Fatal(err)
 	}
 	SetExtensionsPath(extensionPath)
-	configuration, err := GetUIMetaDataConfig("ext-template", "test-ui")
+	configuration, err := GetUIMetaDataConfig("ext-template", "test-ui", []string{global.DefaultLanguage})
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -48,7 +48,7 @@ func TestGetUIMetadataParseConfigsExtentionTest(t *testing.T) {
 		t.Fatal(err)
 	}
 	SetExtensionsPath(extensionPath)
-	cfg, err := getUIMetadataParseConfigs("ext-template")
+	cfg, err := getUIMetadataParseConfigs("ext-template", []string{global.DefaultLanguage})
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -70,7 +70,7 @@ func TestGetUIMetadataParseConfigsExtentionTest(t *testing.T) {
 }
 
 func TestGetUIConfigError(t *testing.T) {
-	_, err := GetUIMetaDataConfig("does-not-exist", "test-ui")
+	_, err := GetUIMetaDataConfig("does-not-exist", "test-ui", []string{global.DefaultLanguage})
 	if err == nil {
 		t.Error("An error should be raised as this file doesn't exists")
 	}

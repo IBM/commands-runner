@@ -1,0 +1,227 @@
+/*
+###############################################################################
+# Licensed Materials - Property of IBM Copyright IBM Corporation 2017, 2019. All Rights Reserved.
+# U.S. Government Users Restricted Rights - Use, duplication or disclosure restricted by GSA ADP
+# Schedule Contract with IBM Corp.
+#
+# Contributors:
+#  IBM Corporation - initial API and implementation
+###############################################################################
+*/
+package main1
+
+import (
+	"bytes"
+	"errors"
+	"io/ioutil"
+	"os"
+	"strings"
+
+	log "github.com/sirupsen/logrus"
+
+	"github.com/olebedev/config"
+	cli "gopkg.in/urfave/cli.v1"
+)
+
+func main() {
+	//	log.SetLevel(log.DebugLevel)
+	var sourceFile string
+	var destFile string
+	var translationFile string
+
+	convertUIMetadataForLocationzation := func(c *cli.Context) error {
+		err := convertUIMetadataForLocationzation(sourceFile, destFile, translationFile)
+		if err != nil {
+			log.Error(err.Error())
+		}
+		return err
+	}
+
+	app := cli.NewApp()
+	//Overwrite some app parameters
+	app.Usage = "client ..."
+	app.Version = "1.0.0"
+	app.Description = "Sample client"
+
+	//Enrich with extra client commands
+	app.Commands = []cli.Command{
+		{
+			Name:   "convert",
+			Action: convertUIMetadataForLocationzation,
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:        "sourceFile, s",
+					Usage:       "The path to the uimetadata file to convert",
+					Destination: &sourceFile,
+				},
+				cli.StringFlag{
+					Name:        "destFile, d",
+					Usage:       "The path to the generated destination file",
+					Destination: &destFile,
+				},
+				cli.StringFlag{
+					Name:        "translation, t",
+					Usage:       "The path to the generated translation file",
+					Destination: &translationFile,
+				},
+			},
+		},
+	}
+
+	//Run the command
+	errRun := app.Run(os.Args)
+	if errRun != nil {
+		os.Exit(1)
+	}
+}
+
+func convertUIMetadataForLocationzation(sourceFile string, destFile string, translationFile string) error {
+	var translationsMap map[string]string
+	translationsMap = make(map[string]string, 0)
+	log.Debug("Read translation File:" + translationFile)
+	if _, err := os.Stat(translationFile); err == nil {
+		log.Debug("Translation File exists")
+		translationData, err := ioutil.ReadFile(translationFile)
+		if err != nil {
+			return err
+		}
+		outTemplate = bytes.NewBufferString(string(translationData))
+		log.Debug("Translation File contains:" + outTemplate.String())
+	} else {
+		log.Debug("Translation File doesn't exist")
+		outTemplate = bytes.NewBufferString("")
+	}
+
+	log.Debug("Read file:" + sourceFile)
+	manifest, err := ioutil.ReadFile(sourceFile)
+	if err != nil {
+		return err
+	}
+	log.Debug("Parse:" + string(manifest))
+	cfgSource, err := config.ParseYaml(string(manifest))
+	if err != nil {
+		return err
+	}
+	log.Debug("Get ui_metadata")
+	cfg, err := cfgSource.Get("ui_metadata")
+	if err != nil {
+		return err
+	}
+	err = translateUIMetadata(cfg, "en", outTemplate)
+	if err != nil {
+		return err
+	}
+	data, err := config.RenderYaml(cfgSource.Root)
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(translationFile, outTemplate.Bytes(), 0644)
+	return ioutil.WriteFile(destFile, []byte(data), 0644)
+}
+
+func translateUIMetadata(cfg *config.Config, lang string, outTemplate *bytes.Buffer) error {
+	uiMetadataNames, err := cfg.Map("")
+	if err != nil {
+		return err
+	}
+	for uiMetadataKey, val := range uiMetadataNames {
+		uiMetadataNameMap := val.(map[string]interface{})
+		if uiMetadataNameLabel, ok := uiMetadataNameMap["label"]; ok {
+			uiMetadataNameMap["label"] = uiMetadataKey + ".label"
+			addMessage(outTemplate, uiMetadataNameMap, "label", uiMetadataKey+".label", uiMetadataNameLabel)
+		}
+		groups := uiMetadataNameMap["groups"].([]interface{})
+		for _, group := range groups {
+			groupMap, ok := group.(map[string]interface{})
+			if !ok {
+				return errors.New("Expect a map[string]interface{} under groups")
+			}
+			if groupLabel, ok := groupMap["label"]; ok {
+				groupMap["label"] = uiMetadataKey + "." + groupMap["name"].(string) + ".label"
+				addMessage(outTemplate, groupMap, "label", uiMetadataKey+"."+groupMap["name"].(string)+".label", groupLabel)
+			}
+			if properties, ok := groupMap["properties"]; ok {
+				propertiesList, ok := properties.([]interface{})
+				if !ok {
+					return errors.New("Expect a []interface{} under properties")
+				}
+				err = translateProperties(propertiesList, uiMetadataKey+"."+groupMap["name"].(string), lang, outTemplate)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func translateProperties(properties []interface{}, path string, lang string, outTemplate *bytes.Buffer) error {
+	for _, property := range properties {
+		log.Debugf("property=%v", property)
+		p, ok := property.(map[string]interface{})
+		if !ok {
+			return errors.New("Expect a map[string]interface{} at path " + path)
+		}
+		currentPropertyName, ok := p["name"]
+
+		if !ok {
+			return errors.New("Property name missing at path " + path)
+		}
+		log.Debug("path=" + path)
+		translateProperty(p, path+"."+currentPropertyName.(string), lang, outTemplate)
+		if val, ok := p["properties"]; ok {
+			log.Debugf("List of properties found %v", val)
+			newProperties, ok := val.([]interface{})
+			if !ok {
+				return errors.New("Expect an []interface{} at path: " + path)
+			}
+			newPath := path
+
+			newPath = path + "." + currentPropertyName.(string)
+
+			err := translateProperties(newProperties, newPath, lang, outTemplate)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func translateProperty(property map[string]interface{}, path string, lang string, outTemplate *bytes.Buffer) {
+	var propertyPath string
+	if val, ok := property["description"]; ok {
+		propertyPath = path + ".description"
+		addMessage(outTemplate, property, "description", propertyPath, val)
+	}
+	if val, ok := property["label"]; ok {
+		propertyPath = path + ".label"
+		addMessage(outTemplate, property, "label", propertyPath, val)
+	}
+	if val, ok := property["sample_value"]; ok {
+		switch val.(type) {
+		case string:
+			propertyPath = path + ".sample_value"
+			addMessage(outTemplate, property, "sample_value", propertyPath, val)
+		default:
+		}
+	}
+
+}
+
+func addMessage(buffer *bytes.Buffer, property map[string]interface{}, key string, propertyPath string, value interface{}) error {
+	currentBufferString := buffer.String()
+	if !strings.Contains(currentBufferString, propertyPath+":") {
+		property[key] = propertyPath
+		val := value.(string)
+		strings.Rep
+		_, err := buffer.WriteString(propertyPath + ": " + value.(string) + "\n")
+		if err != nil {
+			return err
+		}
+		log.Info("Destination and translation files updated with: " + propertyPath + ":" + value.(string))
+		return nil
+	}
+	log.Info("Destination and translation files not updated because it already contains key: " + propertyPath + " already exists")
+	return nil
+}

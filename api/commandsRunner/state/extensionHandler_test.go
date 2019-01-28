@@ -24,6 +24,7 @@ import (
 	"testing"
 
 	log "github.com/sirupsen/logrus"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 )
 
 func init() {
@@ -248,7 +249,7 @@ func TestRegisterCustomExtension(t *testing.T) {
 		t.Errorf("The path: %s, does not exist", path)
 	}
 
-	path = filepath.Join(path, "extension-manifest.yml")
+	path = filepath.Join(path, global.DefaultExtenstionManifestFile)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		t.Errorf("The path: %s, does not exist", path)
 	}
@@ -288,7 +289,7 @@ func TestRegisterCustomExtensionWihtFormData(t *testing.T) {
 		t.Errorf("The path: %s, does not exist", path)
 	}
 
-	path = filepath.Join(path, "extension-manifest.yml")
+	path = filepath.Join(path, global.DefaultExtenstionManifestFile)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		t.Errorf("The path: %s, does not exist", path)
 	}
@@ -302,6 +303,7 @@ func TestRegisterCustomExtensionWihtFormData(t *testing.T) {
 }
 
 func TestRegisterCustomExtensionWithIBMExtensionName(t *testing.T) {
+	//	log.SetLevel(log.DebugLevel)
 	t.Log("Entering........... TestRegisterCustomExtensionWithIBMExtensionName")
 	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
 	SetExtensionsPath("../../test/resource/tmp/")
@@ -316,7 +318,7 @@ func TestRegisterCustomExtensionWithIBMExtensionName(t *testing.T) {
 	handler := http.HandlerFunc(HandleExtension)
 	handler.ServeHTTP(rr, req)
 
-	assert("Extension name is already used by "+EmbeddedExtensions+" extension\n", rr.Body.String(), t)
+	assert("Error Install:Extension name is already used by embedded extension\n", rr.Body.String(), t)
 	cleanup()
 }
 
@@ -504,11 +506,11 @@ func setupFileStructureLists() {
 	_ = os.Mkdir(GetExtensionsPathEmbedded(), 0777)
 	for _, extension := range extensions {
 		_ = os.Mkdir(filepath.Join(GetExtensionsPathCustom(), extension), 0777)
-		os.Create(filepath.Join(GetExtensionsPathCustom(), extension, "extension-manifest.yml"))
+		os.Create(filepath.Join(GetExtensionsPathCustom(), extension, global.DefaultExtenstionManifestFile))
 	}
 	for _, extension := range extensionsIBM {
 		_ = os.Mkdir(filepath.Join(GetExtensionsPathEmbedded(), extension), 0777)
-		os.Create(filepath.Join(GetExtensionsPathEmbedded(), extension, "extension-manifest.yml"))
+		os.Create(filepath.Join(GetExtensionsPathEmbedded(), extension, global.DefaultExtenstionManifestFile))
 	}
 	os.Create(filepath.Join(GetExtensionsPathCustom(), dontDeleteFile))
 	os.Create(filepath.Join(GetExtensionsPathCustom(), deleteFile))

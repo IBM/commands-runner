@@ -26,7 +26,7 @@ LIC_ARY=("$CHECK1" "$CHECK2" "$CHECK3" "$CHECK4" "$CHECK5")
 ERROR=0
 
 echo "##### Copyright check #####"
-for f in `find . -type f ! -iname ".*" -path ./vendor -prune`; do
+for f in `find .  \( -path ./vendor -prune \) -o \( -path ./api/i18n/i18nBinData -prune \) -type f  ! -iname ".*" -o  -print`; do
   if [ ! -f "$f" ] || [ "$f" = "./build-tools/copyright-check.sh" ]; then
     continue
   fi
