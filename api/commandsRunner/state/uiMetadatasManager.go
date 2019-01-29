@@ -307,6 +307,16 @@ func translateProperty(property map[string]interface{}, first bool, parentProper
 	if val, ok := property["label"]; ok {
 		property["label"], _ = i18nUtils.Translate(val.(string), val.(string), []string{lang})
 	}
+	if val, ok := property["validation_error_message"]; ok {
+		property["validation_error_message"], _ = i18nUtils.Translate(val.(string), val.(string), []string{lang})
+	}
+	if val, ok := property["items"]; ok {
+		options := val.([]interface{})
+		for index := range options {
+			option := options[index].(map[string]interface{})
+			option["label"], _ = i18nUtils.Translate(option["label"].(string), option["label"].(string), []string{lang})
+		}
+	}
 	if val, ok := property["sample_value"]; ok {
 		switch val.(type) {
 		case string:

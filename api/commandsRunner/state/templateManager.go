@@ -150,6 +150,18 @@ func printPropertyCallBack() TraversePropertiesCallBack {
 		var sampleValue interface{}
 		if val, ok := property["sample_value"]; ok {
 			sampleValue = val
+		} else {
+			if val, ok := property["items"]; ok {
+				options := val.([]interface{})
+				sampleValue = "Possible values are: "
+				for index := range options {
+					option := options[index].(map[string]interface{})
+					sampleValue = sampleValue.(string) + option["label"].(string)
+					if index < len(options)-1 {
+						sampleValue = sampleValue.(string) + ", "
+					}
+				}
+			}
 		}
 		nameLine := ""
 		if _, ok := property["properties"]; ok {
