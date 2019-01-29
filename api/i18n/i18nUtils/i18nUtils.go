@@ -78,9 +78,9 @@ func LoadTranslationFilesFromDir(i18nDir string) error {
 	//Create bundle holding all messages for i18n
 	if Bundle == nil {
 		Bundle = &i18n.Bundle{DefaultLanguage: language.English}
-		Bundle.RegisterUnmarshalFunc("yaml", yaml.Unmarshal)
-		Bundle.RegisterUnmarshalFunc("yml", yaml.Unmarshal)
 	}
+	Bundle.RegisterUnmarshalFunc("yaml", yaml.Unmarshal)
+	Bundle.RegisterUnmarshalFunc("yml", yaml.Unmarshal)
 	files, err := filepath.Glob(filepath.Join(i18nDir, "*"))
 	if err != nil {
 		log.Error("Error searching for translation files", err.Error())
