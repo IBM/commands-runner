@@ -159,3 +159,21 @@ As the previous state and next state are defined in the `call_state` attribute o
 ### Concurency
 
 When calling the `engine start` command, in fact behind the scene the same code runs as though the command `extension -e crs-name deploy` was launched. Each time a extension is deployed, a state manager is created for that extension name and runs in its own thread. So the commands-runner support concurrency if each concurrent deployment have a different extension name. If a deployment with the same extension name is launched, the commands-runner will stop mentioning that the deployment is already running.
+
+# Migration
+
+## Convert uimetadata for localization
+A tool was created to generate from an existing ui_metadata.yml, a new ui_metadata.yml where the labels, descriptions, sample_values and validation_error_messages are replaced by a key and that key references an entry in the generated i18n yaml file.
+The source code is in `github.ibm.com/IBMPrivateCloud/cfp-commands-runner/migrationTools/convertUIMetadataLocalization`
+
+### Build the localization tool
+
+- `make localization`, the binary is generated in `migrationTools/_build/localization`
+
+### Run the tool
+
+- `migrationTools/_build/localization -s <ui_metadata_source_file> -d <ui_metadata_destination_file> -t <i18n_yaml_destination_file>`
+
+### In case of update of the ui_metadata file
+- If you add a new attribute in the ui_metadata (ie: description: "hello world"), the tool will add that entry in the i18n file as the related key doesn't exist their yet and the ui_metadata attribute will be updated with that key.
+- 

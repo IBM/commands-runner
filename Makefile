@@ -21,6 +21,23 @@ TAG_VERSION ?= `cat VERSION`+$(GIT_COMMIT)
 
 .DEFAULT_GOAL := all
 
+BEFORE_SCRIPT := $(shell ./build-tools/before-make-script.sh)
+
+.PHONY: all-checks
+all-checks: i18n-check copyright-check
+
+i18n-check:
+	@echo "Running i18n-check ..."
+	@go test -timeout 30s github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/i18n/i18nUtils -run '^Test_i18nUpToDate'
+
+.PHONY: generate-code
+generate-code:
+	@go-bindata -version; \
+	if [ $$? -ne 0 ]; then \
+		go get -v github.com/jteeuwen/go-bindata/...; \
+	fi
+	go-bindata -pkg i18nBinData -o api/i18n/i18nBinData/i18nTranslations.go -prefix api/i18n/resources api/i18n/resources/*
+
 .PHONY: dep-install
 glide-install::
 	
@@ -31,14 +48,13 @@ glide-install::
 	fi
 
 .PHONY: pre-req
-pre-req::
+pre-req:: 
 	go get -v github.com/jteeuwen/go-bindata/...
 	dep ensure -v
-	go-bindata -pkg i18nBinData -o api/i18n/i18nBinData/i18nTranslations.go -prefix api/i18n/resources api/i18n/resources/*
 
 .PHONY: go-test
 go-test:: 
-	go test -p 1 -v github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/...
+	go test -p 1 -v github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/...
 
 .PHONY: copyright-check
 copyright-check:
@@ -83,7 +99,7 @@ code:
 	mkdir -p examples/_build
 	go build -o examples/_build/cr-code  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/examples/code
 
-.PHONY: migration
-code:
+.PHONY: localization
+localization:
 	mkdir -p migrationTools/_build
 	go build -o migrationTools/_build/localization  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/migrationTools/convertUIMetadataLocalization

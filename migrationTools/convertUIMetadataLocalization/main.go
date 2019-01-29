@@ -212,6 +212,10 @@ func translateProperty(property map[string]interface{}, path string, lang string
 		propertyPath = path + ".label"
 		addMessage(translationsMap, property, "label", propertyPath, val)
 	}
+	if val, ok := property["validation_error_message"]; ok {
+		propertyPath = path + ".validation_error_message"
+		addMessage(translationsMap, property, "validation_error_message", propertyPath, val)
+	}
 	if val, ok := property["sample_value"]; ok {
 		switch val.(type) {
 		case string:

@@ -17,7 +17,7 @@ import (
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 )
 
-func TestTranslations(t *testing.T) {
+func Test_i18nUpToDate(t *testing.T) {
 	//log.SetLevel(log.DebugLevel)
 	//EN test
 	translation, _ := Translate("i18n.test.helloworld", "error", []string{global.DefaultLanguage})
