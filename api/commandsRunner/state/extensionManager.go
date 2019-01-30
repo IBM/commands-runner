@@ -269,6 +269,7 @@ func extractAndWriteFile(targetdir, extensionName string, zf *zip.File) error {
 	log.Debug("Entering in... extractAndWriteFile")
 	rc, err := zf.Open()
 	if err != nil {
+		logger.AddCallerField().Error(err.Error())
 		return err
 	}
 	defer rc.Close()
@@ -290,15 +291,21 @@ func extractAndWriteFile(targetdir, extensionName string, zf *zip.File) error {
 		os.MkdirAll(path, zf.Mode())
 
 	default:
-		os.MkdirAll(filepath.Dir(path), zf.Mode())
+		err = os.MkdirAll(filepath.Dir(path), 0744)
+		if err != nil {
+			logger.AddCallerField().Error(err.Error())
+			return err
+		}
 		f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, zf.Mode())
 		if err != nil {
+			logger.AddCallerField().Error(err.Error())
 			return err
 		}
 		defer f.Close()
 
 		_, err = io.Copy(f, rc)
 		if err != nil {
+			logger.AddCallerField().Error(err.Error())
 			return err
 		}
 	}
