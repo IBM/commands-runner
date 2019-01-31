@@ -101,5 +101,10 @@ code:
 
 .PHONY: localization
 localization:
-	mkdir -p migrationTools/_build
-	go build -o migrationTools/_build/localization  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/migrationTools/convertUIMetadataLocalization
+	mkdir -p tools/_build
+	go build -o tools/_build/localization  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/tools/convertUIMetadataLocalization
+
+.PHONY: verify-localization
+verify-localization:
+	mkdir -p tools/_build
+	go build -o tools/_build/verify-localization  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/tools/verifyLocalization

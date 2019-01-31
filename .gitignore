@@ -12,7 +12,7 @@
 api/commandsRunner/cm
 examples/data/*
 examples/_build
-migrationTools/_build
+tools/_build
 .idea
 vendor
 _vendor*

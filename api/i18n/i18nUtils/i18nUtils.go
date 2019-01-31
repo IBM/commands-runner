@@ -120,12 +120,16 @@ func Translate(key string, defaultTranslation string, langs []string) (string, e
 		}
 	}
 	localizer := i18n.NewLocalizer(Bundle, langs...)
-	translation, err := localizer.Localize(&i18n.LocalizeConfig{
-		MessageID: key,
-		DefaultMessage: &i18n.Message{
+	var defaultMessage *i18n.Message
+	if defaultTranslation != "" {
+		defaultMessage = &i18n.Message{
 			ID:    key,
 			Other: defaultTranslation,
-		},
+		}
+	}
+	translation, err := localizer.Localize(&i18n.LocalizeConfig{
+		MessageID:      key,
+		DefaultMessage: defaultMessage,
 	})
 	return translation, err
 }
