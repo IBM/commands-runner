@@ -101,10 +101,22 @@ code:
 
 .PHONY: localization
 localization:
-	mkdir -p tools/_build
-	go build -o tools/_build/localization  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/tools/convertUIMetadataLocalization
+	mkdir -p tools/_build/localization/linux_amd64
+	env GOOS=linux GOARCH=amd64 go build -o tools/_build/localization/linux_amd64/localization  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/tools/verifyLocalization
+	mkdir -p tools/_build/localization/darwin_amd64
+	env GOOS=darwin GOARCH=amd64 go build -o tools/_build/localization/darwin_amd64/localization  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/tools/verifyLocalization
+	mkdir -p tools/_build/localization/windows_amd64	
+	env GOOS=windows GOARCH=amd64 go build -o tools/_build/localization/windows_amd64/localization  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/tools/verifyLocalization
+	mkdir -p tools/_build/localization/windows_386
+	env GOOS=windows GOARCH=386 go build -o tools/_build/localization/windows_386/localization  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/tools/verifyLocalization
 
 .PHONY: verify-localization
 verify-localization:
-	mkdir -p tools/_build
-	go build -o tools/_build/verify-localization  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/tools/verifyLocalization
+	mkdir -p tools/_build/verify-localization/linux_amd64
+	env GOOS=linux GOARCH=amd64 go build -o tools/_build/verify-localization/linux_amd64/verify-localization  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/tools/verifyLocalization
+	mkdir -p tools/_build/verify-localization/darwin_amd64
+	env GOOS=darwin GOARCH=amd64 go build -o tools/_build/verify-localization/darwin_amd64/verify-localization  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/tools/verifyLocalization
+	mkdir -p tools/_build/verify-localization/windows_amd64	
+	env GOOS=windows GOARCH=amd64 go build -o tools/_build/verify-localization/windows_amd64/verify-localization  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/tools/verifyLocalization
+	mkdir -p tools/_build/verify-localization/windows_386
+	env GOOS=windows GOARCH=386 go build -o tools/_build/verify-localization/windows_386/verify-localization  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/tools/verifyLocalization
