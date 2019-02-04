@@ -164,16 +164,57 @@ When calling the `engine start` command, in fact behind the scene the same code 
 
 ## Convert uimetadata for localization
 A tool was created to generate from an existing ui_metadata.yml, a new ui_metadata.yml where the labels, descriptions, sample_values and validation_error_messages are replaced by a key and that key references an entry in the generated i18n yaml file.
+The key is the property path. For exanple in the following ui_metadat:
+
+```
+ui_metadata:
+  vmware:
+    label: vmware.label
+    groups:
+    - label: vmware.vmware_config.label
+      name: vmware_config
+      properties:
+      - description: vmware.vmware_config.vmware_address.description
+        label: vmware.vmware_config.vmware_address.label
+        mandatory: true
+        name: vmware_address
+        sample_value: vmware.vmware_config.vmware_address.sample_value
+        type: text
+        validation_error_message: vmware.vmware_config.vmware_address.validation_error_message
+```
+
+each property have the path as value to reference the i18n.
+The label in vmware and groups vmware_config has for key vmware.vmware_config.label.
+`<config_name>.<groupe_name>.<attribute_name>`
+description has : `<config_name>.<group_name>.<property_name>.<attribute_name>`
+
 The source code is in `github.ibm.com/IBMPrivateCloud/cfp-commands-runner/migrationTools/convertUIMetadataLocalization`
 
 ### Build the localization tool
 
-- `make localization`, the binary is generated in `migrationTools/_build/localization`
+- `make localization`, the binary is generated in `migrationTools/_build/localization/<platform>/localization`
 
 ### Run the tool
 
 - `migrationTools/_build/localization -s <ui_metadata_source_file> -d <ui_metadata_destination_file> -t <i18n_yaml_destination_file>`
 
 ### In case of update of the ui_metadata file
-- If you add a new attribute in the ui_metadata (ie: description: "hello world"), the tool will add that entry in the i18n file as the related key doesn't exist their yet and the ui_metadata attribute will be updated with that key.
-- 
+- If you add a new attribute in the ui_metadata (ie: description: "hello world"), the tool will add that entry in the destination i18n file as the related key doesn't exist their yet and the ui_metadata attribute will be updated with that key.
+- if the key already exist in the destination file then no replacement is done.
+
+## verify locatization
+Another tool was created to verify if the ui_metadata of an extension can be translated in each languages set in the i18n directory. If a message can not be translated (ie: the key can not be found in the i18n translation file) then an error message is shown.
+
+The source code is in `github.ibm.com/IBMPrivateCloud/cfp-commands-runner/migrationTools/verifyLocalization`
+
+### Build the localization tool
+
+- `make verify-localization`, the binary is generated in `migrationTools/_build/verify-localization/<platform>/verify-localization`
+
+### Run the tool
+
+- `migrationTools/_build/verify-localization -p <extension_path> [-l <languages>]`
+
+
+
+
