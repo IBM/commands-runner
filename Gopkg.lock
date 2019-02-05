@@ -8,6 +8,16 @@
   version = "v2.2.1"
 
 [[projects]]
+  name = "github.com/nicksnyder/go-i18n"
+  packages = [
+    "v2/i18n",
+    "v2/internal",
+    "v2/internal/plural"
+  ]
+  revision = "9c0db6e2b3a591b2dfabb8ef487e53cd080c57bf"
+  version = "v2.0.0-beta.6"
+
+[[projects]]
   branch = "master"
   name = "github.com/olebedev/config"
   packages = ["."]
@@ -33,6 +43,17 @@
     "windows"
   ]
   revision = "538ab54ba952cc4c7c705fa213fbf7993c97c175"
+
+[[projects]]
+  name = "golang.org/x/text"
+  packages = [
+    "internal/gen",
+    "internal/tag",
+    "language",
+    "unicode/cldr"
+  ]
+  revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
+  version = "v0.3.0"
 
 [[projects]]
   branch = "master"
@@ -76,6 +97,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4ffe3aa31019592d7c741258ff397d0cb5978928adec59aee33f709c58e2a795"
+  inputs-digest = "a74e33f7be50eb0d43cee2fa2cf4b37d4e0c12ae22b770c06aea00f78d2e811d"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -24,7 +24,7 @@ import (
 
 type TraversePropertiesCallBack func(property map[string]interface{}, first bool, mandatory bool, parentProperty map[string]interface{}, path string, input interface{}) (err error)
 
-func GenerateUIMetaDataTemplate(extensionName string, uiMetadataName string) ([]byte, error) {
+func GenerateUIMetaDataTemplate(extensionName string, uiMetadataName string, langs []string) ([]byte, error) {
 	log.Debug("Entering in... GenerateUIMetaDataTemplate")
 	log.Debugf("extensionName=%s", extensionName)
 	log.Debugf("uiMetadataName=%s", uiMetadataName)
@@ -32,16 +32,16 @@ func GenerateUIMetaDataTemplate(extensionName string, uiMetadataName string) ([]
 		uiMetadataName = global.DefaultUIMetaDataName
 	}
 	log.Debugf("uiMetadataName=%s", uiMetadataName)
-	raw, e := getUIMetadataTemplate(extensionName, uiMetadataName)
+	raw, e := getUIMetadataTemplate(extensionName, uiMetadataName, langs)
 	if e != nil {
 		return nil, e
 	}
 	return raw, nil
 }
 
-func getUIMetadataTemplate(extensionName string, uiMetadataName string) ([]byte, error) {
+func getUIMetadataTemplate(extensionName string, uiMetadataName string, langs []string) ([]byte, error) {
 	log.Debug("Entering in... getUIMetadataTemplate")
-	cfg, err := getUIMetadataParseConfig(extensionName, uiMetadataName)
+	cfg, err := getUIMetadataParseConfig(extensionName, uiMetadataName, langs)
 	if err != nil {
 		return nil, err
 	}
@@ -150,6 +150,18 @@ func printPropertyCallBack() TraversePropertiesCallBack {
 		var sampleValue interface{}
 		if val, ok := property["sample_value"]; ok {
 			sampleValue = val
+		} else {
+			if val, ok := property["items"]; ok {
+				options := val.([]interface{})
+				sampleValue = "Possible values are: "
+				for index := range options {
+					option := options[index].(map[string]interface{})
+					sampleValue = sampleValue.(string) + option["label"].(string)
+					if index < len(options)-1 {
+						sampleValue = sampleValue.(string) + ", "
+					}
+				}
+			}
 		}
 		nameLine := ""
 		if _, ok := property["properties"]; ok {

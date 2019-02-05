@@ -1,4 +1,3 @@
-/api/commandsRunner/resourceManager
 /api/test/resource/extensions/custom-extension
 /api/test/resource/out-test*
 /api/test/resource/extensions/custom/out*/*
@@ -13,6 +12,7 @@
 api/commandsRunner/cm
 examples/data/*
 examples/_build
+tools/_build
 .idea
 vendor
 _vendor*

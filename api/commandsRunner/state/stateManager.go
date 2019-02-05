@@ -1298,7 +1298,7 @@ func (sm *States) InsertStateFromExtensionName(extensionName string, pos int, st
 	if err != nil {
 		return err
 	}
-	manifestPath = filepath.Join(manifestPath, "extension-manifest.yml")
+	manifestPath = filepath.Join(manifestPath, global.DefaultExtenstionManifestFile)
 	log.Debug("manifestPath: " + manifestPath)
 	manifestBytes, err := ioutil.ReadFile(manifestPath)
 	if err != nil {

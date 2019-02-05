@@ -63,3 +63,9 @@ const DefaultUIMetaDataName = "default"
 
 //StatesFileName the states file name to use accross the different packages
 const StatesFileName = "states-file.yml"
+
+//DefaultLanguage
+const DefaultLanguage = "en-US"
+
+//DefaultExtenstionManifestFile
+const DefaultExtenstionManifestFile = "extension-manifest.yml"

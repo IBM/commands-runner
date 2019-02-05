@@ -20,7 +20,7 @@ import (
 	"github.com/olebedev/config"
 )
 
-func GetUIMetaDataConfig(extensionName string, uiMetadataName string) ([]byte, error) {
+func GetUIMetaDataConfig(extensionName string, uiMetadataName string, langs []string) ([]byte, error) {
 	log.Debug("Entering in... GetUIMetaDataConfig")
 	log.Debugf("extensionName=%s", extensionName)
 	log.Debugf("uiMetadataName=%s", uiMetadataName)
@@ -28,16 +28,16 @@ func GetUIMetaDataConfig(extensionName string, uiMetadataName string) ([]byte, e
 		uiMetadataName = global.DefaultUIMetaDataName
 	}
 	log.Debugf("uiMetadataName=%s", uiMetadataName)
-	raw, e := getUIMetadataConfig(extensionName, uiMetadataName)
+	raw, e := getUIMetadataConfig(extensionName, uiMetadataName, langs)
 	if e != nil {
 		return nil, e
 	}
 	return raw, nil
 }
 
-func getUIMetadataConfig(extensionName string, uiMetadataName string) ([]byte, error) {
+func getUIMetadataConfig(extensionName string, uiMetadataName string, langs []string) ([]byte, error) {
 	log.Debug("Entering in... getUIMetadataConfig")
-	cfg, err := getUIMetadataParseConfig(extensionName, uiMetadataName)
+	cfg, err := getUIMetadataParseConfig(extensionName, uiMetadataName, langs)
 	if err == nil {
 		uiConfigFilefg, err := config.ParseYaml("ui_metadata:")
 		if err != nil {
@@ -56,9 +56,9 @@ func getUIMetadataConfig(extensionName string, uiMetadataName string) ([]byte, e
 	return nil, errors.New("No ui configuration available for " + extensionName + " and " + uiMetadataName)
 }
 
-func getUIMetadataParseConfig(extensionName string, uiMetadataName string) (cfg *config.Config, err error) {
+func getUIMetadataParseConfig(extensionName string, uiMetadataName string, langs []string) (cfg *config.Config, err error) {
 	log.Debug("Entering in... getUIMetadataParseConfig")
-	cfg, err = getUIMetadataParseConfigs(extensionName)
+	cfg, err = getUIMetadataParseConfigs(extensionName, langs)
 	if err != nil {
 		return nil, err
 	}

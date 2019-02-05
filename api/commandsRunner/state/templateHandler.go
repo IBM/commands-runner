@@ -17,6 +17,7 @@ import (
 
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/logger"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/i18n/i18nUtils"
 )
 
 //handle template rest api requests
@@ -35,6 +36,7 @@ Method: GET
 */
 func getTemplateEndpoint(w http.ResponseWriter, req *http.Request) {
 	log.Debug("Entering in getTemplateEndpoint")
+	langs := i18nUtils.GetLangs(req)
 	extensionName, m, err := global.GetExtensionNameFromRequest(req)
 	if err != nil {
 		logger.AddCallerField().Error(err.Error())
@@ -49,7 +51,7 @@ func getTemplateEndpoint(w http.ResponseWriter, req *http.Request) {
 		uiMetaDataName = uiMetaDataNameFound[0]
 	}
 	//Retrieve the property name
-	uiconfig, err := GenerateUIMetaDataTemplate(extensionName, uiMetaDataName)
+	uiconfig, err := GenerateUIMetaDataTemplate(extensionName, uiMetaDataName, langs)
 	if err == nil {
 		//		log.Debug(string(uiconfig))
 		w.Write([]byte(uiconfig))

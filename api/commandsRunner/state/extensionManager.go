@@ -26,6 +26,8 @@ import (
 
 	"github.com/olebedev/config"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/logger"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/i18n/i18nUtils"
 )
 
 const EmbeddedExtensions = "embedded"
@@ -56,6 +58,11 @@ type Extension struct {
 	ValidationConfigURL string    `yaml:"validation_config_url" json:"validation_config_url"`
 	GenerateConfigURL   string    `yaml:"generate_config_url" json:"generate_config_url"`
 	ExtensionPath       string    `yaml:"-" json:"-"`
+	//PersistedPaths The path listed in that array will be not erased between upgrades.
+	//The states-file path is always added to that array.
+	//The path is a pattern relative to the extension home directory.
+	//The pattern syntax is described at https://golang.org/src/path/filepath/match.go?s=1226:1284#L34
+	PersistedPaths []string `yaml:"persisted_paths" json:"persisted_paths`
 }
 
 type CallState struct {
@@ -262,6 +269,7 @@ func extractAndWriteFile(targetdir, extensionName string, zf *zip.File) error {
 	log.Debug("Entering in... extractAndWriteFile")
 	rc, err := zf.Open()
 	if err != nil {
+		logger.AddCallerField().Error(err.Error())
 		return err
 	}
 	defer rc.Close()
@@ -283,15 +291,21 @@ func extractAndWriteFile(targetdir, extensionName string, zf *zip.File) error {
 		os.MkdirAll(path, zf.Mode())
 
 	default:
-		os.MkdirAll(filepath.Dir(path), zf.Mode())
+		err = os.MkdirAll(filepath.Dir(path), 0744)
+		if err != nil {
+			logger.AddCallerField().Error(err.Error())
+			return err
+		}
 		f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, zf.Mode())
 		if err != nil {
+			logger.AddCallerField().Error(err.Error())
 			return err
 		}
 		defer f.Close()
 
 		_, err = io.Copy(f, rc)
 		if err != nil {
+			logger.AddCallerField().Error(err.Error())
 			return err
 		}
 	}
@@ -319,18 +333,6 @@ func getEmbeddedExtensionRepoPath(extensionName string) (string, error) {
 		return filepath.Join(embeddedExtensionsRepositoryPath, extensionName), nil
 	}
 	return filepath.Join(embeddedExtensionsRepositoryPath, extensionName, extension.Version), nil
-	// files, err := ioutil.ReadDir(filepath.Join(embeddedExtensionsRepositoryPath, extensionName))
-	// if err != nil {
-	// 	log.Debug(err.Error())
-	// 	return "", err
-	// }
-	// if len(files) == 0 {
-	// 	return "", errors.New("extension directory " + extensionName + " is empty")
-	// }
-	// if len(files) == 1 && files[0].IsDir() {
-	// 	return filepath.Join(embeddedExtensionsRepositoryPath, extensionName, files[0].Name()), nil
-	// }
-	// return filepath.Join(embeddedExtensionsRepositoryPath, extensionName), nil
 }
 
 //CopyExtensionToEmbeddedExtensionPath copy the extension to the extension directory
@@ -455,7 +457,7 @@ func listRegisteredExtensionsDir(extensionPath string) (*Extensions, error) {
 				extension.Type = EmbeddedExtensions
 			}
 			log.Debug("extension.Name: " + extensionName)
-			manifestPath := filepath.Join(extensionPath, extensionName, "extension-manifest.yml")
+			manifestPath := filepath.Join(extensionPath, extensionName, global.DefaultExtenstionManifestFile)
 			log.Debug("manifestPath: " + manifestPath)
 			manifestBytes, err := ioutil.ReadFile(manifestPath)
 			if err != nil {
@@ -496,7 +498,7 @@ func ReadRegisteredExtension(extensionName string) (*Extension, error) {
 		return &extension, err
 	}
 	log.Debug("extension.Name: " + extensionName)
-	manifestPath := filepath.Join(extensionPath, "extension-manifest.yml")
+	manifestPath := filepath.Join(extensionPath, global.DefaultExtenstionManifestFile)
 	log.Debug("manifestPath: " + manifestPath)
 	manifestBytes, err := ioutil.ReadFile(manifestPath)
 	if err != nil {
@@ -606,37 +608,98 @@ func ListExtensions(filter string, catalog bool) (*Extensions, error) {
 }
 
 //Take a backup of an extension on /tmp
-func backupExtension(extensionName string) (bool, error) {
+func backupExtension(extensionName string) (string, error) {
 	extensionPath, err := GetRegisteredExtensionPath(extensionName)
 	if err != nil && extensionPath != "" {
-		return false, err
+		return "", err
 	}
 	//extension not yet registered, so no backup needed.
 	if extensionPath == "" {
-		return false, nil
+		return "", nil
 	}
 	backupPath := filepath.Join("/tmp", extensionName) + string(filepath.Separator)
 	err = os.RemoveAll(backupPath)
 	if err != nil {
-		return false, err
+		return "", err
 	}
 	err = global.CopyRecursive(extensionPath, backupPath)
 	log.Debug("Backup of " + extensionPath + " taken at " + backupPath)
-	return true, err
+	return backupPath, err
 }
 
-func restoreExtension(extensionName string) error {
+func restoreExtension(extensionName string, backupPath string) error {
 	extensionPath, err := GetRegisteredExtensionPath(extensionName)
 	if err != nil {
 		return err
 	}
-	backupPath := filepath.Join("/tmp", extensionName) + string(filepath.Separator)
 	err = os.RemoveAll(extensionPath)
 	if err != nil {
 		return err
 	}
 	err = global.CopyRecursive(backupPath, extensionPath)
+	os.RemoveAll(backupPath)
+	os.Remove(backupPath)
 	log.Debug("Restore of " + extensionPath + " from " + backupPath)
+	return err
+}
+
+func restoreExtensionPersistedPaths(extensionName string, backupPath string) error {
+	log.Debug("Entering in... restoreExtensionPersistedPaths")
+	extensionPath, err := GetRegisteredExtensionPath(extensionName)
+	if err != nil {
+		return err
+	}
+	paths := make([]string, 0)
+	//The states-file is always persisted
+	statesFilePath := filepath.Join(global.StatesFileName)
+	log.Debug("StatesFilePath: " + statesFilePath)
+	paths = append(paths, statesFilePath)
+	uiConfigPath := filepath.Join(global.ConfigYamlFileName)
+	log.Debug("uiConfigPath: " + uiConfigPath)
+	paths = append(paths, uiConfigPath)
+	//Read manifest to find the persistedPaths
+	manifestPath := filepath.Join(backupPath, global.DefaultExtenstionManifestFile)
+	input, err := ioutil.ReadFile(manifestPath)
+	if err != nil {
+		logger.AddCallerField().Error(err.Error())
+		return err
+	}
+	var extensionManifest map[string]interface{}
+	extensionManifest = make(map[string]interface{}, 0)
+	err = yaml.Unmarshal(input, &extensionManifest)
+	if err != nil {
+		return err
+	}
+	persistedPaths := make([]string, 0)
+	if val, ok := extensionManifest["persisted_paths"]; ok {
+		persistedPaths = val.([]string)
+		paths = append(paths, persistedPaths...)
+	}
+	//make the paths absolute by adding extensionPath
+	log.Debug("Restoring persisted paths")
+	for _, path := range paths {
+		log.Debug("Restoring of Persisted Path " + path)
+		matches, err := filepath.Glob(filepath.Join(backupPath, path))
+		if err != nil {
+			logger.AddCallerField().Error(err.Error())
+			return err
+		}
+		for _, match := range matches {
+			log.Debug("Match: " + match)
+			log.Debug("backupPath:" + backupPath)
+			log.Debug("extensionPath:" + extensionPath)
+			destPath := strings.Replace(match, backupPath, extensionPath+string(filepath.Separator), -1)
+			sourcePath := filepath.Join(match)
+			log.Debug("Restoring " + destPath + " from " + sourcePath)
+			err = global.CopyRecursive(sourcePath, destPath)
+			if err != nil {
+				logger.AddCallerField().Error(err.Error())
+				return err
+			}
+			log.Debug(destPath + " restored from " + sourcePath)
+		}
+		log.Debug(path + " Restored")
+	}
 	return err
 }
 
@@ -662,7 +725,8 @@ func RegisterExtension(extensionName, zipPath string, force bool) error {
 	log.Debug("Entering in... RegisterExtension")
 	log.Debug("extensionName: " + extensionName)
 	log.Debug("zipPath: " + zipPath)
-	if !force && IsExtensionRegistered(extensionName) {
+	isExtensionRegistered := IsExtensionRegistered(extensionName)
+	if !force && isExtensionRegistered {
 		return errors.New("Extension " + extensionName + " already registered")
 	}
 	isEmbeddedExtension, err := IsEmbeddedExtension(extensionName)
@@ -670,51 +734,89 @@ func RegisterExtension(extensionName, zipPath string, force bool) error {
 	if err != nil {
 		return err
 	}
+
 	var extensionPath string
-	backupTaken, err := backupExtension(extensionName)
-	if err != nil {
-		return err
-	}
-	var errInstall error
 	if isEmbeddedExtension {
-		if zipPath != "" {
-			fileInfo, _ := os.Stat(zipPath)
-			if fileInfo.Size() != 0 {
-				return errors.New("Extension name is already used by embedded extension")
-			}
-		}
-		errInstall = CopyExtensionToEmbeddedExtensionPath(extensionName)
 		extensionPath = filepath.Join(GetExtensionsPathEmbedded(), extensionName)
 	} else {
-		if zipPath != "" {
-			errInstall = Unzip(zipPath, GetExtensionsPathCustom(), extensionName)
-			if errInstall == nil {
-				os.Remove(zipPath)
-			}
-		} else {
-			errInstall = errors.New("the zipPath parameter is missing")
-		}
 		extensionPath = filepath.Join(GetExtensionsPathCustom(), extensionName)
 	}
-	var errGenStatesFile error
-	if errInstall == nil {
-		errGenStatesFile = GenerateStatesFile(extensionName, extensionPath)
-		//Failure to generate the template files must not stop the installation.
-		GenerateTemplateFiles(extensionName, extensionPath)
+	var errInstall, errGenStatesFile, errLoadTranslation, errRestorePersistedPaths error
+	var backupPath string
+	if isExtensionRegistered {
+		backupPath, err = backupExtension(extensionName)
+		if err != nil {
+			return err
+		}
+
+		//Clean directory before installation (persisted_paths will be restored later from the backup)
+		log.Debug("Cleaning the extension directory before update: " + extensionPath)
+		//os.RemoveAll(filepath.Join(extensionPath, "*"))
+
+		files, err := filepath.Glob(filepath.Join(extensionPath, "*"))
+		if err != nil {
+			return err
+		}
+		for _, file := range files {
+			log.Debug("Deleting file: " + file)
+			err = os.RemoveAll(file)
+			if err != nil {
+				return err
+			}
+		}
+
+		//Restore persisted_path from backup
+		errRestorePersistedPaths = restoreExtensionPersistedPaths(extensionName, backupPath)
 	}
-	if errInstall != nil || errGenStatesFile != nil {
-		if backupTaken {
-			restoreExtension(extensionName)
+	if errRestorePersistedPaths == nil {
+		if isEmbeddedExtension {
+			if zipPath != "" {
+				fileInfo, _ := os.Stat(zipPath)
+				if fileInfo.Size() != 0 {
+					errInstall = errors.New("Extension name is already used by embedded extension")
+				}
+			}
+			if errInstall == nil {
+				errInstall = CopyExtensionToEmbeddedExtensionPath(extensionName)
+			}
+		} else {
+			if zipPath != "" {
+				errInstall = Unzip(zipPath, GetExtensionsPathCustom(), extensionName)
+				if errInstall == nil {
+					os.Remove(zipPath)
+				}
+			} else {
+				errInstall = errors.New("the zipPath parameter is missing")
+			}
+		}
+		if errInstall == nil {
+			errGenStatesFile = GenerateStatesFile(extensionName, extensionPath)
+			errLoadTranslation = i18nUtils.LoadTranslationFilesFromDir(filepath.Join(extensionPath, i18nUtils.I18nDirectory))
+			//Failure to generate the template files must not stop the installation.
+			GenerateTemplateFiles(extensionName, extensionPath)
+		}
+
+	}
+	if errInstall != nil || errGenStatesFile != nil || errLoadTranslation != nil || errRestorePersistedPaths != nil {
+		if backupPath != "" {
+			log.Debug("Rolled back due to the error below")
+			restoreExtension(extensionName, backupPath)
 		} else {
 			os.RemoveAll(extensionPath)
 			os.Remove(extensionPath)
 		}
 	}
-	if errGenStatesFile != nil {
-		return errors.New("Error Generate States file:" + errGenStatesFile.Error() + "\nRegistration rolled back")
+	if errRestorePersistedPaths != nil {
+		return errors.New("Error Restoring Persisted Paths:" + errRestorePersistedPaths.Error())
+	}
+	if errLoadTranslation != nil {
+		return errors.New("Error Loading translation:" + errLoadTranslation.Error())
 	}
 	if errInstall != nil {
-		return errors.New("Error Install:" + errInstall.Error() + "\nRegistration rolled back")
+		return errors.New("Error Install:" + errInstall.Error())
+	}
+	if errGenStatesFile != nil {
+		return errors.New("Error Generate States file:" + errGenStatesFile.Error())
 	}
 	return nil
 }
@@ -722,7 +824,7 @@ func RegisterExtension(extensionName, zipPath string, force bool) error {
 func GenerateStatesFile(extensionName string, extensionPath string) error {
 	log.Debug("Entering in... GenerateStatesFile")
 	log.Debug("Extension:" + extensionName)
-	manifestPath := filepath.Join(extensionPath, "extension-manifest.yml")
+	manifestPath := filepath.Join(extensionPath, global.DefaultExtenstionManifestFile)
 	input, err := ioutil.ReadFile(manifestPath)
 	if err != nil {
 		return err
@@ -737,7 +839,7 @@ func GenerateStatesFile(extensionName string, extensionPath string) error {
 	if val, ok := inYaml["states_update_mode"]; ok {
 		statesUpdateMode = strings.ToLower(val.(string))
 	}
-	newStatesB, err := global.ExtractKey(filepath.Join(extensionPath, "extension-manifest.yml"),
+	newStatesB, err := global.ExtractKey(filepath.Join(extensionPath, global.DefaultExtenstionManifestFile),
 		"states")
 	if err != nil {
 		return err
@@ -776,7 +878,7 @@ func GenerateStatesFile(extensionName string, extensionPath string) error {
 
 func GenerateTemplateFiles(extensionName string, extensionPath string) error {
 	log.Debug("Entering in... GenerateTemplateFiles")
-	manifestPath := filepath.Join(extensionPath, "extension-manifest.yml")
+	manifestPath := filepath.Join(extensionPath, global.DefaultExtenstionManifestFile)
 	input, err := ioutil.ReadFile(manifestPath)
 	if err != nil {
 		return err
@@ -795,14 +897,20 @@ func GenerateTemplateFiles(extensionName string, extensionPath string) error {
 		}
 	}
 	//loop on configurations
-	for uiMetadataName := range uiMetaData {
-		data, err := GenerateUIMetaDataTemplate(extensionName, uiMetadataName.(string))
-		if err != nil {
-			return err
-		}
-		err = ioutil.WriteFile(filepath.Join(extensionPath, global.ConfigRootKey+"_"+uiMetadataName.(string)+"_template.yml"), data, 0644)
-		if err != nil {
-			return err
+	langs, err := i18nUtils.GetAllLanguageTags()
+	if err != nil {
+		return err
+	}
+	for _, lang := range langs {
+		for uiMetadataName := range uiMetaData {
+			data, err := GenerateUIMetaDataTemplate(extensionName, uiMetadataName.(string), []string{lang.String()})
+			if err != nil {
+				return err
+			}
+			err = ioutil.WriteFile(filepath.Join(extensionPath, global.ConfigRootKey+"_"+uiMetadataName.(string)+"_template."+lang.String()+".yml"), data, 0644)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil

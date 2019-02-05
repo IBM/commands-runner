@@ -21,6 +21,23 @@ TAG_VERSION ?= `cat VERSION`+$(GIT_COMMIT)
 
 .DEFAULT_GOAL := all
 
+BEFORE_SCRIPT := $(shell ./build-tools/before-make-script.sh)
+
+.PHONY: all-checks
+all-checks: i18n-check copyright-check
+
+i18n-check:
+	@echo "Running i18n-check ..."
+	@go test -timeout 30s github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/i18n/i18nUtils -run '^Test_i18nUpToDate'
+
+.PHONY: generate-code
+generate-code:
+	@go-bindata -version; \
+	if [ $$? -ne 0 ]; then \
+		go get -v github.com/jteeuwen/go-bindata/...; \
+	fi
+	go-bindata -pkg i18nBinData -o api/i18n/i18nBinData/i18nTranslations.go -prefix api/i18n/resources api/i18n/resources/*
+
 .PHONY: dep-install
 glide-install::
 	
@@ -31,13 +48,13 @@ glide-install::
 	fi
 
 .PHONY: pre-req
-pre-req::
-	
+pre-req:: 
+	go get -v github.com/jteeuwen/go-bindata/...
 	dep ensure -v
 
 .PHONY: go-test
 go-test:: 
-	go test -p 1 -v github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/...
+	go test -p 1 -v github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/...
 
 .PHONY: copyright-check
 copyright-check:
@@ -81,3 +98,25 @@ client:
 code:
 	mkdir -p examples/_build
 	go build -o examples/_build/cr-code  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/examples/code
+
+.PHONY: localization
+localization:
+	mkdir -p tools/_build/localization/linux_amd64
+	env GOOS=linux GOARCH=amd64 go build -o tools/_build/localization/linux_amd64/localization  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/tools/verifyLocalization
+	mkdir -p tools/_build/localization/darwin_amd64
+	env GOOS=darwin GOARCH=amd64 go build -o tools/_build/localization/darwin_amd64/localization  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/tools/verifyLocalization
+	mkdir -p tools/_build/localization/windows_amd64	
+	env GOOS=windows GOARCH=amd64 go build -o tools/_build/localization/windows_amd64/localization  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/tools/verifyLocalization
+	mkdir -p tools/_build/localization/windows_386
+	env GOOS=windows GOARCH=386 go build -o tools/_build/localization/windows_386/localization  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/tools/verifyLocalization
+
+.PHONY: verify-localization
+verify-localization:
+	mkdir -p tools/_build/verify-localization/linux_amd64
+	env GOOS=linux GOARCH=amd64 go build -o tools/_build/verify-localization/linux_amd64/verify-localization  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/tools/verifyLocalization
+	mkdir -p tools/_build/verify-localization/darwin_amd64
+	env GOOS=darwin GOARCH=amd64 go build -o tools/_build/verify-localization/darwin_amd64/verify-localization  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/tools/verifyLocalization
+	mkdir -p tools/_build/verify-localization/windows_amd64	
+	env GOOS=windows GOARCH=amd64 go build -o tools/_build/verify-localization/windows_amd64/verify-localization  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/tools/verifyLocalization
+	mkdir -p tools/_build/verify-localization/windows_386
+	env GOOS=windows GOARCH=386 go build -o tools/_build/verify-localization/windows_386/verify-localization  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/tools/verifyLocalization

@@ -33,26 +33,34 @@ const testDir = "../../testFile/"
 //If the destDir doesn't exist, it will be created.
 func CopyRecursive(src, destDir string) error {
 	if _, err := os.Stat(src); err != nil {
-		log.Debug(err.Error())
+		logger.AddCallerField().Error(err.Error())
 		return err
 	}
-	os.MkdirAll(destDir, 0744)
-	err := filepath.Walk(src, func(path string, f os.FileInfo, err error) error {
-		log.Debug(path)
+	srcInfo, err := os.Stat(src)
+	if err != nil {
+		return err
+	}
+	if srcInfo.IsDir() {
+		os.MkdirAll(destDir, 0744)
+	}
+	err = filepath.Walk(src, func(path string, f os.FileInfo, err error) error {
+		//		log.Debug(path)
 		cleanPath := filepath.Clean(src)
 		relPath := path[len(cleanPath):]
-		log.Debug("RelPath:" + relPath)
+		//		log.Debug("RelPath:" + relPath)
 		newPath := filepath.Join(destDir, relPath)
-		log.Debug("NewPath:" + newPath)
+		//		log.Debug("NewPath:" + newPath)
 		if f.IsDir() {
 			os.Mkdir(newPath, f.Mode())
 		} else {
 			reader, err := os.OpenFile(path, os.O_RDONLY, 0666)
 			if err != nil {
+				logger.AddCallerField().Error(err.Error())
 				return err
 			}
 			writer, err := os.OpenFile(newPath, os.O_CREATE|os.O_WRONLY, f.Mode())
 			if err != nil {
+				logger.AddCallerField().Error(err.Error())
 				return err
 			}
 			_, err = io.Copy(writer, reader)
@@ -60,6 +68,7 @@ func CopyRecursive(src, destDir string) error {
 			writer.Sync()
 			writer.Close()
 			if err != nil {
+				logger.AddCallerField().Error(err.Error())
 				return err
 			}
 		}
@@ -67,7 +76,7 @@ func CopyRecursive(src, destDir string) error {
 	})
 
 	if err != nil {
-		log.Debug(err.Error())
+		logger.AddCallerField().Error(err.Error())
 		return err
 	}
 	return nil
@@ -89,11 +98,22 @@ func GetHomeDir() string {
 	return homeDir
 }
 
+//GetDir returns the directory where the executable is.
+func GetExecutableDir() (string, error) {
+	launchingDir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	if err != nil {
+		logger.AddCallerField().Error(err.Error())
+		return "", err
+	}
+	return launchingDir, nil
+}
+
 //getExtensionName from request
 func GetExtensionNameFromRequest(req *http.Request) (string, url.Values, error) {
 	log.Debug("Entering in GetExtensionNameFromRequest")
 	m, errRQ := url.ParseQuery(req.URL.RawQuery)
 	if errRQ != nil {
+		logger.AddCallerField().Error(errRQ.Error())
 		return "", m, errRQ
 	}
 	var extensionName string
@@ -111,12 +131,14 @@ func ExtractKey(inputFilePath string, key string) ([]byte, error) {
 	log.Debug("Entering in... ExtractKey")
 	input, err := ioutil.ReadFile(inputFilePath)
 	if err != nil {
+		logger.AddCallerField().Error(err.Error())
 		return nil, err
 	}
 	var inYaml map[string]interface{}
 	inYaml = make(map[string]interface{}, 0)
 	err = yaml.Unmarshal(input, &inYaml)
 	if err != nil {
+		logger.AddCallerField().Error(err.Error())
 		return nil, err
 	}
 	var outYaml map[string]interface{}
@@ -124,6 +146,7 @@ func ExtractKey(inputFilePath string, key string) ([]byte, error) {
 	outYaml[key] = inYaml[key]
 	output, err := yaml.Marshal(outYaml)
 	if err != nil {
+		logger.AddCallerField().Error(err.Error())
 		return nil, err
 	}
 	return output, err
@@ -169,26 +192,31 @@ func ForwardRequest(w http.ResponseWriter, req *http.Request, newURL string) {
 func CopyToTemp(tempDir string, fileName string) (string, error) {
 	err := os.MkdirAll(filepath.Join(testDir, tempDir), 0700)
 	if err != nil {
+		logger.AddCallerField().Error(err.Error())
 		return "", err
 	}
 	fi, err := os.Stat(fileName)
 	if err != nil {
+		logger.AddCallerField().Error(err.Error())
 		return "", err
 	}
 	switch mode := fi.Mode(); {
 	case mode.IsDir():
 		err = CopyRecursive(fileName, filepath.Join(testDir, tempDir, fi.Name()))
 		if err != nil {
+			logger.AddCallerField().Error(err.Error())
 			return "", err
 		}
 		return filepath.Join(testDir, tempDir, fi.Name()), nil
 	case mode.IsRegular():
 		reader, err := os.OpenFile(fileName, os.O_RDONLY, 0666)
 		if err != nil {
+			logger.AddCallerField().Error(err.Error())
 			return "", err
 		}
 		writer, err := os.OpenFile(filepath.Join(testDir, tempDir, fi.Name()), os.O_CREATE|os.O_WRONLY, fi.Mode())
 		if err != nil {
+			logger.AddCallerField().Error(err.Error())
 			return "", err
 		}
 		_, err = io.Copy(writer, reader)
@@ -196,6 +224,7 @@ func CopyToTemp(tempDir string, fileName string) (string, error) {
 		writer.Sync()
 		writer.Close()
 		if err != nil {
+			logger.AddCallerField().Error(err.Error())
 			return "", err
 		}
 		return filepath.Join(testDir, tempDir, fi.Name()), nil

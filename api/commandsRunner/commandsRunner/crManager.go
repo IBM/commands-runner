@@ -13,6 +13,7 @@ package commandsRunner
 import (
 	log "github.com/sirupsen/logrus"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/i18n/i18nUtils"
 )
 
 const COPYRIGHT string = `###############################################################################
@@ -63,9 +64,9 @@ func SetDefaultExtensionName(defaultExtensionName string) {
 	global.DefaultExtensionName = defaultExtensionName
 }
 
-func SetDeploymentName(deploymentName string) {
-	global.DeploymentName = deploymentName
-}
+// func SetDeploymentName(deploymentName string) {
+// 	global.DeploymentName = deploymentName
+// }
 
 func SetAboutURL(aboutURL string) {
 	global.AboutURL = aboutURL
@@ -76,9 +77,10 @@ func SetAbout(about string) {
 }
 
 //Retrieve Settings
-func GetSettings() *Settings {
+func GetSettings(langs []string) *Settings {
+	deploymentName, _ := i18nUtils.Translate("deployment.name", "Deployment tool", langs)
 	settings := &Settings{
-		DeploymentName:       global.DeploymentName,
+		DeploymentName:       deploymentName,
 		DefaultExtensionName: global.DefaultExtensionName,
 		ConfigRootKey:        global.ConfigRootKey,
 		AboutURL:             global.AboutURL,

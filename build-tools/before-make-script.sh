@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ###############################################################################
 # Licensed Materials - Property of IBM Copyright IBM Corporation 2017, 2019. All Rights Reserved.
@@ -9,7 +9,4 @@
 #  IBM Corporation - initial API and implementation
 ###############################################################################
 
-echo "Start Step1: $1"
-sleep 1
-echo "End: $1"
-exit 0
+ln -sf ../../build-tools/git-hooks/pre-commit .git/hooks/pre-commit
