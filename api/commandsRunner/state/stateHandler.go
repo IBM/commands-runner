@@ -26,6 +26,7 @@ import (
 
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/logger"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/i18n/i18nUtils"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -115,6 +116,7 @@ func GetStatesEndpoint(w http.ResponseWriter, req *http.Request) {
 	//validatePath := regexp.MustCompile("/cr/v1/states")
 	//Retreive the requested state
 	log.Debug(req.URL.Path)
+	langs := i18nUtils.GetLangs(req)
 	sm, m, errSM := getStateManagerFromRequest(req)
 	if errSM != nil {
 		logger.AddCallerField().Error(errSM.Error())
@@ -141,7 +143,7 @@ func GetStatesEndpoint(w http.ResponseWriter, req *http.Request) {
 	}
 	recursive, err := strconv.ParseBool(recursiveString)
 
-	states, err := sm.GetStates(status, extensionsOnly, recursive)
+	states, err := sm.GetStates(status, extensionsOnly, recursive, langs)
 	if err == nil {
 		//		json.NewEncoder(w).Encode(states)
 		enc := json.NewEncoder(w)
@@ -449,6 +451,7 @@ Method: GET
 */
 func GetStateEndpoint(w http.ResponseWriter, req *http.Request) {
 	log.Debug("Entering.... in GetStateEndpoint")
+	langs := i18nUtils.GetLangs(req)
 	//Check format
 	validatePath := regexp.MustCompile("/cr/v1/state/(.*)$")
 	//Retreive the requested state
@@ -467,7 +470,7 @@ func GetStateEndpoint(w http.ResponseWriter, req *http.Request) {
 			http.Error(w, errSM.Error(), http.StatusBadRequest)
 			return
 		}
-		state, err := sm.GetState(params[1])
+		state, err := sm.GetState(params[1], langs)
 		if err == nil {
 			//			json.NewEncoder(w).Encode(state)
 			enc := json.NewEncoder(w)

@@ -36,7 +36,7 @@ func CallStateManager(extensionName string) {
 
 	log.Info("============== Print states ========================")
 	//Print states
-	states, err := stateManagerInstance.GetStates("", false, true)
+	states, err := stateManagerInstance.GetStates("", false, true, nil)
 	statesOut, err := yaml.Marshal(states)
 	if err != nil {
 		log.Fatal(err.Error())
@@ -52,7 +52,7 @@ func CallStateManager(extensionName string) {
 
 	//Print states
 	log.Info("============== Print states ========================")
-	states, err = stateManagerInstance.GetStates("", false, true)
+	states, err = stateManagerInstance.GetStates("", false, true, nil)
 	statesOut, err = yaml.Marshal(states)
 	if err != nil {
 		log.Fatal(err.Error())

@@ -68,7 +68,7 @@ func TestGetStatesOK(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	states, err := sm.GetStates("", false, false)
+	states, err := sm.GetStates("", false, false, nil)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -106,7 +106,7 @@ func TestGetStatesWithStatus(t *testing.T) {
 	statesPath := "../../test/resource/states-run-running.yaml"
 	sm := newStateManager("states-run-running")
 	sm.StatesPath = statesPath
-	states, err := sm.GetStates(StateRUNNING, false, false)
+	states, err := sm.GetStates(StateRUNNING, false, false, nil)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -165,14 +165,14 @@ func TestSetStatesStatusesOK(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	state, err := sm.GetState("state1")
+	state, err := sm.GetState("state1", nil)
 	if err != nil {
 		t.Error(err.Error())
 	}
 	if state.Status != StateSKIP {
 		t.Error("Status not set as SKIP as expected:" + state.Status)
 	}
-	states, err := sm.GetStates(StateSKIP, false, false)
+	states, err := sm.GetStates(StateSKIP, false, false, nil)
 	if len(states.StateArray) > 1 {
 		t.Error("Another state was set to SKIP")
 	}
@@ -205,14 +205,14 @@ func TestSetStatesStatusesFromTo(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	state, err := sm.GetState("state1")
+	state, err := sm.GetState("state1", nil)
 	if err != nil {
 		t.Error(err.Error())
 	}
 	if state.Status == StateSKIP {
 		t.Error("Status set as SKIP as expected:" + state.Status)
 	}
-	states, err := sm.GetStates(StateSKIP, false, false)
+	states, err := sm.GetStates(StateSKIP, false, false, nil)
 	if len(states.StateArray) != 3 {
 		t.Error("Not the correct number of states were set to SKIP")
 	}
@@ -226,14 +226,14 @@ func TestSetStatesStatusesFromTo(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	state, err = sm.GetState("state1")
+	state, err = sm.GetState("state1", nil)
 	if err != nil {
 		t.Error(err.Error())
 	}
 	if state.Status == StateSKIP {
 		t.Error("Status set as SKIP and got :" + state.Status)
 	}
-	states, err = sm.GetStates(StateSKIP, false, false)
+	states, err = sm.GetStates(StateSKIP, false, false, nil)
 	if len(states.StateArray) != 2 {
 		t.Error("Not the correct number of states were set to SKIP")
 	}
@@ -247,14 +247,14 @@ func TestSetStatesStatusesFromTo(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	state, err = sm.GetState("repeat")
+	state, err = sm.GetState("repeat", nil)
 	if err != nil {
 		t.Error(err.Error())
 	}
 	if state.Status == StateSKIP {
 		t.Error("Status set as SKIP as expected:" + state.Status)
 	}
-	states, err = sm.GetStates(StateSKIP, false, false)
+	states, err = sm.GetStates(StateSKIP, false, false, nil)
 	if len(states.StateArray) != 1 {
 		t.Error("Not the correct number of states were set to SKIP")
 	}
@@ -268,14 +268,14 @@ func TestSetStatesStatusesFromTo(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	state, err = sm.GetState("repeat")
+	state, err = sm.GetState("repeat", nil)
 	if err != nil {
 		t.Error(err.Error())
 	}
 	if state.Status == StateSKIP {
 		t.Error("Status set as SKIP as expected:" + state.Status)
 	}
-	states, err = sm.GetStates(StateSKIP, false, false)
+	states, err = sm.GetStates(StateSKIP, false, false, nil)
 	if len(states.StateArray) != 2 {
 		t.Error("Not the correct number of states were set to SKIP")
 	}
@@ -289,14 +289,14 @@ func TestSetStatesStatusesFromTo(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	state, err = sm.GetState("repeat")
+	state, err = sm.GetState("repeat", nil)
 	if err != nil {
 		t.Error(err.Error())
 	}
 	if state.Status != StateSKIP {
 		t.Error("Status set as SKIP as expected:" + state.Status)
 	}
-	states, err = sm.GetStates(StateSKIP, false, false)
+	states, err = sm.GetStates(StateSKIP, false, false, nil)
 	if len(states.StateArray) != 4 {
 		t.Error("Not the correct number of states were set to SKIP")
 	}
@@ -314,14 +314,14 @@ func TestSetStatesStatusesFromTo(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	state, err = sm.GetState("repeat")
+	state, err = sm.GetState("repeat", nil)
 	if err != nil {
 		t.Error(err.Error())
 	}
 	if state.Status != StateSKIP {
 		t.Error("Status set as SKIP as expected:" + state.Status)
 	}
-	states, err = sm.GetStates(StateSKIP, false, false)
+	states, err = sm.GetStates(StateSKIP, false, false, nil)
 	if len(states.StateArray) != 2 {
 		t.Error("Not the correct number of states were set to SKIP")
 	}
@@ -368,7 +368,7 @@ func TestSetStatesWithDelete(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	statesResult, err := sm.GetStates("state1", false, false)
+	statesResult, err := sm.GetStates("state1", false, false, nil)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -376,7 +376,7 @@ func TestSetStatesWithDelete(t *testing.T) {
 	if len(states.StateArray) > 0 {
 		t.Error("State 1 not removed")
 	}
-	statesResult, err = sm.GetStates("cr", false, false)
+	statesResult, err = sm.GetStates("cr", false, false, nil)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -431,7 +431,7 @@ func TestSetStatesMerge(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	statesResult, err := sm.GetStates("", false, false)
+	statesResult, err := sm.GetStates("", false, false, nil)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -472,7 +472,7 @@ func TestSetStatesMergeWithDelete(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	statesResult, err := sm.GetStates("", false, false)
+	statesResult, err := sm.GetStates("", false, false, nil)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -1049,7 +1049,7 @@ func TestGetStateOK(t *testing.T) {
 	statesPath := "../../test/resource/states-TestGetStateOK.yaml"
 	sm := newStateManager("states-TestGetStateOK")
 	sm.StatesPath = statesPath
-	state, err := sm.GetState("state1")
+	state, err := sm.GetState("state1", nil)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -1067,7 +1067,7 @@ func TestGetStateNOK(t *testing.T) {
 	statesPath := "../../test/resource/states-TestGetStateNOK.yaml"
 	sm := newStateManager("states-TestGetStateNOK")
 	sm.StatesPath = statesPath
-	stateN, err := sm.GetState("not-exist")
+	stateN, err := sm.GetState("not-exist", nil)
 	if err == nil {
 		t.Error("Found a state but should'nt " + stateN.Status)
 	}
@@ -1079,7 +1079,7 @@ func TestGetStateEmptyState(t *testing.T) {
 	statesPath := "../../test/resource/states-TestGetStateEmptyState.yaml"
 	sm := newStateManager("states-TestGetStateEmptyState")
 	sm.StatesPath = statesPath
-	_, err := sm.GetState("")
+	_, err := sm.GetState("", nil)
 	if err == nil {
 		t.Error("An error should be raised as the state is not specified")
 	}
@@ -1300,7 +1300,7 @@ func TestSetStateStatus(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	stateN, err := sm.GetState("cr")
+	stateN, err := sm.GetState("cr", nil)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -1320,7 +1320,7 @@ func TestSetStateStatus(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	stateN, err = sm.GetState("cr")
+	stateN, err = sm.GetState("cr", nil)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -1370,7 +1370,7 @@ func TestEngineSuccess(t *testing.T) {
 		t.Error("Expected status SUCCEEDED but got " + sm.Status)
 	}
 	t.Log("Get Failed states")
-	states, errStates := sm.GetStates(StateFAILED, false, false)
+	states, errStates := sm.GetStates(StateFAILED, false, false, nil)
 	if errStates != nil {
 		t.Error(errStates.Error())
 	}
@@ -1479,7 +1479,7 @@ func TestEngineSuccessFromFailure(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	states, _ := sm.GetStates("", false, false)
+	states, _ := sm.GetStates("", false, false, nil)
 	t.Logf("%v", states)
 	t.Log("Calculate statuses")
 	statuses, err := sm.CalculateStatesToRun(FirstState, LastState)
@@ -1490,7 +1490,7 @@ func TestEngineSuccessFromFailure(t *testing.T) {
 	t.Log("Execute states file")
 	sm.Execute("task1", "task3", nil, nil)
 	t.Log("Get Failed states")
-	states, errStates := sm.GetStates(StateFAILED, false, false)
+	states, errStates := sm.GetStates(StateFAILED, false, false, nil)
 	if errStates != nil {
 		t.Error(errStates.Error())
 	}
@@ -1546,14 +1546,14 @@ func TestEngineSuccessWithExtension(t *testing.T) {
 		t.Error(err.Error())
 	}
 	t.Log("Get Failed states")
-	states, errStates := sm.GetStates(StateFAILED, false, false)
+	states, errStates := sm.GetStates(StateFAILED, false, false, nil)
 	if errStates != nil {
 		t.Error(errStates.Error())
 	}
 	if len(states.StateArray) > 0 {
 		t.Error("At least one state failed:" + states.StateArray[0].Name)
 	}
-	statesExt, err := smExt.GetStates("", false, true)
+	statesExt, err := smExt.GetStates("", false, true, nil)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -1606,7 +1606,7 @@ func TestEngineWithRerunAfter(t *testing.T) {
 	t.Log("Execute states file")
 	sm.Execute("task1", "task3", nil, nil)
 	t.Log("Get Failed states")
-	states, errStates := sm.GetStates(StateFAILED, false, false)
+	states, errStates := sm.GetStates(StateFAILED, false, false, nil)
 	if errStates != nil {
 		t.Error(errStates.Error())
 	}
@@ -1775,7 +1775,7 @@ func TestEngineFailure(t *testing.T) {
 	}
 	time.Sleep(10 * time.Second)
 	t.Log("Get Failed states")
-	states, errStates := sm.GetStates(StateFAILED, false, false)
+	states, errStates := sm.GetStates(StateFAILED, false, false, nil)
 	if errStates != nil {
 		t.Error(errStates.Error())
 	}

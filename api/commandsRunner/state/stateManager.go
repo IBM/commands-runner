@@ -27,6 +27,7 @@ import (
 	"time"
 
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/logger"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/i18n/i18nUtils"
 
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 
@@ -425,7 +426,7 @@ func (sm *States) _getState(state string) (*State, error) {
 }
 
 //GetStates returns the list of states with a given status. if the status is an empty string then it returns all states.
-func (sm *States) GetStates(status string, extensionsOnly bool, recursive bool) (*States, error) {
+func (sm *States) GetStates(status string, extensionsOnly bool, recursive bool, langs []string) (*States, error) {
 	log.Debug("Entering... GetStates")
 	errStates := sm.readStates()
 	if errStates != nil {
@@ -463,7 +464,7 @@ func (sm *States) GetStates(status string, extensionsOnly bool, recursive bool) 
 				if err != nil {
 					return nil, err
 				}
-				subStates, err := smp.GetStates(status, extensionsOnly, recursive)
+				subStates, err := smp.GetStates(status, extensionsOnly, recursive, langs)
 				if err != nil {
 					return nil, err
 				}
@@ -483,6 +484,12 @@ func (sm *States) GetStates(status string, extensionsOnly bool, recursive bool) 
 		}
 	} else {
 		resultStates = *states
+	}
+	//Translate states
+	if langs != nil {
+		for i := 0; i < len(resultStates.StateArray); i++ {
+			resultStates.StateArray[i].Label, _ = i18nUtils.Translate(resultStates.StateArray[i].Label, resultStates.StateArray[i].Label, langs)
+		}
 	}
 	return &resultStates, nil
 }
@@ -1177,7 +1184,7 @@ func (sm *States) ResetEngineExecutionInfo() error {
 }
 
 //GetState return a state providing its name
-func (sm *States) GetState(state string) (*State, error) {
+func (sm *States) GetState(state string, langs []string) (*State, error) {
 	log.Debug("Entering... GetState")
 	log.Debugf("Read states=%s\n", state)
 	errStates := sm.readStates()
@@ -1185,6 +1192,9 @@ func (sm *States) GetState(state string) (*State, error) {
 		return nil, errStates
 	}
 	stateFound, errState := sm._getState(state)
+	if stateFound != nil && errState != nil && langs != nil {
+		stateFound.Label, _ = i18nUtils.Translate(stateFound.Label, stateFound.Label, langs)
+	}
 	return stateFound, errState
 }
 
@@ -1544,7 +1554,7 @@ func (sm *States) getLogPath(state string) (string, error) {
 //GetLogs Get logs from a given position, a given length. The length is the number of characters to return if bychar is true otherwize is the number of lines.
 func (sm *States) GetLogs(position int64, length int64, bychar bool) (string, error) {
 	var data []byte
-	states, err := sm.GetStates("", false, false)
+	states, err := sm.GetStates("", false, false, nil)
 	if err != nil {
 		return string(data), err
 	}
