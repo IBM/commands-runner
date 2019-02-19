@@ -146,7 +146,7 @@ func printPropertyCallBack() TraversePropertiesCallBack {
 		//Build commentLine
 		var commentLine string
 		if val, ok := property["description"]; ok {
-			commentLine = fmt.Sprintf("%s", leftPad("# "+strings.Replace(val.(string), "\n", "\n# ", -1), offSet, " "))
+			commentLine = fmt.Sprintf("%s", leftPad("# "+val.(string), offSet, " "))
 		}
 		//Search sample value
 		var sampleValue interface{}
@@ -180,7 +180,7 @@ func printPropertyCallBack() TraversePropertiesCallBack {
 		// write comment line of not empty
 		if commentLine != "" {
 			commentLine = commentLine + fmt.Sprint("\n")
-			writeBuffer(outTemplate, mandatory, commentLine)
+			writeBuffer(outTemplate, mandatory, strings.Replace(commentLine, "\n", "\n# ", -1))
 		}
 		//Search default value
 		var defaultValue interface{}
