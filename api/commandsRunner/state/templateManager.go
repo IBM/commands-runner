@@ -143,10 +143,12 @@ func printPropertyCallBack() TraversePropertiesCallBack {
 		}
 		log.Debugf("pathArrayLen=%d", pathArrayLen)
 		offSet := pathArrayLen * 2
+		//Build commentLine
+		var commentLine string
 		if val, ok := property["description"]; ok {
-			commentLine := fmt.Sprintf("%s\n", leftPad("# "+strings.Replace(val.(string), "\n", "\n# ", -1), offSet, " "))
-			writeBuffer(outTemplate, mandatory, commentLine)
+			commentLine = fmt.Sprintf("%s", leftPad("# "+val.(string), offSet, " "))
 		}
+		//Search sample value
 		var sampleValue interface{}
 		if val, ok := property["sample_value"]; ok {
 			sampleValue = val
@@ -163,22 +165,58 @@ func printPropertyCallBack() TraversePropertiesCallBack {
 				}
 			}
 		}
+		//Add sampleValue to comment
+		if sampleValue != nil {
+			switch sampleValue.(type) {
+			case string:
+				commentLine = commentLine + fmt.Sprintf(" - sample_value: %s", sampleValue)
+			case int:
+				commentLine = commentLine + fmt.Sprintf(" - sample_value: %d", sampleValue)
+			case bool:
+				commentLine = commentLine + fmt.Sprintf(" - sample_value: %t", sampleValue)
+			default:
+			}
+		}
+		// write comment line of not empty
+		if commentLine != "" {
+			commentLine = commentLine + fmt.Sprint("\n")
+			writeBuffer(outTemplate, mandatory, strings.Replace(commentLine, "\n", "\n# ", -1))
+		}
+		//Search default value
+		var defaultValue interface{}
+		if val, ok := property["default"]; ok {
+			defaultValue = val
+		}
 		nameLine := ""
 		if _, ok := property["properties"]; ok {
 			nameLine = fmt.Sprintf("%s:\n", leftPad(property["name"].(string), offSet, " "))
 		} else {
-			switch sampleValue.(type) {
+			//Create line with default
+			switch defaultValue.(type) {
 			case string:
 				if !mandatory {
-					sampleValue = strings.Replace(sampleValue.(string), "\n", "\n# ", -1)
+					defaultValue = strings.Replace(defaultValue.(string), "\n", "\n# ", -1)
 				}
-				nameLine = fmt.Sprintf("%s: \"%s\"\n", leftPad(property["name"].(string), offSet, " "), sampleValue)
+				nameLine = fmt.Sprintf("%s: \"%s\"\n", leftPad(property["name"].(string), offSet, " "), defaultValue)
 			case int:
-				nameLine = fmt.Sprintf("%s: %d\n", leftPad(property["name"].(string), offSet, " "), sampleValue)
+				nameLine = fmt.Sprintf("%s: %d\n", leftPad(property["name"].(string), offSet, " "), defaultValue)
 			case bool:
-				nameLine = fmt.Sprintf("%s: %t\n", leftPad(property["name"].(string), offSet, " "), sampleValue)
+				nameLine = fmt.Sprintf("%s: %t\n", leftPad(property["name"].(string), offSet, " "), defaultValue)
 			default:
-				nameLine = fmt.Sprintf("%s: \"%s\"\n", leftPad(property["name"].(string), offSet, " "), "No sample_value provided or unknown sample_value type")
+				//if no default found then create line with sample value as comment
+				switch sampleValue.(type) {
+				case string:
+					if !mandatory {
+						sampleValue = strings.Replace(sampleValue.(string), "\n", "\n# ", -1)
+					}
+					nameLine = fmt.Sprintf("%s: # %s\n", leftPad(property["name"].(string), offSet, " "), sampleValue)
+				case int:
+					nameLine = fmt.Sprintf("%s: # %d\n", leftPad(property["name"].(string), offSet, " "), sampleValue)
+				case bool:
+					nameLine = fmt.Sprintf("%s: # %t\n", leftPad(property["name"].(string), offSet, " "), sampleValue)
+				default:
+					nameLine = fmt.Sprintf("%s: # %s\n", leftPad(property["name"].(string), offSet, " "), "No default/sample_value provided or unknown default/sample_value type")
+				}
 			}
 			log.Debug("nameLine1:" + nameLine)
 			if val, ok := parentProperty["type"]; ok {
