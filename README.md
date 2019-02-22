@@ -192,11 +192,11 @@ The source code is in `github.ibm.com/IBMPrivateCloud/cfp-commands-runner/migrat
 
 ### Build the localization tool
 
-- `make localization`, the binary is generated in `migrationTools/_build/localization/<platform>/localization`
+- `make localization`, the binary is generated in `tools/_build/localization/darwin_amd64/localization`
 
 ### Run the tool
 
-- `migrationTools/_build/localization -s <ui_metadata_source_file> -d <ui_metadata_destination_file> -t <i18n_yaml_destination_file>`
+- `tools/_build/localization/darwin_amd64/localization convert -s <extension_manifest_source_file> -d <extension_manifest_source_file> -t <i18n_yaml_destination_file>`
 
 ### In case of update of the ui_metadata file
 - If you add a new attribute in the ui_metadata (ie: description: "hello world"), the tool will add that entry in the destination i18n file as the related key doesn't exist their yet and the ui_metadata attribute will be updated with that key.
@@ -213,7 +213,7 @@ The source code is in `github.ibm.com/IBMPrivateCloud/cfp-commands-runner/migrat
 
 ### Run the tool
 
-- `migrationTools/_build/verify-localization -p <extension_path> [-l <languages>]`
+- `migrationTools/_build/verify-localization verify -p <extension_path> [-l <languages>]`
 
 
 

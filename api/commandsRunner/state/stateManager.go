@@ -135,7 +135,7 @@ type States struct {
 	//EndTime if not empty, it contains the last end execution time of the state
 	EndTime string `yaml:"end_time" json:"end_time"`
 	//Status states status
-	Status     string `yaml:"status" json:"status`
+	Status     string `yaml:"status" json:"status"`
 	StatesPath string `yaml:"-" json:"-"`
 	mux        *sync.Mutex
 }
@@ -925,6 +925,8 @@ func (sm *States) mergeStates(newStates States) error {
 			state.StartTime = sm.StateArray[i].StartTime
 			state.EndTime = sm.StateArray[i].EndTime
 			state.Reason = sm.StateArray[i].Reason
+			state.ExecutionID = sm.StateArray[i].ExecutionID
+			state.ExecutedByExtensionName = sm.StateArray[i].ExecutedByExtensionName
 			log.Debugf("Merged state: %v", sm.StateArray[i])
 			log.Debug("New State Node Updated with old status: " + state.Name)
 		} else {
@@ -1087,6 +1089,10 @@ func (sm *States) setStateStatus(state State, status string, recursively bool) e
 }
 
 func (sm *States) setParentStateStatus(status string) error {
+	//No parent
+	if sm.ParentExtensionName == "" {
+		return nil
+	}
 	//Update the parent extension name in the inserted extension state-file
 	stateManager, errStateManager := GetStatesManager(sm.ParentExtensionName)
 	if errStateManager != nil {
@@ -1103,6 +1109,8 @@ func (sm *States) setParentStateStatus(status string) error {
 	}
 	if stateFound.Status != status {
 		stateFound.Status = status
+		stateFound.StartTime = sm.StartTime
+		stateFound.EndTime = sm.EndTime
 		err = stateManager.writeStates()
 		if err != nil {
 			return err
@@ -1441,35 +1449,34 @@ func (sm *States) InsertState(state State, pos int, stateName string, before boo
 		sm.StateArray = make([]State, 0)
 		sm.StateArray = append(sm.StateArray, bckStateArray...)
 		return errors.New(err.Error())
-	} else {
-		err := sm.setStateStatus(state, StateREADY, true)
-		if err != nil {
-			return err
-		}
-		sm.setDefaultValues()
-		err = sm.writeStates()
-		if err != nil {
-			return err
-		}
-		//We are inserting an extension
-		if valid {
-			//Update the parent extension name in the inserted extension state-file
-			stateManager, errStateManager := GetStatesManager(state.Name)
-			if errStateManager != nil {
-				logger.AddCallerField().Error(errStateManager.Error())
-				return errStateManager
-			}
-			err = stateManager.readStates()
-			if err != nil {
-				return err
-			}
-			stateManager.ParentExtensionName = sm.ExtensionName
-			log.Debug("Parent Extension name:" + sm.ExtensionName)
-			return stateManager.writeStates()
-		} else {
-			return nil
-		}
 	}
+	err = sm.setStateStatus(state, StateREADY, true)
+	if err != nil {
+		return err
+	}
+	sm.setDefaultValues()
+	err = sm.writeStates()
+	if err != nil {
+		return err
+	}
+	//We are inserting an extension
+	if valid {
+		//Update the parent extension name in the inserted extension state-file
+		stateManager, errStateManager := GetStatesManager(state.Name)
+		if errStateManager != nil {
+			logger.AddCallerField().Error(errStateManager.Error())
+			return errStateManager
+		}
+		err = stateManager.readStates()
+		if err != nil {
+			return err
+		}
+		stateManager.ParentExtensionName = sm.ExtensionName
+		log.Debug("Parent Extension name:" + sm.ExtensionName)
+		return stateManager.writeStates()
+	}
+	return nil
+
 }
 
 //DeleteState Delete a state at a given position or with a given name
@@ -1830,7 +1837,7 @@ func (sm *States) setStatesExecutionID(callerState *State) error {
 	return nil
 }
 
-func (sm *States) setExecutionTimesAndStatesStatus(status string) error {
+func (sm *States) setExecutionTimesAndStatesStatus(status string, callerState *State) error {
 	errStates := sm.readStates()
 	if errStates != nil {
 		log.Debug(errStates.Error())
@@ -1844,6 +1851,18 @@ func (sm *States) setExecutionTimesAndStatesStatus(status string) error {
 		sm.EndTime = timeNow
 	}
 	sm.Status = status
+	// if this execution was called from a parent states file
+	// then no need to set the parent status as the parent status is set during
+	// the parent execution... also if that test was not done, the parent states status
+	// could flip from READY, RUNNING, SUCCEEDED each time a sub-process is called from the parent.
+	if callerState == nil {
+		//Set the caller state status and timestamp
+		errStates = sm.setParentStateStatus(status)
+		if errStates != nil {
+			log.Debug(errStates.Error())
+			return errStates
+		}
+	}
 	errStates = sm.writeStates()
 	if errStates != nil {
 		log.Debug(errStates.Error())
@@ -1865,7 +1884,7 @@ func (sm *States) Execute(fromState string, toState string, callerState *State, 
 		log.Debug(err.Error())
 		return err
 	}
-	errStartTime := sm.setExecutionTimesAndStatesStatus(StateRUNNING)
+	errStartTime := sm.setExecutionTimesAndStatesStatus(StateRUNNING, callerState)
 	if errStartTime != nil {
 		log.Debug(errStartTime.Error())
 		return errStartTime
@@ -1875,7 +1894,7 @@ func (sm *States) Execute(fromState string, toState string, callerState *State, 
 	if err != nil {
 		status = StateFAILED
 	}
-	errStopTime := sm.setExecutionTimesAndStatesStatus(status)
+	errStopTime := sm.setExecutionTimesAndStatesStatus(status, callerState)
 	if errStopTime != nil {
 		log.Debug(errStopTime.Error())
 		return errStopTime
@@ -1987,22 +2006,6 @@ func (sm *States) executeState(state State, callerState *State, callerOutFile *o
 		return err
 	}
 	defer outfile.Close()
-	//Update states to be rerun
-	// for _, stateName := range state.StatesToRerun {
-	// 	stateToReRun, err := sm._getState(stateName)
-	// 	if err != nil {
-	// 		log.Debug("WARNING: State to rerun " + stateName + " not found in states_to_rerun attribute of " + state.Name + ":" + err.Error())
-	// 	} else {
-	// 		if stateToReRun.Status != StateSKIP {
-	// 			err := sm.setStateStatus(*stateToReRun, StateREADY, true)
-	// 			if err != nil {
-	// 				logger.AddCallerField().Error(err)
-	// 				return errors.New("State to rerun " + stateToReRun.Name + " not found in states_to_rerun attribute of " + state.Name + ":" + err.Error())
-	// 			}
-	// 			log.Debug("Reset to READY state " + stateToReRun.Name)
-	// 		}
-	// 	}
-	// }
 	var errExec error
 	isExtension, errExt := IsExtension(state.Name)
 	if errExt != nil {

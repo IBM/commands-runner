@@ -102,13 +102,13 @@ code:
 .PHONY: localization
 localization:
 	mkdir -p tools/_build/localization/linux_amd64
-	env GOOS=linux GOARCH=amd64 go build -o tools/_build/localization/linux_amd64/localization  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/tools/verifyLocalization
+	env GOOS=linux GOARCH=amd64 go build -o tools/_build/localization/linux_amd64/localization  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/tools/convertUIMetadataLocalization
 	mkdir -p tools/_build/localization/darwin_amd64
-	env GOOS=darwin GOARCH=amd64 go build -o tools/_build/localization/darwin_amd64/localization  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/tools/verifyLocalization
+	env GOOS=darwin GOARCH=amd64 go build -o tools/_build/localization/darwin_amd64/localization  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/tools/convertUIMetadataLocalization
 	mkdir -p tools/_build/localization/windows_amd64	
-	env GOOS=windows GOARCH=amd64 go build -o tools/_build/localization/windows_amd64/localization  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/tools/verifyLocalization
+	env GOOS=windows GOARCH=amd64 go build -o tools/_build/localization/windows_amd64/localization  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/tools/convertUIMetadataLocalization
 	mkdir -p tools/_build/localization/windows_386
-	env GOOS=windows GOARCH=386 go build -o tools/_build/localization/windows_386/localization  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/tools/verifyLocalization
+	env GOOS=windows GOARCH=386 go build -o tools/_build/localization/windows_386/localization  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/tools/convertUIMetadataLocalization
 
 .PHONY: verify-localization
 verify-localization:
