@@ -571,7 +571,7 @@ func TestInsertStatesBeforeFirst(t *testing.T) {
 	state := &State{
 		Name: "beforeFirst",
 	}
-	err = sm.InsertState(*state, 1, "", true)
+	err = sm.InsertState(*state, 1, "", true, false)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -618,7 +618,7 @@ func TestInsertStatesAfterFirst(t *testing.T) {
 	state := &State{
 		Name: "afterFirst",
 	}
-	err = sm.InsertState(*state, 1, "", false)
+	err = sm.InsertState(*state, 1, "", false, false)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -664,7 +664,7 @@ func TestInsertStatesBeforeLast(t *testing.T) {
 	state := &State{
 		Name: "beforeLast",
 	}
-	err = sm.InsertState(*state, 2, "", true)
+	err = sm.InsertState(*state, 2, "", true, false)
 	stateData, _ = sm.convert2String()
 	t.Log(stateData)
 	if err != nil {
@@ -714,7 +714,7 @@ func TestInsertStatesAfterLast(t *testing.T) {
 	state := &State{
 		Name: "afterLast",
 	}
-	err = sm.InsertState(*state, 2, "", false)
+	err = sm.InsertState(*state, 2, "", false, false)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -763,7 +763,7 @@ func TestInsertStatesAfterLastByName(t *testing.T) {
 	state := &State{
 		Name: "afterLastByName",
 	}
-	err = sm.InsertState(*state, 0, "Last", false)
+	err = sm.InsertState(*state, 0, "Last", false, false)
 	statesData, _ = sm.convert2String()
 	t.Log(statesData)
 	if err != nil {
@@ -814,7 +814,7 @@ func TestInsertStatesWithCycle(t *testing.T) {
 			"Last",
 		},
 	}
-	err = sm.InsertState(*state, 2, "", true)
+	err = sm.InsertState(*state, 0, "", true, false)
 	stateData, _ := sm.convert2String()
 	t.Log(stateData)
 	if err == nil {

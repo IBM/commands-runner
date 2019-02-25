@@ -261,6 +261,15 @@ func PutInsertStateStatesEndpoint(w http.ResponseWriter, req *http.Request) {
 	if stateNameFound, okStateName := m["state-name"]; okStateName {
 		stateName = stateNameFound[0]
 	}
+	overwrite := false
+	if overwriteFound, okOverwrite := m["overwrite"]; okOverwrite {
+		overwrite, errCvt = strconv.ParseBool(overwriteFound[0])
+		if errCvt != nil {
+			logger.AddCallerField().Error(errCvt.Error())
+			http.Error(w, "Can not convert overwrite parameter to boolean "+errCvt.Error(), 500)
+			return
+		}
+	}
 	//log.Debugf("ReqBody:\n%s", req.Body)
 	buf := new(bytes.Buffer)
 	var nbBytes int64
@@ -285,11 +294,11 @@ func PutInsertStateStatesEndpoint(w http.ResponseWriter, req *http.Request) {
 				return
 			}
 			log.Debug("Extension to insert: " + insertExtensionName)
-			err = sm.InsertStateFromExtensionName(insertExtensionName, pos, stateName, before)
+			err = sm.InsertStateFromExtensionName(insertExtensionName, pos, stateName, before, overwrite)
 		} else {
 			bodyRaw := buf.String()
 			body := html.UnescapeString(bodyRaw)
-			err = sm.InsertStateFromString(body, pos, stateName, before)
+			err = sm.InsertStateFromString(body, pos, stateName, before, overwrite)
 		}
 		if err != nil {
 			logger.AddCallerField().Error(err.Error())

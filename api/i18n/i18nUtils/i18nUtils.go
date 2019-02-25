@@ -75,6 +75,7 @@ func LoadMessageFiles() error {
 
 //Load into the Bundle with the translation file located in i18nDir
 func LoadTranslationFilesFromDir(i18nDir string) error {
+	log.Debug("Entering in.... LoadTranslationFilesFromDir")
 	//Create bundle holding all messages for i18n
 	if Bundle == nil {
 		Bundle = &i18n.Bundle{DefaultLanguage: language.English}

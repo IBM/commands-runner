@@ -438,7 +438,7 @@ func Client() *cli.App {
 			fmt.Println(errClient.Error())
 			return errClient
 		}
-		data, err := client.InsertStateStates(extensionName, statePosition, stateName, c.Bool("before"), statePath, insertExtensionName)
+		data, err := client.InsertStateStates(extensionName, statePosition, stateName, c.Bool("before"), statePath, insertExtensionName, c.Bool("overwrite"))
 		if err != nil {
 			fmt.Println(err.Error())
 			return err
@@ -1177,6 +1177,10 @@ func Client() *cli.App {
 						cli.BoolFlag{
 							Name:  "before, b",
 							Usage: "Insert the state before the provided position/state name",
+						},
+						cli.BoolFlag{
+							Name:  "overwrite, o",
+							Usage: "overwrite the state if already exists",
 						},
 					},
 					Action: insertStateStates,

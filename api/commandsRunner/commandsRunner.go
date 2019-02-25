@@ -12,7 +12,6 @@ package commandsRunner
 
 import (
 	"errors"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -247,8 +246,8 @@ func ServerStart(preInit InitFunc, postInit InitFunc, preStart InitFunc, postSta
 			Action: func(c *cli.Context) error {
 				commandsRunner.LogPath = filepath.Join(configDir, "commands-runner.log")
 				file, _ := os.Create(commandsRunner.LogPath)
-				out := io.MultiWriter(file, os.Stderr)
-				log.SetOutput(out)
+				//				out := io.MultiWriter(file, os.Stderr)
+				log.SetOutput(file)
 				logLevel := os.Getenv("CR_TRACE")
 				log.Printf("CR_TRACE: %s", logLevel)
 				if logLevel == "" {

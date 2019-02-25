@@ -149,7 +149,7 @@ func (crc *CommandsRunnerClient) SetStatesStatuses(extensionName string, newStat
 	return data, nil
 }
 
-func (crc *CommandsRunnerClient) InsertStateStates(extensionName string, pos int, stateName string, before bool, statePath string, insertExtensionName string) (string, error) {
+func (crc *CommandsRunnerClient) InsertStateStates(extensionName string, pos int, stateName string, before bool, statePath string, insertExtensionName string, overwrite bool) (string, error) {
 	if extensionName == "" {
 		extensionName = crc.DefaultExtensionName
 	}
@@ -157,7 +157,7 @@ func (crc *CommandsRunnerClient) InsertStateStates(extensionName string, pos int
 		err := errors.New("A state file or extension name missing")
 		return "", err
 	}
-	url := "states?action=insert&pos=" + strconv.Itoa(pos) + "&before=" + strconv.FormatBool(before)
+	url := "states?action=insert&pos=" + strconv.Itoa(pos) + "&before=" + strconv.FormatBool(before) + "&overwrite=" + strconv.FormatBool(overwrite)
 	if extensionName != "" {
 		url += "&extension-name=" + extensionName
 	}

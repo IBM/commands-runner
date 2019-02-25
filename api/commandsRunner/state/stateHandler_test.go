@@ -583,7 +583,7 @@ func TestAddStateManagerIBM(t *testing.T) {
 	//	global.SetExtensionResourcePath("../../test/resource/extensions/")
 	extension := "ext-template"
 	addStateManager(extension)
-	sm, err := getStateManager(extension)
+	sm, err := getStatesManager(extension)
 	if err != nil {
 		t.Error("Unable to retrieve state manager " + extension)
 	}

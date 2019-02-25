@@ -62,7 +62,7 @@ type Extension struct {
 	//The states-file path is always added to that array.
 	//The path is a pattern relative to the extension home directory.
 	//The pattern syntax is described at https://golang.org/src/path/filepath/match.go?s=1226:1284#L34
-	PersistedPaths []string `yaml:"persisted_paths" json:"persisted_paths`
+	PersistedPaths []string `yaml:"persisted_paths" json:"persisted_paths"`
 }
 
 type CallState struct {
@@ -741,7 +741,7 @@ func RegisterExtension(extensionName, zipPath string, force bool) error {
 	} else {
 		extensionPath = filepath.Join(GetExtensionsPathCustom(), extensionName)
 	}
-	var errInstall, errGenStatesFile, errLoadTranslation, errRestorePersistedPaths error
+	var errInstall, errGenStatesFile, errLoadTranslation, errRestorePersistedPaths, errUpdateCallers error
 	var backupPath string
 	if isExtensionRegistered {
 		backupPath, err = backupExtension(extensionName)
@@ -797,7 +797,13 @@ func RegisterExtension(extensionName, zipPath string, force bool) error {
 		}
 
 	}
-	if errInstall != nil || errGenStatesFile != nil || errLoadTranslation != nil || errRestorePersistedPaths != nil {
+	log.Debugf("Extension %s isExtensionRegistered: %v", extensionName, isExtensionRegistered)
+	log.Debug("if isExtensionRegistered then updateCallers")
+	if isExtensionRegistered {
+		log.Debug("Update Caller: " + extensionName)
+		errUpdateCallers = updateCallers(extensionName)
+	}
+	if errUpdateCallers != nil || errInstall != nil || errGenStatesFile != nil || errLoadTranslation != nil || errRestorePersistedPaths != nil {
 		if backupPath != "" {
 			log.Debug("Rolled back due to the error below")
 			restoreExtension(extensionName, backupPath)
@@ -817,6 +823,9 @@ func RegisterExtension(extensionName, zipPath string, force bool) error {
 	}
 	if errGenStatesFile != nil {
 		return errors.New("Error Generate States file:" + errGenStatesFile.Error())
+	}
+	if errUpdateCallers != nil {
+		return errors.New("Error while updating callers:" + errUpdateCallers.Error())
 	}
 	return nil
 }

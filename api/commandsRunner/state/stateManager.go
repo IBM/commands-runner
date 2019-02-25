@@ -176,8 +176,8 @@ func removeStateManager(extensionName string) error {
 }
 
 //Find a stateManager based on the extensionNAme
-func getStateManager(extensionName string) (*States, error) {
-	log.Debug("Entering in getStateManager")
+func getStatesManager(extensionName string) (*States, error) {
+	log.Debug("Entering in getStatesManager")
 	log.Debug("ExtensionName: " + extensionName)
 	if val, ok := stateManagers[extensionName]; ok {
 		statePath, _ := getStatePath(extensionName)
@@ -192,7 +192,7 @@ func getStateManager(extensionName string) (*States, error) {
 func GetStatesManager(extensionName string) (*States, error) {
 	log.Debug("Entering in getAddStateManagersss")
 	log.Debug("Search for manager: " + extensionName)
-	sm, err := getStateManager(extensionName)
+	sm, err := getStatesManager(extensionName)
 	if err == nil {
 		log.Debug("Manager already exists, returning it")
 		return sm, nil
@@ -200,7 +200,7 @@ func GetStatesManager(extensionName string) (*States, error) {
 	log.Debug("Manager doesn't exist, creating")
 	addStateManager(extensionName)
 	log.Debug("returning created manager")
-	return getStateManager(extensionName)
+	return getStatesManager(extensionName)
 }
 
 //NewClient creates a new client
@@ -350,7 +350,7 @@ func (sm *States) copyStateToRerunToNextStates() {
 	for index := range sm.StateArray {
 		if !sm.StateArray[index].Deleted {
 			for _, stateRerun := range sm.StateArray[index].StatesToRerun {
-				if !sm.isInNextState(sm.StateArray[index], stateRerun) {
+				if !sm.isInNextStates(sm.StateArray[index], stateRerun) {
 					sm.StateArray[index].NextStates = append(sm.StateArray[index].NextStates, stateRerun)
 				}
 			}
@@ -552,9 +552,9 @@ func (sm *States) SetStatesStatuses(status string, fromStateName string, fromInc
 	}
 	fromIndex := 0
 	if fromStateName != "" {
-		fromIndex, err = sm.getStatePosition(fromStateName)
+		fromIndex = sm.getStatePosition(fromStateName)
 		log.Debug("From Position: " + fromStateName + " index: " + strconv.Itoa(fromIndex))
-		if err != nil {
+		if fromIndex == -1 {
 			return errors.New(fromStateName + " not found!")
 		}
 		if !fromIncluded {
@@ -566,9 +566,9 @@ func (sm *States) SetStatesStatuses(status string, fromStateName string, fromInc
 	log.Debug("From: " + fromStateName + " index: " + strconv.Itoa(fromIndex))
 	toIndex := len(sm.StateArray) - 1
 	if toStateName != "" {
-		toIndex, err = sm.getStatePosition(toStateName)
+		toIndex = sm.getStatePosition(toStateName)
 		log.Debug("To Position: " + toStateName + " index: " + strconv.Itoa(toIndex))
-		if err != nil {
+		if toIndex == -1 {
 			return errors.New(toStateName + " not found!")
 		}
 		if !toIncluded {
@@ -591,22 +591,18 @@ func (sm *States) SetStatesStatuses(status string, fromStateName string, fromInc
 }
 
 //indexState Search index in states array for a given state
-func indexState(states []State, stateName string) (int, error) {
+func indexState(states []State, stateName string) int {
 	for index, stateAux := range states {
 		if stateAux.Name == stateName {
-			return index, nil
+			return index
 		}
 	}
-	return -1, errors.New(stateName + " not found")
+	return -1
 }
 
 //getStatePosition Search index in the current statearray
-func (sm *States) getStatePosition(stateName string) (int, error) {
-	index, err := indexState(sm.StateArray, stateName)
-	if err != nil {
-		return -1, err
-	}
-	return index, nil
+func (sm *States) getStatePosition(stateName string) int {
+	return indexState(sm.StateArray, stateName)
 }
 
 //Remove deleted states from the current state and new states.
@@ -627,7 +623,7 @@ func (sm *States) removeDeletedStates(newStates States) (*States, error) {
 		//If the new state is marked as to be deleted
 		if state.Deleted {
 			//Search the same state in the current state file.
-			oldIndex, _ := indexState(sm.StateArray, state.Name)
+			oldIndex := indexState(sm.StateArray, state.Name)
 			log.Debug("currentStates located at " + strconv.Itoa(oldIndex))
 			//if found then clean current states
 			if oldIndex != -1 {
@@ -638,7 +634,7 @@ func (sm *States) removeDeletedStates(newStates States) (*States, error) {
 					sm.StateArray = append(sm.StateArray[:oldIndex], sm.StateArray[oldIndex+1:]...)
 				}
 			}
-			newIndex, _ := indexState(newStates.StateArray, state.Name)
+			newIndex := indexState(newStates.StateArray, state.Name)
 			log.Debug("newStates located at " + strconv.Itoa(newIndex))
 			//if found then clean newStates
 			if newIndex != -1 {
@@ -731,7 +727,7 @@ func (sm *States) topoSort() error {
 			if !isNextStateMigrationDone {
 				isNextStateMigrationDone = true
 			}
-			indexState, _ := indexState(sm.StateArray, nextState)
+			indexState := indexState(sm.StateArray, nextState)
 			if indexState == -1 {
 				sm.StateArray[index].NextStates = append(sm.StateArray[index].NextStates[:indexNext], sm.StateArray[index].NextStates[indexNext+1:]...)
 			}
@@ -987,7 +983,7 @@ func (sm *States) generateStatesFromGraph(sorted []graph.Node, graph *simple.Dir
 }
 
 //isInNextState Check if a state is in the NextState of a given state.
-func (sm *States) isInNextState(currentState State, stateName string) bool {
+func (sm *States) isInNextStates(currentState State, stateName string) bool {
 	for _, nextStateName := range currentState.NextStates {
 		if nextStateName == stateName {
 			return true
@@ -996,8 +992,18 @@ func (sm *States) isInNextState(currentState State, stateName string) bool {
 	return false
 }
 
+//NextStatesIndexOf return the index of a stateName in the NextStates
+func (sm *States) NextStatesIndexOf(currentState State, stateName string) int {
+	for index, nextStateName := range currentState.NextStates {
+		if nextStateName == stateName {
+			return index
+		}
+	}
+	return -1
+}
+
 //isInPreviousState Check if a state is in the PreviousState of a given state.
-func (sm *States) isInPreviousState(currentState State, stateName string) bool {
+func (sm *States) isInPreviousStates(currentState State, stateName string) bool {
 	for _, previousStateNAme := range currentState.PreviousStates {
 		if previousStateNAme == stateName {
 			return true
@@ -1039,7 +1045,7 @@ func (sm *States) isRunning() bool {
 //f recusively is true and if the state is an extension then the states of the extension will be set to the status and this recursively.
 func (sm *States) setStateStatus(state State, status string, recursively bool) error {
 	log.Debug("Entering.... setStateStatus state:" + state.Name + " status:" + status + " recursively:" + strconv.FormatBool(recursively))
-	index, _ := indexState(sm.StateArray, state.Name)
+	index := indexState(sm.StateArray, state.Name)
 	if index == -1 {
 		return errors.New("State: " + state.Name + " not found!")
 	}
@@ -1311,7 +1317,11 @@ func (sm *States) setStateStatusWithTimeStamp(isStart bool, state string, status
 	return nil
 }
 
-func (sm *States) InsertStateFromExtensionName(extensionName string, pos int, stateName string, before bool) error {
+func (sm *States) InsertStateFromExtensionName(extensionName string, pos int, stateName string, before bool, overwrite bool) error {
+	log.Debug("Entering..... InsertStateFromExtensionName")
+	log.Debug("State name: " + stateName)
+	log.Debug("State position: " + strconv.Itoa(pos))
+	log.Debug("State before: " + strconv.FormatBool(before))
 	manifestPath, err := GetRegisteredExtensionPath(extensionName)
 	if err != nil {
 		return err
@@ -1344,7 +1354,7 @@ func (sm *States) InsertStateFromExtensionName(extensionName string, pos int, st
 		return err
 	}
 	log.Debug("call_state: " + stateString)
-	err = sm.InsertStateFromString(stateString, pos, stateName, before)
+	err = sm.InsertStateFromString(stateString, pos, stateName, before, overwrite)
 	if err != nil {
 		return err
 	}
@@ -1355,34 +1365,51 @@ func (sm *States) InsertStateFromExtensionName(extensionName string, pos int, st
 //The state Def is provided as a string
 //If the position is 0 and the stateName is not provided then the state will be inserted taking into account the PreviousStates and NextStates of the inserted state.
 //Array start in Go at 0 but here the pos 1 is the elem 0
-func (sm *States) InsertStateFromString(stateDef string, pos int, stateName string, before bool) error {
+func (sm *States) InsertStateFromString(stateDef string, pos int, stateName string, before bool, overwrite bool) error {
+	log.Debug("Entering..... InsertStateFromString")
+	log.Debug("State name: " + stateName)
+	log.Debug("State position: " + strconv.Itoa(pos))
+	log.Debug("State before: " + strconv.FormatBool(before))
+
 	var stateAux State
 	err := yaml.Unmarshal([]byte(stateDef), &stateAux)
 	if err != nil {
 		return err
 	}
-	return sm.InsertState(stateAux, pos, stateName, before)
+	return sm.InsertState(stateAux, pos, stateName, before, overwrite)
 }
 
-//InsertState Insert state at a given position, before or after a given state.
-//If the position is 0 and the stateName is not provided then the state will be inserted taking into account the PreviousStates and NextStates of the inserted state.
+//InsertState Insert state at a given state position, before or after a given state.
+//If the referencePosition is not 0, then that position will be used as reference for insertion
+//If the referencePosition is equal 0 and the referenceStateName is provided, the position of the referenceStateName will be used as reference for insertion
+//If the referencePosition is 0 and the referenceStateName is not provided then the state will be inserted taking into account the PreviousStates and NextStates of the inserted state.
+//If the state is already present, then it is updated if overwrite is true
 //Array start in Go at 0 but here the pos 1 is the elem 0
-func (sm *States) InsertState(state State, pos int, stateName string, before bool) error {
+func (sm *States) InsertState(state State, referencePosition int, referenceStateName string, before bool, overwrite bool) error {
 	log.Debug("Entering..... InsertState")
-	log.Debug("State name: " + stateName)
+	log.Debug("Reference State name: " + referenceStateName)
 	sm.lock()
 	defer sm.unlock()
 	errStates := sm.readStates()
 	if errStates != nil {
+		logger.AddCallerField().Error(errStates.Error())
 		return errStates
 	}
-	_, err := sm._getState(state.Name)
-	if err == nil {
-		return errors.New("State name " + state.Name + " already exists")
+	if sm.isRunning() {
+		return errors.New("Insert can not be executed while a deployment is running")
+	}
+	stateAlreadyInserted := false
+	existingPosition := sm.getStatePosition(state.Name)
+	if existingPosition != -1 {
+		if overwrite {
+			stateAlreadyInserted = true
+		} else {
+			return errors.New("State name " + state.Name + " already exists")
+		}
 	}
 	valid, err := IsExtension(state.Name)
 	if err != nil {
-		log.Debug(err.Error())
+		logger.AddCallerField().Error(err.Error())
 		return err
 	}
 	//We are inserting an extension and so the extension must be registered
@@ -1392,67 +1419,105 @@ func (sm *States) InsertState(state State, pos int, stateName string, before boo
 			return errors.New("The state name " + state.Name + " is not registered")
 		}
 	}
-	if sm.isRunning() {
-		return errors.New("Insert can not be executed while a deployment is running")
-	}
-	position := pos
-	if stateName != "" {
-		position, err = sm.getStatePosition(stateName)
-		if err != nil {
+	//Set the position with the provided position
+	whereToInsertedPosition := referencePosition
+	//if the stateName is provided then the insertion will be relative to that state
+	//Search the position of that state as new position
+	if referenceStateName != "" {
+		whereToInsertedPosition = sm.getStatePosition(referenceStateName)
+		if whereToInsertedPosition == -1 {
+			err := errors.New("state : " + referenceStateName + " not found")
+			logger.AddCallerField().Error(err.Error())
 			return err
 		}
-		position++
-		log.Debug("Position:" + strconv.Itoa(position))
-	} else if position == 0 && (len(state.NextStates) == 0 || len(state.PreviousStates) == 0) {
+		whereToInsertedPosition++
+		log.Debug("Position:" + strconv.Itoa(whereToInsertedPosition))
+	} else if whereToInsertedPosition == 0 && (len(state.NextStates) == 0 || len(state.PreviousStates) == 0) {
 		return errors.New("The position, state name and previous and next states are undefined")
-	} else if position != 0 && (position < 1 || position > len(sm.StateArray)) {
-		return errors.New("The position must be between 1 and " + strconv.Itoa(len(sm.StateArray)) + " currently:" + strconv.Itoa(position))
+	} else if whereToInsertedPosition != 0 && (whereToInsertedPosition < 1 || whereToInsertedPosition > len(sm.StateArray)) {
+		return errors.New("The position must be between 1 and " + strconv.Itoa(len(sm.StateArray)) + " currently:" + strconv.Itoa(whereToInsertedPosition))
 	}
 
 	//Copy the state at the end but it will be overwritten by the copy
 	bckStateArray := make([]State, 0)
 	bckStateArray = append(bckStateArray, sm.StateArray...)
 	log.Debugf("%v", bckStateArray)
-	arrayPos := position
-	if position != 0 {
-		if before {
-			arrayPos = position - 1
-		}
-		//Update the PreviousStates and NextStates surrounding states
-		if arrayPos > 0 {
-			if !sm.isInNextState(sm.StateArray[arrayPos-1], state.Name) {
-				sm.StateArray[arrayPos-1].NextStates = append(sm.StateArray[arrayPos-1].NextStates, state.Name)
+	//The new state doesn't provide relative positionning
+	if len(state.NextStates) == 0 && len(state.PreviousStates) == 0 {
+		//if state already inserted, then just update the state
+		if stateAlreadyInserted {
+			updateState(&sm.StateArray[existingPosition], state)
+		} else {
+			arrayPos := whereToInsertedPosition
+			//Do the insertion based on position
+			if before {
+				arrayPos = whereToInsertedPosition - 1
 			}
-		}
-		if arrayPos < len(sm.StateArray) {
-			if !sm.isInNextState(state, sm.StateArray[arrayPos].Name) {
-				state.NextStates = append(state.NextStates, sm.StateArray[arrayPos].Name)
+			//Update the PreviousStates and NextStates surrounding states
+			if arrayPos > 0 {
+				if !sm.isInNextStates(sm.StateArray[arrayPos-1], state.Name) {
+					sm.StateArray[arrayPos-1].NextStates = append(sm.StateArray[arrayPos-1].NextStates, state.Name)
+				}
+			}
+			if arrayPos < len(sm.StateArray) {
+				if !sm.isInNextStates(state, sm.StateArray[arrayPos].Name) {
+					state.NextStates = append(state.NextStates, sm.StateArray[arrayPos].Name)
+				}
 			}
 		}
 	} else {
-		//Update the NextState of the PreviousStates
+		//if state already inserted update the current state and delete the NextStates reference
+		// referenced in PreviousStats of the current state
+		if stateAlreadyInserted {
+			log.Debug("Not position insertion")
+			for _, stateName := range sm.StateArray[existingPosition].PreviousStates {
+				log.Debugf("Cleaning Referenced NextStates of %s", stateName)
+				statePos := sm.getStatePosition(stateName)
+				if statePos == -1 {
+					err := errors.New("state : " + stateName + " not found")
+					logger.AddCallerField().Error(err.Error())
+					return err
+				}
+				//Search the index of the state in the NextStates
+				index := sm.NextStatesIndexOf(sm.StateArray[statePos], sm.StateArray[existingPosition].Name)
+				if index != -1 {
+					//remove entry in NextStates
+					log.Debugf("Remove NextStates %s from %s", sm.StateArray[existingPosition].Name, sm.StateArray[statePos].Name)
+					sm.StateArray[statePos].NextStates = append(sm.StateArray[statePos].NextStates[:index], sm.StateArray[statePos].NextStates[index+1:]...)
+				}
+			}
+			updateState(&sm.StateArray[existingPosition], state)
+			log.Debugf("State after update: %v", sm.StateArray[existingPosition])
+		}
+		//As the topology sort is a based on the NextStates, we need to
+		//update the NextStates of the states referenced by the PreviousStates of provided state.
 		for _, stateName := range state.PreviousStates {
-			statePos, err := sm.getStatePosition(stateName)
-			if err != nil {
+			statePos := sm.getStatePosition(stateName)
+			if statePos == -1 {
+				err := errors.New("state : " + stateName + " not found")
+				logger.AddCallerField().Error(err.Error())
 				return err
 			}
-			if !sm.isInNextState(sm.StateArray[statePos], stateName) {
+			if !sm.isInNextStates(sm.StateArray[statePos], stateName) {
 				sm.StateArray[statePos].NextStates = append(sm.StateArray[statePos].NextStates, state.Name)
 			}
 		}
 	}
-	log.Debug(strconv.Itoa(arrayPos))
-	sm.StateArray = append(sm.StateArray, state)
+	if !stateAlreadyInserted {
+		sm.StateArray = append(sm.StateArray, state)
+		err = sm.setStateStatus(state, StateREADY, true)
+		if err != nil {
+			logger.AddCallerField().Error(err.Error())
+			return err
+		}
+	}
 	err = sm.topoSort() //	err = sm.hasCycles()
 	if err != nil {
 		log.Debugf("bckStateArray: %v", bckStateArray)
 		sm.StateArray = make([]State, 0)
 		sm.StateArray = append(sm.StateArray, bckStateArray...)
+		logger.AddCallerField().Error(err.Error())
 		return errors.New(err.Error())
-	}
-	err = sm.setStateStatus(state, StateREADY, true)
-	if err != nil {
-		return err
 	}
 	sm.setDefaultValues()
 	err = sm.writeStates()
@@ -1469,6 +1534,7 @@ func (sm *States) InsertState(state State, pos int, stateName string, before boo
 		}
 		err = stateManager.readStates()
 		if err != nil {
+			logger.AddCallerField().Error(err.Error())
 			return err
 		}
 		stateManager.ParentExtensionName = sm.ExtensionName
@@ -1477,6 +1543,63 @@ func (sm *States) InsertState(state State, pos int, stateName string, before boo
 	}
 	return nil
 
+}
+
+func updateState(currentState *State, newState State) {
+	currentState.Phase = newState.Phase
+	currentState.Label = newState.Label
+	currentState.LogPath = newState.LogPath
+	currentState.Script = newState.Script
+	currentState.ScriptTimeout = newState.ScriptTimeout
+	currentState.Protected = newState.Protected
+	currentState.Deleted = newState.Deleted
+	currentState.PrerequisiteStates = newState.PrerequisiteStates
+	currentState.StatesToRerun = newState.StatesToRerun
+	currentState.RerunOnRunOfStates = newState.RerunOnRunOfStates
+	currentState.PreviousStates = newState.PreviousStates
+	currentState.NextStates = newState.NextStates
+}
+
+//updateCallers update the caller state already inserted in an another extension states-file
+func updateCallers(extensionName string) error {
+	log.Debug("Entering... updateCallers: " + extensionName)
+	//Search manager
+	stateManager, errStateManager := GetStatesManager(extensionName)
+	if errStateManager != nil {
+		logger.AddCallerField().Error(errStateManager.Error())
+		return errStateManager
+	}
+	err := stateManager.readStates()
+	if err != nil {
+		return err
+	}
+
+	//If no parent nothing to do
+	log.Debug("stateManager.ParentExtensionName:" + stateManager.ParentExtensionName)
+	if stateManager.ParentExtensionName != "" {
+		stateParentManager, errStateManager := GetStatesManager(stateManager.ParentExtensionName)
+		if errStateManager != nil {
+			logger.AddCallerField().Error(errStateManager.Error())
+			return errStateManager
+		}
+		err := stateParentManager.readStates()
+		if err != nil {
+			logger.AddCallerField().Error(err.Error())
+			return err
+		}
+		//Search the caller state in the parent states-file
+		currentPosition := stateParentManager.getStatePosition(extensionName)
+		log.Debug("updateCallers.curcurrentPositionrent: " + strconv.Itoa(currentPosition))
+		if currentPosition == -1 {
+			currentPosition = 0
+		}
+		err = stateParentManager.InsertStateFromExtensionName(extensionName, currentPosition, "", true, true)
+		if err != nil {
+			logger.AddCallerField().Error(err.Error())
+			return err
+		}
+	}
+	return nil
 }
 
 //DeleteState Delete a state at a given position or with a given name
@@ -1495,9 +1618,9 @@ func (sm *States) DeleteState(pos int, stateName string) error {
 	position := pos
 	var err error
 	if stateName != "" {
-		position, err = sm.getStatePosition(stateName)
-		if err != nil {
-			return err
+		position = sm.getStatePosition(stateName)
+		if position == -1 {
+			return errors.New("state :" + stateName + " not found")
 		}
 		position++
 	}
