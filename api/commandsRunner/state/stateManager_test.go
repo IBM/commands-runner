@@ -22,6 +22,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/logger"
 
 	"github.com/go-yaml/yaml"
 )
@@ -37,6 +38,7 @@ const COPYRIGHT_TEST string = `#################################################
 
 func init() {
 	//	log.SetLevel(log.DebugLevel)
+	logger.InitLogFile("/tmp", 10)
 	state1log := "sample-state1 line 1\nsample-state1 line 2\nsample-state1 line 3\nsample-state1 line 4\nsample-state1 line 5"
 	state2log := "sample-state2 line 1\nsample-state2 line 2\nsample-state2 line 3\nsample-state2 line 4\nsample-state2 line 5"
 	ioutil.WriteFile("/tmp/sample-state1.log", []byte(state1log), 0600)

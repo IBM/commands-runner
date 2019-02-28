@@ -13,6 +13,7 @@ package commandsRunner
 import (
 	log "github.com/sirupsen/logrus"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/logger"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/i18n/i18nUtils"
 )
 
@@ -26,7 +27,8 @@ const COPYRIGHT string = `######################################################
 ###############################################################################`
 
 type Log struct {
-	Level string `yaml:"level" json:"level"`
+	Level      string `yaml:"level" json:"level"`
+	MaxBackups int    `yaml:"max_backups" json:"max_backups"`
 }
 
 type About struct {
@@ -58,6 +60,15 @@ func SetLogLevel(levelRequested string) error {
 //Retrieve level
 func GetLogLevel() string {
 	return log.GetLevel().String()
+}
+
+func SetLogMaxBackups(maxBackups int) {
+	logger.InitLogFile(global.ConfigDirectory, maxBackups)
+}
+
+//Retrieve maxBackup
+func GetLogMaxBackups() int {
+	return logger.LogFile.MaxBackups
 }
 
 func SetDefaultExtensionName(defaultExtensionName string) {

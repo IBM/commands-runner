@@ -54,12 +54,50 @@ func (crc *CommandsRunnerClient) SetCRLogLevel(level string) (string, error) {
 		return data, err
 	}
 	if errCode != http.StatusOK {
-		return data, errors.New("Unable to set pcm log level: " + data + ", please check log for more information")
+		return data, errors.New("Unable to set cr log level: " + data + ", please check log for more information")
 	}
 	return data, nil
 }
 
-//GetLogLevel of PCM
+//GetCRLogMaxBackups of CR
+func (crc *CommandsRunnerClient) GetCRLogMaxBackups() (string, error) {
+	url := "cr/log/max-backups"
+	data, errCode, err := crc.RestCall(http.MethodGet, global.BaseURL, url, nil, nil)
+	if err != nil {
+		return data, err
+	}
+	if errCode != http.StatusOK {
+		return data, errors.New("Unable to get cr max-backups: " + data + ", please check log for more information")
+	}
+	//Generate the text format otherwize return the json
+	if crc.OutputFormat == "text" {
+		cfg, err := config.ParseJson(data)
+		if err != nil {
+			return "", err
+		}
+		maxBackups, err := cfg.String("max_backups")
+		if err != nil {
+			return "", err
+		}
+		out := fmt.Sprintf("max-backups: %s\n", maxBackups)
+		return out, nil
+	}
+	return crc.convertJSONOrYAML(data)
+}
+
+func (crc *CommandsRunnerClient) SetCRLogMaxBackups(maxBackups string) (string, error) {
+	url := "cr/log/max-backups?max-backups=" + maxBackups
+	data, errCode, err := crc.RestCall(http.MethodPut, global.BaseURL, url, nil, nil)
+	if err != nil {
+		return data, err
+	}
+	if errCode != http.StatusOK {
+		return data, errors.New("Unable to set cr log max-backups: " + data + ", please check log for more information")
+	}
+	return data, nil
+}
+
+//GetCRSettings of CR
 func (crc *CommandsRunnerClient) GetCRSettings() (string, error) {
 	url := "cr/settings"
 	data, errCode, err := crc.RestCall(http.MethodGet, global.BaseURL, url, nil, nil)
@@ -84,7 +122,7 @@ func (crc *CommandsRunnerClient) GetCRSettings() (string, error) {
 	return crc.convertJSONOrYAML(data)
 }
 
-//GetAbout of PCM
+//GetAbout of CR
 func (crc *CommandsRunnerClient) GetCRAbout() (string, error) {
 	url := "cr/about"
 	data, errCode, err := crc.RestCall(http.MethodGet, global.BaseURL, url, nil, nil)

@@ -59,6 +59,7 @@ func Client() *cli.App {
 	var curlDataPath string
 
 	var logLevel string
+	var logMaxBackups string
 
 	var statusName string
 	var status string
@@ -547,6 +548,17 @@ func Client() *cli.App {
 		return err
 	}
 
+	getCRLogMaxBackups := func(c *cli.Context) error {
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
+		if errClient != nil {
+			fmt.Println(errClient.Error())
+			return errClient
+		}
+		data, err := client.GetCRLogMaxBackups()
+		fmt.Print(data)
+		return err
+	}
+
 	getCRAbout := func(c *cli.Context) error {
 		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
 		if errClient != nil {
@@ -565,6 +577,17 @@ func Client() *cli.App {
 			return errClient
 		}
 		data, err := client.SetCRLogLevel(logLevel)
+		fmt.Print(data)
+		return err
+	}
+
+	setCRLogMaxBackups := func(c *cli.Context) error {
+		client, errClient := clientManager.NewClient(URL, OutputFormat, Timeout, CACertPath, InsecureSSL, Token, DefaultExtensionName)
+		if errClient != nil {
+			fmt.Println(errClient.Error())
+			return errClient
+		}
+		data, err := client.SetCRLogMaxBackups(logMaxBackups)
 		fmt.Print(data)
 		return err
 	}
@@ -846,6 +869,23 @@ func Client() *cli.App {
 							Name:        "level, l",
 							Usage:       "Requested log level",
 							Destination: &logLevel,
+						},
+					},
+				},
+				{
+					Name:   "log-max-backups",
+					Usage:  "Get the current log max backups",
+					Action: getCRLogMaxBackups,
+				},
+				{
+					Name:   "set-log-max-backups",
+					Usage:  "Set the log max backups",
+					Action: setCRLogMaxBackups,
+					Flags: []cli.Flag{
+						cli.StringFlag{
+							Name:        "max-backups, mb",
+							Usage:       "Requested log max backups",
+							Destination: &logMaxBackups,
 						},
 					},
 				},

@@ -13,14 +13,22 @@ package logger
 
 import (
 	"fmt"
+	"path/filepath"
 	"runtime"
 	"strings"
 
+	"github.com/natefinch/lumberjack"
 	"github.com/sirupsen/logrus"
 )
 
 //DefaultLogLevel default log level
 const DefaultLogLevel = "info"
+
+//Default maximum backups for log
+const DefaultLogMaxBackup = "10"
+
+//Log writer
+var LogFile *lumberjack.Logger
 
 //AddCallerField Add called name to the log.
 func AddCallerField() *logrus.Entry {
@@ -30,4 +38,14 @@ func AddCallerField() *logrus.Entry {
 		return logrus.WithField("caller", caller)
 	}
 	return &logrus.Entry{}
+}
+
+func InitLogFile(configDir string, maxBackups int) {
+	LogFile = &lumberjack.Logger{
+		Filename: filepath.Join(configDir, "commands-runner.log"),
+		//	MaxSize:    2, // default 100 megabytes
+		MaxBackups: maxBackups,
+		// MaxAge:     28, // no age days
+		// Compress:   true, // disabled by default
+	}
 }

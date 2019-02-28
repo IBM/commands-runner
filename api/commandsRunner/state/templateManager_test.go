@@ -24,13 +24,13 @@ import (
 )
 
 func TestTraverseProperties(t *testing.T) {
-	//log.SetLevel(log.DebugLevel)
+	log.SetLevel(log.DebugLevel)
 	var properties []interface{}
 	properties = make([]interface{}, 0)
 	p1 := make(map[string]interface{}, 0)
 	p1["name"] = "param1"
-	p1["description"] = "Description 1"
 	p1["sample_value"] = "Eg: sample_value 1"
+	p1["mandatory"] = true
 	properties = append(properties, p1)
 	p2 := make(map[string]interface{}, 0)
 	p2["name"] = "param2"
@@ -67,20 +67,20 @@ func TestTraverseProperties(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	expectedOut := `# Description 1 - sample_value: Eg: sample_value 1
-# param1: # Eg: sample_value 1
+	expectedOut := `# No description - sample_value: Eg: sample_value 1
+param1: # Eg: sample_value 1
 # Description 
 # 2 - sample_value: Eg: sample_value 2
-# param2: # Eg: sample_value 2
+param2: # Eg: sample_value 2
 # # Description 
 # 3
-# # param3:
+# param3:
 #   # Description 31 - sample_value: Eg: 
 # sample_value 31
-# #   param31: # Eg: 
+#   param31: # Eg: 
 # sample_value 31
 # Description 4 - sample_value: Eg: sample_value 4
-# param4: # Eg: sample_value 4
+param4: # Eg: sample_value 4
 `
 	if out.String() != expectedOut {
 		t.Errorf("expecting: \n%s \ngot \n%s", expectedOut, out.String())

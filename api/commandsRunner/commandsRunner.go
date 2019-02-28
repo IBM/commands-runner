@@ -12,6 +12,7 @@ package commandsRunner
 
 import (
 	"errors"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -19,10 +20,9 @@ import (
 	"strconv"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
-	cli "gopkg.in/urfave/cli.v1"
-
 	oconfig "github.com/olebedev/config"
+	log "github.com/sirupsen/logrus"
+
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/commandsRunner"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/config"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
@@ -31,6 +31,7 @@ import (
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/state"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/status"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/i18n/i18nUtils"
+	cli "gopkg.in/urfave/cli.v1"
 )
 
 const COPYRIGHT string = `###############################################################################
@@ -213,8 +214,14 @@ func ServerStart(preInit InitFunc, postInit InitFunc, preStart InitFunc, postSta
 	var configDir string
 	var port string
 	var portSSL string
-
 	//	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	//If Panic close the current log.
+	defer func() {
+		if r := recover(); r != nil {
+			log.Debug(r)
+			logger.LogFile.Close()
+		}
+	}()
 
 	app := cli.NewApp()
 	app.Usage = "Commands Runner for installation"
@@ -244,10 +251,29 @@ func ServerStart(preInit InitFunc, postInit InitFunc, preStart InitFunc, postSta
 				},
 			},
 			Action: func(c *cli.Context) error {
-				commandsRunner.LogPath = filepath.Join(configDir, "commands-runner.log")
-				file, _ := os.Create(commandsRunner.LogPath)
-				//				out := io.MultiWriter(file, os.Stderr)
-				log.SetOutput(file)
+				// commandsRunner.LogPath = filepath.Join(configDir, "commands-runner.log")
+				// file, _ := os.Create(commandsRunner.LogPath)
+				logMaxBackups := os.Getenv("CR_LOG_MAX_BACKUPS")
+				maxBackups := 10
+				var errMaxBackups error
+				if logMaxBackups != "" {
+					maxBackups, errMaxBackups = strconv.Atoi(logMaxBackups)
+					if errMaxBackups != nil {
+						maxBackups = 10
+					}
+				}
+
+				logger.InitLogFile(configDir, maxBackups)
+
+				out := io.MultiWriter(logger.LogFile, os.Stderr)
+				log.SetOutput(out)
+				if errMaxBackups != nil {
+					log.Errorf("The provided maximum backups for log can not be converted to integer %s (default value used)", errMaxBackups.Error())
+				}
+				err := logger.LogFile.Rotate()
+				if err != nil {
+					log.Error(err.Error())
+				}
 				logLevel := os.Getenv("CR_TRACE")
 				log.Printf("CR_TRACE: %s", logLevel)
 				if logLevel == "" {

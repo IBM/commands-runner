@@ -1996,6 +1996,13 @@ func (sm *States) setExecutionTimesAndStatesStatus(status string, callerState *S
 
 //Execute states from state 'fromState' to state 'toState'
 func (sm *States) Execute(fromState string, toState string, callerState *State, callerOutFile *os.File) error {
+	if callerState == nil {
+		err := logger.LogFile.Rotate()
+		if err != nil {
+			log.Error(err.Error())
+		}
+		log.Infof("Execute %s from %s to %s", sm.ExtensionName, fromState, toState)
+	}
 	log.Debug("Enterring... Execute from " + fromState + " to " + toState)
 	log.Debug("State:" + sm.StatesPath)
 	log.Debug("From state:" + fromState)

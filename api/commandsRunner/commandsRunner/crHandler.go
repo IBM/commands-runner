@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"strconv"
 
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/i18n/i18nUtils"
@@ -26,7 +27,7 @@ import (
 
 func HandleCR(w http.ResponseWriter, req *http.Request) {
 	log.Debug("Entering in handleCR")
-	validatePath := regexp.MustCompile("/cr/v1/cr/(\\blog\\b|\\bsettings\\b|\\babout\\b)(/([\\w]*))?$")
+	validatePath := regexp.MustCompile("/cr/v1/cr/(\\blog\\b|\\bsettings\\b|\\babout\\b)(/(\\w[\\w-]*))?$")
 	log.Debug(req.URL.Path)
 	params := validatePath.FindStringSubmatch(req.URL.Path)
 	log.Debug(params)
@@ -37,14 +38,20 @@ func HandleCR(w http.ResponseWriter, req *http.Request) {
 			switch params[3] {
 			case "level":
 				GetLogLevelEndpoint(w, req)
+			case "max-backups":
+				GetLogMaxBackupsEndpoint(w, req)
 			default:
 				logger.AddCallerField().Error("Unsupported command:" + params[2])
 				http.Error(w, "Unsupported command:"+params[2], http.StatusBadRequest)
 			}
 		case "PUT":
-			if params[3] == "level" {
+			switch params[3] {
+			case "level":
 				SetLogLevelEndpoint(w, req)
-			} else {
+			case "max-backups":
+				SetLogMaxBackupEndpoint(w, req)
+			default:
+				logger.AddCallerField().Error("Unsupported command:" + params[3])
 				http.Error(w, "Unsupported url:"+req.URL.Path, http.StatusBadRequest)
 			}
 		default:
@@ -69,6 +76,20 @@ func GetLogLevelEndpoint(w http.ResponseWriter, req *http.Request) {
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
 	err := enc.Encode(logLevel)
+	if err != nil {
+		logger.AddCallerField().Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func GetLogMaxBackupsEndpoint(w http.ResponseWriter, req *http.Request) {
+	data := GetLogMaxBackups()
+	logMaxBackups := &Log{
+		MaxBackups: data,
+	}
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "  ")
+	err := enc.Encode(logMaxBackups)
 	if err != nil {
 		logger.AddCallerField().Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -122,4 +143,22 @@ func SetLogLevelEndpoint(w http.ResponseWriter, req *http.Request) {
 		logger.AddCallerField().Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+func SetLogMaxBackupEndpoint(w http.ResponseWriter, req *http.Request) {
+	query, _ := url.ParseQuery(req.URL.RawQuery)
+	log.Debugf("Query: %s", query)
+
+	logMaxBackups := ""
+	logMaxBackupsFound, okLogMaxBackups := query["max-backups"]
+	if okLogMaxBackups {
+		log.Debug("max-backups:%s", logMaxBackupsFound)
+		logMaxBackups = logMaxBackupsFound[0]
+	}
+	maxBackups, errMaxBackup := strconv.Atoi(logMaxBackups)
+	if errMaxBackup != nil {
+		logger.AddCallerField().Error(errMaxBackup.Error())
+		http.Error(w, errMaxBackup.Error(), http.StatusInternalServerError)
+	}
+	SetLogMaxBackups(maxBackups)
 }
