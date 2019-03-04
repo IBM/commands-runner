@@ -267,6 +267,13 @@ func translateUIMetadata(cfg *config.Config, lang string) ([]string, error) {
 					messagesNotFound = append(messagesNotFound, groupLabel.(string))
 				}
 			}
+			if groupDescription, ok := groupMap["description"]; ok {
+				groupMap["description"], _ = i18nUtils.Translate(groupDescription.(string), groupDescription.(string), []string{lang})
+				if groupMap["description"].(string) == groupDescription.(string) {
+					log.Warning("message '" + groupDescription.(string) + "' not found")
+					messagesNotFound = append(messagesNotFound, groupDescription.(string))
+				}
+			}
 			if properties, ok := groupMap["properties"]; ok {
 				propertiesList, ok := properties.([]interface{})
 				if !ok {
