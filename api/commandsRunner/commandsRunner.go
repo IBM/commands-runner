@@ -314,6 +314,10 @@ func ServerStart(preInit InitFunc, postInit InitFunc, preStart InitFunc, postSta
 				if postInit != nil {
 					postInit(port, portSSL, configDir, filepath.Join(configDir, global.SSLCertFileName), filepath.Join(configDir, global.SSLKeyFileName))
 				}
+				err = state.DeleteFormerEmbeddedExtensions()
+				if err != nil {
+					logger.AddCallerField().Fatal(err.Error())
+				}
 				err = state.RegisterEmbededExtensions(true)
 				if err != nil {
 					logger.AddCallerField().Fatal(err.Error())
