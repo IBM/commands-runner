@@ -957,3 +957,62 @@ func UnregisterExtension(extensionName string) error {
 	}
 	return nil
 }
+
+//DeleteFormerEmbeddedExtensions delete extensions which are not anymore defined in the extensionsEmbeddedFile
+func DeleteFormerEmbeddedExtensions() error {
+	log.Debug("Entering in... deleteFormerEmbeddedExtensions")
+	//Retrieve the list of extension by browsing the extension embedded path directory
+	extensions, err := ListEmbeddedRegisteredExtensions()
+	if err != nil {
+		return err
+	}
+	//Loop on each extension found
+	for extensionName := range extensions.Extensions {
+		//Check if the extension is present in the extensionsEmbeddedFile
+		stillExtension, err := IsEmbeddedExtension(extensionName)
+		if err != nil {
+			return err
+		}
+		//If not present then unregister it
+		if !stillExtension {
+			err = unregisterExtensionEmbedded(extensionName)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+//unregisterExtensionEmbedded delete an extension and the caller state if the exention was still inserted into another extension.
+func unregisterExtensionEmbedded(extensionName string) error {
+	log.Debug("Entering in... unregisterExtensionEmbedded")
+	if extensionName == global.DefaultExtensionName {
+		return errors.New("The default extension " + extensionName + " can not be unregisted")
+	}
+	stateManager, errStateManager := GetStatesManager(extensionName)
+	if errStateManager != nil {
+		return errStateManager
+	}
+	err := stateManager.readStates()
+	if err == nil {
+		//Check if the extension has a parent
+		if stateManager.ParentExtensionName != "" {
+			parentStateManager, errParentStateManager := GetStatesManager(stateManager.ParentExtensionName)
+			if errParentStateManager != nil {
+				return errParentStateManager
+			}
+			//Delete the caller state in the parent
+			err = parentStateManager.DeleteState(0, stateManager.ParentExtensionName)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	//Remove the extension from the extension embedded path
+	err = os.RemoveAll(filepath.Join(GetExtensionsPathEmbedded(), stateManager.ExtensionName))
+	if err != nil {
+		return err
+	}
+	return nil
+}
