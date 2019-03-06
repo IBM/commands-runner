@@ -19,6 +19,7 @@ import (
 
 	"github.com/natefinch/lumberjack"
 	"github.com/sirupsen/logrus"
+	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 )
 
 //DefaultLogLevel default log level
@@ -42,7 +43,7 @@ func AddCallerField() *logrus.Entry {
 
 func InitLogFile(configDir string, maxBackups int) {
 	LogFile = &lumberjack.Logger{
-		Filename: filepath.Join(configDir, "commands-runner.log"),
+		Filename: filepath.Join(configDir, global.CommandsRunnerLogFileName),
 		//	MaxSize:    2, // default 100 megabytes
 		MaxBackups: maxBackups,
 		// MaxAge:     28, // no age days

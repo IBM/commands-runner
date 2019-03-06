@@ -251,8 +251,6 @@ func ServerStart(preInit InitFunc, postInit InitFunc, preStart InitFunc, postSta
 				},
 			},
 			Action: func(c *cli.Context) error {
-				// commandsRunner.LogPath = filepath.Join(configDir, "commands-runner.log")
-				// file, _ := os.Create(commandsRunner.LogPath)
 				logMaxBackups := os.Getenv("CR_LOG_MAX_BACKUPS")
 				maxBackups := 10
 				var errMaxBackups error

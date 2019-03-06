@@ -76,7 +76,7 @@ func (crc *CommandsRunnerClient) follow(extensionName string, position int64, st
 		if newPos == currentPostion {
 			fmt.Print(".")
 		}
-		if stateName == "cr" {
+		if extensionName == "cr" {
 			currentPostion = newPos
 			continue
 		}
@@ -157,7 +157,7 @@ func (crc *CommandsRunnerClient) GetLogs(extensionName string, stateName string,
 	if extensionName == "" {
 		extensionName = crc.DefaultExtensionName
 	}
-	if stateName == "cr" {
+	if extensionName == "cr" {
 		_, err := crc.getLogs(extensionName, 0, stateName)
 		return err
 	}
