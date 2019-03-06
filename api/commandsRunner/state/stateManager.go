@@ -318,7 +318,7 @@ func (sm *States) setDefaultValues() {
 				log.Debug("Embbeded extension")
 			}
 			log.Debug("ExtensionLogPath:" + dir)
-			logDir := filepath.Join(dir, sm.StateArray[index].Name+".log")
+			logDir := filepath.Join(dir, sm.ExtensionName, sm.StateArray[index].Name+".log")
 			sm.StateArray[index].LogPath = logDir
 			log.Debug("Set state.LogPath to " + sm.StateArray[index].LogPath)
 		}
