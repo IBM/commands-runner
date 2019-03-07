@@ -110,7 +110,7 @@ func NewClient(urlIn string, outputFormat string, timeout string, caCertPath str
 		return nil, err
 	}
 	c.protocol = u.Scheme
-	var insecureSSLBool bool
+	insecureSSLBool := c.InsecureSSL
 	if insecureSSL != "" {
 		insecureSSLBool, err = strconv.ParseBool(insecureSSL)
 		if err != nil {
