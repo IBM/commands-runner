@@ -1877,9 +1877,9 @@ func TestGetLogGoodMock(t *testing.T) {
 	t.Log("Entering... TestGetLogGoodMock")
 	statesPath := "../../test/resource/states-TestGetLogGoodMock.yaml"
 	// sm, err := newStateManager(statesPath)
-	sm := newStateManager("states-TestGetLogGoodMock")
+	sm := newStateManager("mock")
 	sm.StatesPath = statesPath
-	raw, err := sm.GetLog("mock", 0, math.MaxInt64, false)
+	raw, err := sm.GetLog("", 0, math.MaxInt64, false)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -1893,9 +1893,9 @@ func TestGetLogGoodMockByChar(t *testing.T) {
 	t.Log("Entering... TestGetLogGoodMockByChar")
 	statesPath := "../../test/resource/states-TestGetLogGoodMockByChar.yaml"
 	// sm, err := newStateManager(statesPath)
-	sm := newStateManager("states-TestGetLogGoodMockByChar")
+	sm := newStateManager("mock")
 	sm.StatesPath = statesPath
-	raw, err := sm.GetLog("mock", 0, math.MaxInt64, true)
+	raw, err := sm.GetLog("", 0, math.MaxInt64, true)
 	if err != nil {
 		t.Error(err.Error())
 	}

@@ -26,10 +26,10 @@ const CommandsRunnerConfigFileName = "commands-runner.yml"
 const DefaultHost = "localhost"
 
 //DefaultPort default port
-const DefaultPort = "8080"
+const DefaultPort = "30101"
 
 //DefaultPortSSL default port for SSL connection
-const DefaultPortSSL = "8483"
+const DefaultPortSSL = "30103"
 
 //DefaultProtocol default protocol
 const DefaultProtocol = "http"
@@ -39,6 +39,9 @@ const DefaultUrl = DefaultProtocol + "://" + DefaultHost + ":" + DefaultPort
 
 //BaseURL base url api
 const BaseURL = "/cr/v1/"
+
+//CommandsRunnerLogFileName the logFile for CR
+const CommandsRunnerLogFileName = "commands-runner.log"
 
 //DefaultOutputFormat default output format
 const DefaultOutputFormat = "text"

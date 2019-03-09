@@ -31,7 +31,6 @@ import (
 
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/commandsRunner"
 	"gonum.org/v1/gonum/graph"
 
 	"github.com/olebedev/config"
@@ -140,7 +139,7 @@ type States struct {
 	mux        *sync.Mutex
 }
 
-var pcmLogTempFile *os.File
+var crLogTempFile *os.File
 
 var stateManagers map[string]States
 
@@ -1713,11 +1712,11 @@ func (sm *States) GetLog(state string, position int64, length int64, bychar bool
 	var logFile *os.File
 	var logPath string
 	var data []byte
-	if state == "" {
+	if state == "" && sm.ExtensionName != "mock" && sm.ExtensionName != "cr" {
 		return nil, errors.New("State must be defined")
 	}
 	//Mock log
-	switch state {
+	switch sm.ExtensionName {
 	case "mock":
 		logFile, _ := ioutil.TempFile("", "mock")
 		defer os.Remove(logFile.Name()) // clean up
@@ -1732,21 +1731,21 @@ func (sm *States) GetLog(state string, position int64, length int64, bychar bool
 	case "cr":
 		var err error
 		if position == 0 {
-			pcmLogTempFile, err = ioutil.TempFile("/tmp/", "/commands-runner-log")
+			//copy to temp file because log.Debug... continue to fill the actual commands-runner.log
+			crLogTempFile, err = ioutil.TempFile("/tmp/", "/commands-runner-log")
 			if err != nil {
 				return nil, err
 			}
-			logPath = commandsRunner.LogPath
-			logFile, err := os.Open(logPath)
+			logFile, err := os.Open(logger.LogFile.Filename)
 			if err != nil {
 				return nil, err
 			}
-			_, err = io.Copy(pcmLogTempFile, logFile)
+			_, err = io.Copy(crLogTempFile, logFile)
 			if err != nil {
 				return nil, err
 			}
 		}
-		logPath = pcmLogTempFile.Name()
+		logPath = crLogTempFile.Name()
 	default:
 		// read log
 		errStates := sm.readStates()

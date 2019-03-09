@@ -42,12 +42,6 @@ type Settings struct {
 	AboutURL             string `yaml:"about_url" json:"about_url"`
 }
 
-var LogPath string
-
-func SetLogPath(logPath string) {
-	LogPath = logPath
-}
-
 func SetLogLevel(levelRequested string) error {
 	level, err := log.ParseLevel(levelRequested)
 	if err != nil {
