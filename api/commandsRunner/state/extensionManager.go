@@ -281,6 +281,8 @@ func extractAndWriteFile(targetdir, extensionName string, zf *zip.File) error {
 		log.Debug("rootDir:" + rootDir)
 		if rootDir == extensionName {
 			path = filepath.Join(targetdir, zf.Name)
+		} else {
+			path = filepath.Join(targetdir, extensionName, zf.Name[firstSlash+1:])
 		}
 	}
 	log.Debug("Target dir:" + targetdir)

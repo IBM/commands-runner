@@ -11,12 +11,10 @@
 package state
 
 import (
-	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
 	"io/ioutil"
-	"mime"
-	"mime/multipart"
 	"net/http"
 	"net/url"
 	"os"
@@ -111,36 +109,6 @@ func registerExtension(w http.ResponseWriter, req *http.Request) {
 		log.Debug("extensions name :%s", extensionNameFound)
 		extensionName = extensionNameFound[0]
 	}
-	//Get filename from zip
-	log.Debug("Content-Disposition:" + req.Header.Get("Content-Disposition"))
-	var filename, extension string
-	var mReader *multipart.Reader
-	var part *multipart.Part
-	contentDisposition := req.Header.Get("Content-Disposition")
-	if contentDisposition != "" {
-		mediaType, params, _ := mime.ParseMediaType(contentDisposition)
-		log.Debug("mediaType:" + mediaType)
-		filename = params["filename"]
-	} else {
-		var err error
-		mReader, err = req.MultipartReader()
-		if err == nil {
-			part, err = mReader.NextPart()
-			if err != nil {
-				logger.AddCallerField().Error(err)
-				http.Error(w, err.Error(), http.StatusBadGateway)
-				return
-			}
-			filename = part.FileName()
-		}
-	}
-	log.Debug("filename:" + filename)
-	// extensionName := req.Header.Get("Extension-Name")
-	if extensionName == "" {
-		extension = filepath.Ext(filename)
-		log.Debug("extension:" + extension)
-		extensionName = filename[0 : len(filename)-len(extension)]
-	}
 	log.Debug("extensionName:" + extensionName)
 	forceString := req.Header.Get("Force")
 	if forceString == "" {
@@ -153,70 +121,55 @@ func registerExtension(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadGateway)
 		return
 	}
-	zipPath := ""
-	if filename != "" {
-		file, err := ioutil.TempFile("/tmp", extensionName)
-		if err != nil {
-			logger.AddCallerField().Errorf("Unable to create temp file: %v", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		defer file.Close()
-
-		body, err := readBody(req, filename, part)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		size, err := io.Copy(file, bytes.NewReader(body))
-		log.Debugf("Size:%v", size)
-		//		size, err := io.Copy(file, req.Body)
-		if err != nil {
-			logger.AddCallerField().Errorf("Unable to copy body in temp file: %v", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		if filename != "" {
-			zipPath = file.Name()
-		}
-		err = file.Close()
-		if err != nil {
-			logger.AddCallerField().Errorf("Unable to close the temp file: %v", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		if size == 0 {
-			os.Remove(file.Name())
-		}
+	file, header, err := req.FormFile("extension")
+	if err != nil {
+		logger.AddCallerField().Errorf("Unable to parse the form: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
+	defer file.Close()
+	// _, free, _ := global.GetStat("/tmp")
+	// if free < uint64(2*header.Size) {
+	// 	err = errors.New("Not enough free space to install the extension")
+	// 	logger.AddCallerField().Errorf("Error while registring: %v", err)
+	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
+	if extensionName == "" {
+		extension := filepath.Ext(header.Filename)
+		log.Debug("extension:" + extension)
+		extensionName = header.Filename[0 : len(header.Filename)-len(extension)]
+	}
+	log.Debug("ExtensionName:" + extensionName)
+	//This test is done later too but I added here too to avoid to load the whole extension zip.
+	if !force && IsExtensionRegistered(extensionName) {
+		err = errors.New("Extension " + extensionName + " already registered")
+		logger.AddCallerField().Errorf("Error while registring: %v", err)
+		http.Error(w, err.Error(), http.StatusConflict)
+		return
+	}
+	out, err := ioutil.TempFile("/tmp", extensionName)
+	if err != nil {
+		logger.AddCallerField().Errorf("Unable to create temp file: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer out.Close()
+	_, err = io.Copy(out, file)
+	file.Close()
+	defer os.Remove(out.Name())
+	if err != nil {
+		logger.AddCallerField().Errorf("Unable to copy file: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	zipPath := out.Name()
 	err = RegisterExtension(extensionName, zipPath, force)
 	if err != nil {
 		logger.AddCallerField().Errorf("Error while registring: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("Extension registration complete"))
-}
-
-func readBody(req *http.Request, fileName string, part *multipart.Part) ([]byte, error) {
-	log.Debug("Enterring.... readBody")
-	var body []byte
-	var err error
-	mediaType, _, _ := mime.ParseMediaType(req.Header.Get("Content-Disposition"))
-	if mediaType == "upload" {
-		log.Debug("Not a multipart")
-		body, err = ioutil.ReadAll(req.Body)
-		return body, err
-	} else {
-		body, err = ioutil.ReadAll(part)
-		log.Debug("Body:" + string(body))
-		if err != nil {
-			logger.AddCallerField().Error(err.Error())
-			return body, err
-		}
-	}
-	return body, nil
 }
