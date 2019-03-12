@@ -121,13 +121,20 @@ func registerExtension(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadGateway)
 		return
 	}
-	file, header, err := req.FormFile("extension")
-	if err != nil {
-		logger.AddCallerField().Errorf("Unable to parse the form: %v", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	file, header, _ := req.FormFile("extension")
+	// if err != nil {
+	// 	// logger.AddCallerField().Errorf("Unable to parse the form: %v", err)
+	// 	// http.Error(w, err.Error(), http.StatusInternalServerError)
+	// 	// return
+	// }
+	if file != nil {
+		defer file.Close()
+		if extensionName == "" {
+			extension := filepath.Ext(header.Filename)
+			log.Debug("extension:" + extension)
+			extensionName = header.Filename[0 : len(header.Filename)-len(extension)]
+		}
 	}
-	defer file.Close()
 	// _, free, _ := global.GetStat("/tmp")
 	// if free < uint64(2*header.Size) {
 	// 	err = errors.New("Not enough free space to install the extension")
@@ -135,11 +142,6 @@ func registerExtension(w http.ResponseWriter, req *http.Request) {
 	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
 	// 	return
 	// }
-	if extensionName == "" {
-		extension := filepath.Ext(header.Filename)
-		log.Debug("extension:" + extension)
-		extensionName = header.Filename[0 : len(header.Filename)-len(extension)]
-	}
 	log.Debug("ExtensionName:" + extensionName)
 	//This test is done later too but I added here too to avoid to load the whole extension zip.
 	if !force && IsExtensionRegistered(extensionName) {
@@ -148,22 +150,25 @@ func registerExtension(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, err.Error(), http.StatusConflict)
 		return
 	}
-	out, err := ioutil.TempFile("/tmp", extensionName)
-	if err != nil {
-		logger.AddCallerField().Errorf("Unable to create temp file: %v", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	var zipPath string
+	if file != nil {
+		out, err := ioutil.TempFile("/tmp", extensionName)
+		if err != nil {
+			logger.AddCallerField().Errorf("Unable to create temp file: %v", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer out.Close()
+		_, err = io.Copy(out, file)
+		file.Close()
+		defer os.Remove(out.Name())
+		if err != nil {
+			logger.AddCallerField().Errorf("Unable to copy file: %v", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		zipPath = out.Name()
 	}
-	defer out.Close()
-	_, err = io.Copy(out, file)
-	file.Close()
-	defer os.Remove(out.Name())
-	if err != nil {
-		logger.AddCallerField().Errorf("Unable to copy file: %v", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	zipPath := out.Name()
 	err = RegisterExtension(extensionName, zipPath, force)
 	if err != nil {
 		logger.AddCallerField().Errorf("Error while registring: %v", err)
