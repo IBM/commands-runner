@@ -522,6 +522,12 @@ func (sm *States) SetStates(states States, overwrite bool) error {
 			return errDelete
 		}
 		sm.StateArray = newStates.StateArray
+		//Do the topo sort
+		err = sm.topoSort()
+		//Error means cycles
+		if err != nil {
+			return err
+		}
 	} else {
 		log.Info("Merge new and old States File")
 		errMerge := sm.mergeStates(states)
@@ -692,6 +698,28 @@ func (sm *States) addEdgesNext(currentState State, newGraph *simple.DirectedGrap
 			}
 		} else {
 			log.Warning("WARNING: The state next " + stateNext + " listed in states_next attribute of " + currentState.Name + " does not exist")
+		}
+	}
+	return nil
+}
+
+//addEdgesNext Adds the edges listed in the NextState of a given state to the graph
+func (sm *States) addEdgesPrevious(currentState State, newGraph *simple.DirectedGraph, statesNodesID map[string]int64) error {
+	ns := newGraph.Node(statesNodesID[currentState.Name])
+	log.Debug("CurrentState:" + currentState.Name)
+	log.Debugf("PreviousStates: %+v", currentState.PreviousStates)
+	for _, statePrevious := range currentState.PreviousStates {
+		if id, ok := statesNodesID[statePrevious]; ok {
+			ne := newGraph.Node(id)
+			e := newGraph.NewEdge(ns, ne)
+			if ne.ID() != ns.ID() {
+				newGraph.SetEdge(e)
+				log.Debug("Add Egde from existing: " + currentState.Name + " -> " + statePrevious)
+			} else {
+				return errors.New("Add Edge: Current and next state are the same: " + statePrevious)
+			}
+		} else {
+			log.Warning("WARNING: The state next " + statePrevious + " listed in states_previous attribute of " + currentState.Name + " does not exist")
 		}
 	}
 	return nil
@@ -896,20 +924,23 @@ func generateCyclesError(cycles []*States) error {
 //Once the merge done, the final states will be sorted for execution.
 func (sm *States) mergeStates(newStates States) error {
 	log.Debug("Entering.... mergeStates")
-	cleanedStates, err := sm.removeDeletedStates(newStates)
+	//Remove the deleted states from the old and new states-file
+	cleanedNewStates, err := sm.removeDeletedStates(newStates)
 	if err != nil {
 		return err
 	}
 	//If no state are defined use the new provided stateArray, no merge needed.
 	if len(sm.StateArray) == 0 {
-		sm.StateArray = cleanedStates.StateArray
+		sm.StateArray = cleanedNewStates.StateArray
 		return nil
 	}
 	log.Debug("Topology sort")
-	newGraph, statesNodesID, statesMap := cleanedStates.addNodes()
-	//Create and add nodes for the old States if node not yet in the Graph
+	//create a graph with all new states
+	newGraph, statesNodesID, statesMap := cleanedNewStates.addNodes()
+	//Update the existing states to keep their status...
+	//Loop on the old states-file
 	for i := 0; i < len(sm.StateArray); i++ {
-		//if already inserted then update the state with the current status and other values
+		//if already inserted in the graph then update the state with the current status and other values
 		//otherwize insert it as a new node.
 		if _, ok := statesNodesID[sm.StateArray[i].Name]; ok {
 			log.Debug("Update new Node with old status: " + sm.StateArray[i].Name)
@@ -931,26 +962,35 @@ func (sm *States) mergeStates(newStates States) error {
 			statesNodesID[sm.StateArray[i].Name] = n.ID()
 			statesMap[n.ID()] = &sm.StateArray[i]
 			log.Debug("Old Node added: " + sm.StateArray[i].Name + " with id: " + strconv.FormatInt(n.ID(), 10))
+			err := sm.addEdgesNext(sm.StateArray[i], newGraph, statesNodesID)
+			if err != nil {
+				return err
+			}
+			err = sm.addEdgesPrevious(sm.StateArray[i], newGraph, statesNodesID)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
 	//Add the new states edges
-	newGraph, err = cleanedStates.addEdges(newGraph, statesNodesID)
+	newGraph, err = cleanedNewStates.addEdges(newGraph, statesNodesID)
 	if err != nil {
 		return err
 	}
 	//Add the old states edges
-	newGraph, err = sm.addEdges(newGraph, statesNodesID)
-	if err != nil {
-		return err
-	}
+	// newGraph, err = sm.addEdges(newGraph, statesNodesID)
+	// if err != nil {
+	// 	return err
+	// }
 
 	//Print all edges
 	for _, edge := range newGraph.Edges() {
 		ns := edge.From().ID()
 		ne := edge.To().ID()
 		log.Debug("Edge: " + strconv.FormatInt(ns, 10) + " -> " + strconv.FormatInt(ne, 10))
-		log.Debug("Edge: " + statesMap[ns].Name + " -> " + statesMap[ne].Name)
+		edgeString := fmt.Sprintf("%s -> %s\n", statesMap[ns].Name, statesMap[ne].Name)
+		log.Debug("Edge: " + edgeString)
 	}
 
 	//Do the topo sort
