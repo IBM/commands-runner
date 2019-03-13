@@ -256,7 +256,7 @@ func Unzip(src, dest, extensionName string) error {
 	}
 
 	for _, f := range r.File {
-		err = extractAndWriteFile(dest, extensionName, f)
+		err = extractAndWriteFile(src, dest, extensionName, f)
 		if err != nil {
 			return err
 		}
@@ -265,7 +265,7 @@ func Unzip(src, dest, extensionName string) error {
 	return nil
 }
 
-func extractAndWriteFile(targetdir, extensionName string, zf *zip.File) error {
+func extractAndWriteFile(src, targetdir, extensionName string, zf *zip.File) error {
 	log.Debug("Entering in... extractAndWriteFile")
 	rc, err := zf.Open()
 	if err != nil {
@@ -279,11 +279,15 @@ func extractAndWriteFile(targetdir, extensionName string, zf *zip.File) error {
 	if firstSlash != -1 {
 		rootDir := zf.Name[0:firstSlash]
 		log.Debug("rootDir:" + rootDir)
-		if rootDir == extensionName {
-			path = filepath.Join(targetdir, zf.Name)
-		} else {
+		srcBaseName := filepath.Base(src)
+		if rootDir == srcBaseName {
 			path = filepath.Join(targetdir, extensionName, zf.Name[firstSlash+1:])
 		}
+		// if rootDir == extensionName {
+		// 	path = filepath.Join(targetdir, zf.Name)
+		// } else {
+		// 	path = filepath.Join(targetdir, extensionName, zf.Name[firstSlash+1:])
+		// }
 	}
 	log.Debug("Target dir:" + targetdir)
 	log.Debug("zf.Name:" + zf.Name)

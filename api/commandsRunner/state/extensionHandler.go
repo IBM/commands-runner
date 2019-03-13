@@ -14,7 +14,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -152,7 +151,7 @@ func registerExtension(w http.ResponseWriter, req *http.Request) {
 	}
 	var zipPath string
 	if file != nil {
-		out, err := ioutil.TempFile("/tmp", extensionName)
+		out, err := os.Create(filepath.Join("/tmp", extensionName))
 		if err != nil {
 			logger.AddCallerField().Errorf("Unable to create temp file: %v", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
