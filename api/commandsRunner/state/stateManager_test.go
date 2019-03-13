@@ -486,7 +486,7 @@ func TestSetStatesMergeWithDelete(t *testing.T) {
 		t.Error("Wrong order")
 	}
 	if statesResult.StateArray[0].Status != StateSUCCEEDED {
-		t.Error("State1 doesn't have the correct status. expecting SUCCEEDED got " + statesResult.StateArray[0].Status)
+		t.Error(statesResult.StateArray[0].Name + " doesn't have the correct status. expecting SUCCEEDED got " + statesResult.StateArray[0].Status)
 	}
 	sm.ResetEngineExecutionInfo()
 	err = sm.ResetEngine()

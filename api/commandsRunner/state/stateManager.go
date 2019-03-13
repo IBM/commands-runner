@@ -703,7 +703,7 @@ func (sm *States) addEdgesNext(currentState State, newGraph *simple.DirectedGrap
 	return nil
 }
 
-//addEdgesNext Adds the edges listed in the NextState of a given state to the graph
+//addEdgesPrevious Adds the edges listed in the PreviousState of a given state to the graph
 func (sm *States) addEdgesPrevious(currentState State, newGraph *simple.DirectedGraph, statesNodesID map[string]int64) error {
 	ns := newGraph.Node(statesNodesID[currentState.Name])
 	log.Debug("CurrentState:" + currentState.Name)
@@ -711,7 +711,7 @@ func (sm *States) addEdgesPrevious(currentState State, newGraph *simple.Directed
 	for _, statePrevious := range currentState.PreviousStates {
 		if id, ok := statesNodesID[statePrevious]; ok {
 			ne := newGraph.Node(id)
-			e := newGraph.NewEdge(ns, ne)
+			e := newGraph.NewEdge(ne, ns)
 			if ne.ID() != ns.ID() {
 				newGraph.SetEdge(e)
 				log.Debug("Add Egde from existing: " + currentState.Name + " -> " + statePrevious)
@@ -942,6 +942,7 @@ func (sm *States) mergeStates(newStates States) error {
 	for i := 0; i < len(sm.StateArray); i++ {
 		//if already inserted in the graph then update the state with the current status and other values
 		//otherwize insert it as a new node.
+		log.Debug("Checking old states: " + sm.StateArray[i].Name)
 		if _, ok := statesNodesID[sm.StateArray[i].Name]; ok {
 			log.Debug("Update new Node with old status: " + sm.StateArray[i].Name)
 			log.Debugf("Before Merge state: %v", sm.StateArray[i])
