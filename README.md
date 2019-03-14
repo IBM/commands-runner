@@ -215,6 +215,3 @@ The source code is in `github.ibm.com/IBMPrivateCloud/cfp-commands-runner/migrat
 
 - `migrationTools/_build/verify-localization verify -p <extension_path> [-l <languages>]`
 
-
-
-

@@ -236,3 +236,19 @@ func RemoveTemp(fileName string) error {
 	log.Debug("fileName:" + filepath.Join(testDir, fileName))
 	return os.RemoveAll(filepath.Join(testDir, fileName))
 }
+
+//Syscal is not supported on windows
+// func GetStat(mountDir string) (size uint64, free uint64, avail uint64) {
+// 	var stat syscall.Statfs_t
+// 	if err := syscall.Statfs("/tmp", &stat); err != nil {
+// 		panic(err)
+// 	}
+
+// 	size = stat.Blocks * uint64(stat.Bsize)
+// 	free = stat.Bfree * uint64(stat.Bsize)
+// 	avail = stat.Bavail * uint64(stat.Bsize)
+// 	log.Debug("Size:", size)
+// 	log.Debug("Free:", free)
+// 	log.Debug("Available:", avail)
+// 	return size, free, avail
+// }

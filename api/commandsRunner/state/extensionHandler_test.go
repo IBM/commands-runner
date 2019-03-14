@@ -103,22 +103,22 @@ func zipit(source, target string) error {
 	return err
 }
 
-func createFileUploadRequest(pathToFile, extensionName string, t *testing.T) *http.Request {
-	var req *http.Request
-	if pathToFile != "" {
-		zipit("../../test/resource/extensions/custom-extension", pathToFile)
-		body, _ := os.Open(pathToFile)
-		writer := multipart.NewWriter(body)
-		req, _ = http.NewRequest("POST", "/cr/v1/extension?extension-name="+extensionName, body)
-		req.Header.Set("Content-Type", writer.FormDataContentType())
-		req.Header.Set("Content-Disposition", "upload; filename="+filepath.Base(pathToFile))
-	} else {
-		req, _ = http.NewRequest("POST", "/cr/v1/extension?extension-name="+extensionName, nil)
-	}
-	return req
-}
+// func createFileUploadRequest(pathToFile, extensionName string, t *testing.T) *http.Request {
+// 	var req *http.Request
+// 	if pathToFile != "" {
+// 		zipit("../../test/resource/extensions/custom-extension", pathToFile)
+// 		body, _ := os.Open(pathToFile)
+// 		writer := multipart.NewWriter(body)
+// 		req, _ = http.NewRequest("POST", "/cr/v1/extension?extension-name="+extensionName, body)
+// 		req.Header.Set("Content-Type", writer.FormDataContentType())
+// 		//		req.Header.Set("Content-Disposition", "upload; filename="+filepath.Base(pathToFile))
+// 	} else {
+// 		req, _ = http.NewRequest("POST", "/cr/v1/extension?extension-name="+extensionName, nil)
+// 	}
+// 	return req
+// }
 
-func createFileFormDataRequest(pathToFile string, t *testing.T) (*http.Request, error) {
+func createFileFormDataRequest(pathToFile string, extensionName string, t *testing.T) (*http.Request, error) {
 	var req *http.Request
 	if pathToFile != "" {
 		zipit("../../test/resource/extensions/custom-extension", pathToFile)
@@ -130,7 +130,7 @@ func createFileFormDataRequest(pathToFile string, t *testing.T) (*http.Request, 
 
 		body := &bytes.Buffer{}
 		writer := multipart.NewWriter(body)
-		part, err := writer.CreateFormFile(filepath.Base(pathToFile), filepath.Base(pathToFile))
+		part, err := writer.CreateFormFile("extension", filepath.Base(pathToFile))
 		if err != nil {
 			return nil, err
 		}
@@ -144,12 +144,21 @@ func createFileFormDataRequest(pathToFile string, t *testing.T) (*http.Request, 
 			return nil, err
 		}
 
-		req, err := http.NewRequest("POST", "/cr/v1/extension", body)
+		var extensionAttribute string
+		if extensionName != "" {
+			extensionAttribute = "?extension-name=" + extensionName
+		}
+		log.Debug("extensionAttribute:" + extensionAttribute)
+		req, err := http.NewRequest("POST", "/cr/v1/extension"+extensionAttribute, body)
 		// t.Logf("req: %v", req)
 		req.Header.Set("Content-Type", writer.FormDataContentType())
 		return req, err
 	} else {
-		req, _ = http.NewRequest("POST", "/cr/v1/extension", nil)
+		var extensionAttribute string
+		if extensionName != "" {
+			extensionAttribute = "?extension-name=" + extensionName
+		}
+		req, _ = http.NewRequest("POST", "/cr/v1/extension"+extensionAttribute, nil)
 	}
 	//	req.Header.Set("Extension-Name", extensionName)
 	return req, nil
@@ -190,7 +199,10 @@ func TestRegisterExistingExtension(t *testing.T) {
 	fileCreated.Close()
 
 	// Create and handle request for unit test
-	req := createFileUploadRequest("../../test/resource/"+filename, extensionName, t)
+	req, err := createFileFormDataRequest("../../test/resource/"+filename, extensionName, t)
+	if err != nil {
+		t.Error(err.Error())
+	}
 	rr := httptest.NewRecorder()
 	handler := http.HandlerFunc(HandleExtension)
 	handler.ServeHTTP(rr, req)
@@ -211,7 +223,10 @@ func TestRegisterNonExistingExtension(t *testing.T) {
 	_ = os.Mkdir(GetExtensionsPathCustom(), 0777)
 
 	// Create and Handle request
-	req := createFileUploadRequest("../../test/resource/"+filename, "dummy-extension", t)
+	req, err := createFileFormDataRequest("../../test/resource/"+filename, "dummy-extension", t)
+	if err != nil {
+		t.Error(err.Error())
+	}
 	rr := httptest.NewRecorder()
 	handler := http.HandlerFunc(HandleExtension)
 	handler.ServeHTTP(rr, req)
@@ -237,7 +252,10 @@ func TestRegisterCustomExtension(t *testing.T) {
 	_ = os.Mkdir(GetExtensionsPath(), 0777)
 	_ = os.Mkdir(GetExtensionsPathCustom(), 0777)
 
-	req := createFileUploadRequest("../../test/resource/"+filename, extensionName, t)
+	req, err := createFileFormDataRequest("../../test/resource/"+filename, extensionName, t)
+	if err != nil {
+		t.Error(err.Error())
+	}
 	rr := httptest.NewRecorder()
 	handler := http.HandlerFunc(HandleExtension)
 	handler.ServeHTTP(rr, req)
@@ -274,7 +292,7 @@ func TestRegisterCustomExtensionWihtFormData(t *testing.T) {
 	_ = os.Mkdir(GetExtensionsPath(), 0777)
 	_ = os.Mkdir(GetExtensionsPathCustom(), 0777)
 
-	req, err := createFileFormDataRequest("../../test/resource/"+filename, t)
+	req, err := createFileFormDataRequest("../../test/resource/"+filename, extensionName, t)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -313,7 +331,10 @@ func TestRegisterCustomExtensionWithIBMExtensionName(t *testing.T) {
 	_ = os.Mkdir(GetExtensionsPathCustom(), 0777)
 
 	// Create and Handle request
-	req := createFileUploadRequest("../../test/resource/"+filename, extensionName, t)
+	req, err := createFileFormDataRequest("../../test/resource/"+filename, extensionName, t)
+	if err != nil {
+		t.Error(err.Error())
+	}
 	rr := httptest.NewRecorder()
 	handler := http.HandlerFunc(HandleExtension)
 	handler.ServeHTTP(rr, req)
@@ -332,7 +353,10 @@ func TestRegisterIBMExtension(t *testing.T) {
 	_ = os.Mkdir(GetExtensionsPathCustom(), 0777)
 
 	// Create and Handle request
-	req := createFileUploadRequest("", extensionName, t)
+	req, err := createFileFormDataRequest("", extensionName, t)
+	if err != nil {
+		t.Error(err.Error())
+	}
 	rr := httptest.NewRecorder()
 	handler := http.HandlerFunc(HandleExtension)
 	handler.ServeHTTP(rr, req)
@@ -351,7 +375,10 @@ func TestRegisterIBMExtensionWithVersion(t *testing.T) {
 	_ = os.Mkdir(GetExtensionsPathCustom(), 0777)
 
 	// Create and Handle request
-	req := createFileUploadRequest("", extensionName, t)
+	req, err := createFileFormDataRequest("", extensionName, t)
+	if err != nil {
+		t.Error(err.Error())
+	}
 	rr := httptest.NewRecorder()
 	handler := http.HandlerFunc(HandleExtension)
 	handler.ServeHTTP(rr, req)
@@ -370,7 +397,10 @@ func TestRegisterIBMExtensionFilesExists(t *testing.T) {
 	_ = os.Mkdir(GetExtensionsPathEmbedded(), 0777)
 
 	// Create and Handle request
-	req := createFileUploadRequest("", extensionName, t)
+	req, err := createFileFormDataRequest("", extensionName, t)
+	if err != nil {
+		t.Error(err.Error())
+	}
 	rr := httptest.NewRecorder()
 	handler := http.HandlerFunc(HandleExtension)
 	handler.ServeHTTP(rr, req)

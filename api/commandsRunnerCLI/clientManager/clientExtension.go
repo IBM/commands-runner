@@ -11,8 +11,10 @@
 package clientManager
 
 import (
+	"bytes"
 	"errors"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -48,28 +50,60 @@ func (crc *CommandsRunnerClient) registerExtension(pathToZip, extensionName stri
 	}
 	headers := make(map[string]string)
 
-	if pathToZip != "" {
-		headers["Content-Type"] = "application/zip"
-		headers["Content-Disposition"] = "upload; filename=" + filepath.Base(pathToZip)
-	}
-	//	headers["Extension-Name"] = extensionName
 	headers["Force"] = strconv.FormatBool(force)
-	//	url += "&force=" + strconv.FormatBool(force)
-	var file io.Reader
-	var errFile error
-	if pathToZip != "" {
-		file, errFile = os.Open(pathToZip)
-		if errFile != nil {
-			return http.StatusInternalServerError, errFile
-		}
+	//Start new code
+	file, err := os.Open(pathToZip)
+	if err != nil {
+		return http.StatusInternalServerError, err
 	}
-	body, httpCode, err := crc.RestCall(http.MethodPost, global.BaseURL, url, file, headers)
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	part, err := writer.CreateFormFile("extension", filepath.Base(pathToZip))
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
+	_, err = io.Copy(part, file)
+
+	err = writer.Close()
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
+
+	headers["Content-Type"] = writer.FormDataContentType()
+
+	respBody, httpCode, err := crc.RestCall(http.MethodPost, global.BaseURL, url, body, headers)
 	if httpCode != http.StatusConflict && httpCode != http.StatusCreated && httpCode != http.StatusOK {
-		if body != "" {
-			return httpCode, errors.New(body)
+		if respBody != "" {
+			return httpCode, errors.New(respBody)
 		}
 		return httpCode, errors.New("Unable to get extensions, please check logs")
 	}
+	//End new code
+
+	//Start old code
+	// if pathToZip != "" {
+	// 	headers["Content-Type"] = "application/zip"
+	// 	headers["Content-Disposition"] = "upload; filename=" + filepath.Base(pathToZip)
+	// }
+
+	// var file io.Reader
+	// var errFile error
+	// if pathToZip != "" {
+	// 	file, errFile = os.Open(pathToZip)
+	// 	if errFile != nil {
+	// 		return http.StatusInternalServerError, errFile
+	// 	}
+	// }
+	// body, httpCode, err := crc.RestCall(http.MethodPost, global.BaseURL, url, file, headers)
+	// if httpCode != http.StatusConflict && httpCode != http.StatusCreated && httpCode != http.StatusOK {
+	// 	if body != "" {
+	// 		return httpCode, errors.New(body)
+	// 	}
+	// 	return httpCode, errors.New("Unable to get extensions, please check logs")
+	// }
+	//End old code
 	return httpCode, err
 }
 
