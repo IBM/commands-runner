@@ -218,7 +218,7 @@ func ServerStart(preInit InitFunc, postInit InitFunc, preStart InitFunc, postSta
 	//If Panic close the current log.
 	defer func() {
 		if r := recover(); r != nil {
-			log.Debug(r)
+			log.Error(r)
 			logger.LogFile.Close()
 		}
 	}()

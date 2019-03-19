@@ -347,7 +347,7 @@ func translateProperty(property map[string]interface{}, first bool, parentProper
 	if val, ok := property["label"]; ok {
 		property["label"], _ = i18nUtils.Translate(val.(string), val.(string), []string{lang})
 		if property["label"].(string) == val.(string) {
-			log.Error("message '" + val.(string) + "' not found")
+			log.Warning("message '" + val.(string) + "' not found")
 			messagesNotFound = append(messagesNotFound, val.(string))
 		}
 	}
