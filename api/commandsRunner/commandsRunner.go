@@ -159,16 +159,28 @@ func readCommandsRunnerConfig(configDir string) error {
 
 func start() {
 	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Fatal(r)
+				logger.LogFile.Close()
+			}
+		}()
 		log.Info("http://localhost:" + global.ServerPort)
 		if err := http.ListenAndServe(":"+global.ServerPort, nil); err != nil {
-			log.Errorf("ListenAndServe error: %v", err)
+			log.Fatalf("ListenAndServe error: %v", err)
 		}
 	}()
 	_, errCertPath := os.Stat(global.ServerCertificatePath)
 	_, errKeyPath := os.Stat(global.ServerKeyPath)
 	if errCertPath == nil && errKeyPath == nil {
-		log.Info("https://localhost:" + global.ServerPortSSL)
 		go func() {
+			defer func() {
+				if r := recover(); r != nil {
+					log.Fatal(r)
+					logger.LogFile.Close()
+				}
+			}()
+			log.Info("https://localhost:" + global.ServerPortSSL)
 			if err := http.ListenAndServeTLS(":"+global.ServerPortSSL, global.ServerCertificatePath, global.ServerKeyPath, nil); err != nil {
 				log.Errorf("ListenAndServeTLS error: %v", err)
 			}
@@ -218,7 +230,7 @@ func ServerStart(preInit InitFunc, postInit InitFunc, preStart InitFunc, postSta
 	//If Panic close the current log.
 	defer func() {
 		if r := recover(); r != nil {
-			log.Error(r)
+			log.Fatal(r)
 			logger.LogFile.Close()
 		}
 	}()
