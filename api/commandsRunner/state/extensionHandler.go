@@ -120,6 +120,17 @@ func registerExtension(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadGateway)
 		return
 	}
+	runningToFailedString := req.Header.Get("RunningToFailed")
+	if runningToFailedString == "" {
+		runningToFailedString = "false"
+	}
+	log.Debug("runningToFailedtring:" + runningToFailedString)
+	runningToFailed, err := strconv.ParseBool(runningToFailedString)
+	if err != nil {
+		logger.AddCallerField().Errorf("Error converting runningToFailed to boolean: %v", err)
+		http.Error(w, err.Error(), http.StatusBadGateway)
+		return
+	}
 	file, header, _ := req.FormFile("extension")
 	// if err != nil {
 	// 	// logger.AddCallerField().Errorf("Unable to parse the form: %v", err)
@@ -168,7 +179,7 @@ func registerExtension(w http.ResponseWriter, req *http.Request) {
 		}
 		zipPath = out.Name()
 	}
-	err = RegisterExtension(extensionName, zipPath, force)
+	err = RegisterExtension(extensionName, zipPath, force, runningToFailed)
 	if err != nil {
 		logger.AddCallerField().Errorf("Error while registring: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)

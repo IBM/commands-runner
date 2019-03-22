@@ -46,7 +46,7 @@ const COPYRIGHT string = `######################################################
 func setupResponse(w *http.ResponseWriter, req *http.Request) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, Force")
+	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, Force, RunningToFailed")
 }
 
 func validateToken(configDir string, protectedHandler http.HandlerFunc) http.HandlerFunc {
@@ -328,7 +328,7 @@ func ServerStart(preInit InitFunc, postInit InitFunc, preStart InitFunc, postSta
 				if err != nil {
 					logger.AddCallerField().Fatal(err.Error())
 				}
-				err = state.RegisterEmbededExtensions(true)
+				err = state.RegisterEmbededExtensions(true, true)
 				if err != nil {
 					logger.AddCallerField().Fatal(err.Error())
 				}

@@ -251,7 +251,7 @@ func (sm *States) readStates() error {
 		return err
 	}
 	log.Debug("states has been read")
-	log.Debug("States:\n" + string(statesData))
+	//	log.Debug("States:\n" + string(statesData))
 	// Parse state file into the States structure
 	err = yaml.Unmarshal(statesData, &sm)
 	log.Debugf("sm address %p:", &sm)
@@ -263,7 +263,7 @@ func (sm *States) readStates() error {
 	// 	return err
 	// }
 	sm.setDefaultValues()
-	log.Debug("States:\n" + string(statesData))
+	//	log.Debug("States:\n" + string(statesData))
 	log.Debug("Exiting... readStates")
 	return nil
 }
@@ -2229,32 +2229,61 @@ func (sm *States) executeState(state State, callerState *State, callerOutFile *o
 			done := make(chan error, 1)
 			//Wait signal from channel
 			go func() {
+				defer func() {
+					if r := recover(); r != nil {
+						log.Error("Error while running "+state.Name+" ", r)
+					}
+				}()
 				done <- cmd.Wait()
 			}()
 			select {
 			case <-time.After(time.Duration(state.ScriptTimeout) * time.Minute):
+				log.Debug("Start Test timeout of " + state.Name)
 				if state.ScriptTimeout != 0 {
 					if err := cmd.Process.Kill(); err != nil {
 						log.Fatal("failed to kill: ", err)
 					}
 					errExec = errors.New("State " + state.Name + " killed as timeout reached")
 				}
+				log.Debug("End Test timeout of " + state.Name)
 			case err := <-done:
+				log.Debug("End of processing of " + state.Name)
 				if err != nil {
 					errExec = errors.New("process done with error = " + err.Error())
 				}
 			}
 		}
 		if callerOutFile != nil {
-			wCallerOutFile.Flush()
-			callerOutFile.Sync()
+			logger.AddCallerField().Debug("wCallerOutFile.Flush()")
+			err := wCallerOutFile.Flush()
+			if err != nil {
+				logger.AddCallerField().Error(err.Error())
+			}
+			logger.AddCallerField().Debug("callerOutFile.Sync()")
+			err = callerOutFile.Sync()
+			if err != nil {
+				logger.AddCallerField().Error(err.Error())
+			}
 			// callerOutFile.Close()
 		}
-		wOutFile.Flush()
+		logger.AddCallerField().Debug("wOutFile.Flush()")
+		err := wOutFile.Flush()
+		if err != nil {
+			logger.AddCallerField().Error(err.Error())
+		}
 	}
-	outfile.Sync()
-	outfile.Close()
+	logger.AddCallerField().Debug("outfile.Sync()")
+	err = outfile.Sync()
+	if err != nil {
+		logger.AddCallerField().Error(err.Error())
+	}
+	logger.AddCallerField().Debug("outfile.Close()")
+	err = outfile.Close()
+	if err != nil {
+		logger.AddCallerField().Error(err.Error())
+	}
 	if errExec != nil {
+		logger.AddCallerField().Error(errExec.Error())
 		f, err := os.OpenFile(outfilePath, os.O_WRONLY|os.O_APPEND, 0644)
 		if err != nil {
 			logger.AddCallerField().Error(err.Error())

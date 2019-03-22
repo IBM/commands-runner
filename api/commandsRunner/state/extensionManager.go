@@ -710,7 +710,9 @@ func restoreExtensionPersistedPaths(extensionName string, backupPath string) err
 }
 
 //registerEmbededExtension register all embeded extensions
-func RegisterEmbededExtensions(force bool) error {
+//force: if true and already registered the extension is overwritten
+//runningToFailed: if true and the extension is running then the running state will be set to FAILED
+func RegisterEmbededExtensions(force bool, runningToFailed bool) error {
 	log.Debug("Entering in... registerEmbededExtensions")
 	extensions, err := ListEmbeddedExtensions()
 	if err != nil {
@@ -718,7 +720,7 @@ func RegisterEmbededExtensions(force bool) error {
 	}
 	for key := range extensions.Extensions {
 		log.Debug("key: " + key)
-		err := RegisterExtension(key, "", force)
+		err := RegisterExtension(key, "", force, runningToFailed)
 		if err != nil {
 			return err
 		}
@@ -727,7 +729,9 @@ func RegisterEmbededExtensions(force bool) error {
 }
 
 //RegisterExtension register an extension
-func RegisterExtension(extensionName, zipPath string, force bool) error {
+//force: if true and already registered the extension is overwritten
+//runningToFailed: if true and the extension is running then the running state will be set to FAILED
+func RegisterExtension(extensionName, zipPath string, force bool, runningToFailed bool) error {
 	log.Debug("Entering in... RegisterExtension")
 	log.Debug("extensionName: " + extensionName)
 	log.Debug("zipPath: " + zipPath)
@@ -796,7 +800,7 @@ func RegisterExtension(extensionName, zipPath string, force bool) error {
 			}
 		}
 		if errInstall == nil {
-			errGenStatesFile = GenerateStatesFile(extensionName, extensionPath)
+			errGenStatesFile = generateStatesFile(extensionName, extensionPath, runningToFailed)
 			errLoadTranslation = i18nUtils.LoadTranslationFilesFromDir(filepath.Join(extensionPath, i18nUtils.I18nDirectory))
 			//Failure to generate the template files must not stop the installation.
 			GenerateTemplateFiles(extensionName, extensionPath)
@@ -836,8 +840,8 @@ func RegisterExtension(extensionName, zipPath string, force bool) error {
 	return nil
 }
 
-func GenerateStatesFile(extensionName string, extensionPath string) error {
-	log.Debug("Entering in... GenerateStatesFile")
+func generateStatesFile(extensionName string, extensionPath string, runningToFailed bool) error {
+	log.Debug("Entering in... generateStatesFile")
 	log.Debug("Extension:" + extensionName)
 	manifestPath := filepath.Join(extensionPath, global.DefaultExtenstionManifestFile)
 	input, err := ioutil.ReadFile(manifestPath)
@@ -869,6 +873,30 @@ func GenerateStatesFile(extensionName string, extensionPath string) error {
 		err = yaml.Unmarshal(newStatesB, &newStates)
 		if err != nil {
 			return err
+		}
+		if running, _ := sm.IsRunning(); running {
+			logger.AddCallerField().Warn("states-file is running before merging")
+			statesFound, err := sm.GetStates(StateRUNNING, false, false, nil)
+			if err != nil {
+				logger.AddCallerField().Error("states-file is running before merging ", err.Error())
+				return err
+			}
+			logger.AddCallerField().Info("Set RUNNING states to FAILED")
+			logger.AddCallerField().Info("Found " + strconv.Itoa(len(statesFound.StateArray)) + " running states")
+			for _, state := range statesFound.StateArray {
+				logger.AddCallerField().Warn("state ", state.Name, " was ", StateRUNNING, " and will be set to ", StateFAILED)
+				err = sm.setStateStatusWithTimeStamp(false, state.Name, StateFAILED, "Set to failed because was still running at states-file merge time")
+				if err != nil {
+					logger.AddCallerField().Error("Set RUNNING states to FAILED Error:", err.Error())
+					return err
+				}
+			}
+			logger.AddCallerField().Info("Set RUNNING states-file to FAILED")
+			err = sm.setExecutionTimesAndStatesStatus(StateFAILED, nil)
+			if err != nil {
+				logger.AddCallerField().Error("Set RUNNING states-file to FAILED Error:", err)
+				return err
+			}
 		}
 		err = sm.SetStates(newStates, false)
 		if err != nil {
