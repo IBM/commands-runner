@@ -559,10 +559,12 @@ func TestInsertStatesBeforeFirst(t *testing.T) {
 	states := &States{
 		StateArray: []State{
 			{
-				Name: "First",
+				Name:   "First",
+				Script: "test.sh",
 			},
 			{
-				Name: "Last",
+				Name:   "Last",
+				Script: "test.sh",
 			},
 		},
 	}
@@ -571,7 +573,8 @@ func TestInsertStatesBeforeFirst(t *testing.T) {
 		t.Error(err.Error())
 	}
 	state := &State{
-		Name: "beforeFirst",
+		Name:   "beforeFirst",
+		Script: "test.sh",
 	}
 	err = sm.InsertState(*state, 1, "", true, false)
 	if err != nil {
@@ -604,10 +607,12 @@ func TestInsertStatesAfterFirst(t *testing.T) {
 	states := &States{
 		StateArray: []State{
 			{
-				Name: "First",
+				Name:   "First",
+				Script: "test.sh",
 			},
 			{
-				Name: "Last",
+				Name:   "Last",
+				Script: "test.sh",
 			},
 		},
 	}
@@ -618,7 +623,8 @@ func TestInsertStatesAfterFirst(t *testing.T) {
 	}
 	t.Log("afterFirst")
 	state := &State{
-		Name: "afterFirst",
+		Name:   "afterFirst",
+		Script: "test.sh",
 	}
 	err = sm.InsertState(*state, 1, "", false, false)
 	if err != nil {
@@ -650,10 +656,12 @@ func TestInsertStatesBeforeLast(t *testing.T) {
 	states := &States{
 		StateArray: []State{
 			{
-				Name: "First",
+				Name:   "First",
+				Script: "test.sh",
 			},
 			{
-				Name: "Last",
+				Name:   "Last",
+				Script: "test.sh",
 			},
 		},
 	}
@@ -664,7 +672,8 @@ func TestInsertStatesBeforeLast(t *testing.T) {
 		t.Error(err.Error())
 	}
 	state := &State{
-		Name: "beforeLast",
+		Name:   "beforeLast",
+		Script: "test.sh",
 	}
 	err = sm.InsertState(*state, 2, "", true, false)
 	stateData, _ = sm.convert2String()
@@ -700,10 +709,12 @@ func TestInsertStatesAfterLast(t *testing.T) {
 	states := &States{
 		StateArray: []State{
 			{
-				Name: "First",
+				Name:   "First",
+				Script: "test.sh",
 			},
 			{
-				Name: "Last",
+				Name:   "Last",
+				Script: "test.sh",
 			},
 		},
 	}
@@ -714,7 +725,8 @@ func TestInsertStatesAfterLast(t *testing.T) {
 	}
 	t.Log("afterLast")
 	state := &State{
-		Name: "afterLast",
+		Name:   "afterLast",
+		Script: "test.sh",
 	}
 	err = sm.InsertState(*state, 2, "", false, false)
 	if err != nil {
@@ -747,10 +759,12 @@ func TestInsertStatesAfterLastByName(t *testing.T) {
 	states := &States{
 		StateArray: []State{
 			{
-				Name: "First",
+				Name:   "First",
+				Script: "test.sh",
 			},
 			{
-				Name: "Last",
+				Name:   "Last",
+				Script: "test.sh",
 			},
 		},
 	}
@@ -763,7 +777,8 @@ func TestInsertStatesAfterLastByName(t *testing.T) {
 	}
 	t.Log("afterLastByName")
 	state := &State{
-		Name: "afterLastByName",
+		Name:   "afterLastByName",
+		Script: "test.sh",
 	}
 	err = sm.InsertState(*state, 0, "Last", false, false)
 	statesData, _ = sm.convert2String()
@@ -798,10 +813,12 @@ func TestInsertStatesWithCycle(t *testing.T) {
 	states := &States{
 		StateArray: []State{
 			{
-				Name: "First",
+				Name:   "First",
+				Script: "test.sh",
 			},
 			{
-				Name: "Last",
+				Name:   "Last",
+				Script: "test.sh",
 			},
 		},
 	}
@@ -849,10 +866,12 @@ func TestDeleteStatesFirst(t *testing.T) {
 	states := &States{
 		StateArray: []State{
 			{
-				Name: "First",
+				Name:   "First",
+				Script: "test.sh",
 			},
 			{
-				Name: "Last",
+				Name:   "Last",
+				Script: "test.sh",
 			},
 		},
 	}
@@ -891,10 +910,12 @@ func TestDeleteStatesLast(t *testing.T) {
 	states := &States{
 		StateArray: []State{
 			{
-				Name: "First",
+				Name:   "First",
+				Script: "test.sh",
 			},
 			{
-				Name: "Last",
+				Name:   "Last",
+				Script: "test.sh",
 			},
 		},
 	}
@@ -933,10 +954,12 @@ func TestDeleteStatesFirstByName(t *testing.T) {
 	states := &States{
 		StateArray: []State{
 			{
-				Name: "First",
+				Name:   "First",
+				Script: "test.sh",
 			},
 			{
-				Name: "Last",
+				Name:   "Last",
+				Script: "test.sh",
 			},
 		},
 	}
@@ -975,10 +998,12 @@ func TestDeleteStatesLastByName(t *testing.T) {
 	states := &States{
 		StateArray: []State{
 			{
-				Name: "First",
+				Name:   "First",
+				Script: "test.sh",
 			},
 			{
-				Name: "Last",
+				Name:   "Last",
+				Script: "test.sh",
 			},
 		},
 	}
@@ -1018,10 +1043,12 @@ func TestDeleteStatesProtected(t *testing.T) {
 		StateArray: []State{
 			{
 				Name:      "First",
+				Script:    "test.sh",
 				Protected: true,
 			},
 			{
-				Name: "Last",
+				Name:   "Last",
+				Script: "test.sh",
 			},
 		},
 	}

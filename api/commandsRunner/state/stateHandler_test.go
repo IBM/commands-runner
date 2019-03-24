@@ -46,7 +46,7 @@ func init() {
 	}
 	statesJson = "{\"states\":[{\"name\":\"state1\",\"label\":\"Step 1\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cr\",\"label\":\"commands-runer\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
 	stateJson = "{\"name\":\"ext-template\",\"label\":\"Insert\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}"
-	stateInsertDeleteJson = "{\"name\":\"ext-template-insert-delete-handler\",\"label\":\"Insert\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}"
+	stateInsertDeleteJson = "{\"name\":\"ext-template-insert-delete-handler\",\"label\":\"Insert\",\"script\":\"test.sh\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}"
 }
 
 func TestStatesOk(t *testing.T) {
