@@ -11,9 +11,11 @@
 package state
 
 import (
+	"io/ioutil"
 	"path/filepath"
 	"testing"
 
+	"github.com/go-yaml/yaml"
 	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
 )
 
@@ -135,4 +137,17 @@ func TestExtensionPathForNonExistExtension(t *testing.T) {
 		t.Error("Expecting an error as extension name not-exist doesn't exist")
 	}
 	global.RemoveTemp("TestExtensionPathForNonExistExtension")
+}
+
+func TestParseIBMExtension(t *testing.T) {
+	var extensionList Extensions
+	resource, err := ioutil.ReadFile("../../test/resource/ibm-extensions.yml")
+	if err != nil {
+		t.Error(err.Error())
+	}
+	err = yaml.Unmarshal(resource, &extensionList)
+	if err != nil {
+		t.Error(err.Error())
+	}
+
 }
