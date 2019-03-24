@@ -1439,6 +1439,9 @@ func (sm *States) InsertState(state State, referencePosition int, referenceState
 	if sm.isRunning() {
 		return errors.New("Insert can not be executed while a deployment is running")
 	}
+	if state.Name == "" || (!state.IsExtension && state.Script == "") {
+		return errors.New("The state name or script is missing")
+	}
 	stateAlreadyInserted := false
 	existingPosition := sm.getStatePosition(state.Name)
 	if existingPosition != -1 {
