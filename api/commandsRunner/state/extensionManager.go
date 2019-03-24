@@ -558,8 +558,8 @@ func ListEmbeddedExtensions() (*Extensions, error) {
 		log.Debug(err.Error())
 		return nil, err
 	}
-	log.Debug("content extensionsEmbeddedFile " + extensionsEmbeddedFile)
-	log.Debug(string(resource))
+	log.Info("content extensionsEmbeddedFile " + extensionsEmbeddedFile)
+	log.Info(string(resource))
 	err = yaml.Unmarshal(resource, &extensionList)
 	if err != nil {
 		log.Debug(err.Error())
