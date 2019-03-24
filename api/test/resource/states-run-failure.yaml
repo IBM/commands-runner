@@ -20,6 +20,7 @@ states:
   executed_by_extension_name: ""
   execution_id: 0
   next_run: false
+  is_extension: false
 - name: task2
   phase: ""
   label: Task 2
@@ -42,6 +43,7 @@ states:
   executed_by_extension_name: ""
   execution_id: 0
   next_run: false
+  is_extension: false
 - name: task3
   phase: ""
   label: Task 3
@@ -63,6 +65,7 @@ states:
   executed_by_extension_name: ""
   execution_id: 0
   next_run: false
+  is_extension: false
 extension_name: states-run-failure
 parent_extension_name: ""
 executed_by_extension_name: ""
