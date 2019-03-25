@@ -115,6 +115,8 @@ type State struct {
 	ExecutionID int `yaml:"execution_id" json:"execution_id"`
 	//This is true if the state will run based on status, PrerequisiteStates, RerunOnRunOfStates and StatesToRerun
 	NextRun bool `yaml:"next_run" json:"next_run"`
+	//This is true when the state is a extension
+	IsExtension bool `yaml:"is_extension" json:"is_extension"`
 }
 
 type States struct {
@@ -324,6 +326,7 @@ func (sm *States) setDefaultValues() {
 		if sm.StateArray[index].ScriptTimeout == 0 {
 			sm.StateArray[index].ScriptTimeout = 60
 		}
+		// sm.StateArray[index].IsExtension = false
 	}
 	log.Debug("Exiting... setDefaultValues")
 }
@@ -1096,26 +1099,20 @@ func (sm *States) setStateStatus(state State, status string, recursively bool) e
 	sm.StateArray[index].StartTime = ""
 	sm.StateArray[index].EndTime = ""
 	sm.StateArray[index].Reason = ""
-	if recursively {
-		isExtension, err := IsExtension(state.Name)
+	if recursively && state.IsExtension {
+		log.Debug(state.Name + " is an extension")
+		extensionStateManager, err := GetStatesManager(state.Name)
 		if err != nil {
 			return err
 		}
-		if isExtension {
-			log.Debug(state.Name + " is an extension")
-			extensionStateManager, err := GetStatesManager(state.Name)
+		err = extensionStateManager.readStates()
+		if err != nil {
+			return err
+		}
+		for _, state := range extensionStateManager.StateArray {
+			err := extensionStateManager.setStateStatus(state, status, true)
 			if err != nil {
 				return err
-			}
-			err = extensionStateManager.readStates()
-			if err != nil {
-				return err
-			}
-			for _, state := range extensionStateManager.StateArray {
-				err := extensionStateManager.setStateStatus(state, status, true)
-				if err != nil {
-					return err
-				}
 			}
 		}
 	}
@@ -1389,6 +1386,10 @@ func (sm *States) InsertStateFromExtensionName(extensionName string, pos int, st
 	if err != nil {
 		return err
 	}
+	err = stateCfg.Set("is_extension", true)
+	if err != nil {
+		return err
+	}
 	stateString, err := config.RenderYaml(stateCfg.Root)
 	if err != nil {
 		return err
@@ -1437,6 +1438,9 @@ func (sm *States) InsertState(state State, referencePosition int, referenceState
 	}
 	if sm.isRunning() {
 		return errors.New("Insert can not be executed while a deployment is running")
+	}
+	if state.Name == "" || (!state.IsExtension && state.Script == "") {
+		return errors.New("The state name or script is missing")
 	}
 	stateAlreadyInserted := false
 	existingPosition := sm.getStatePosition(state.Name)

@@ -20,6 +20,7 @@ states:
   executed_by_extension_name: ""
   execution_id: 0
   next_run: false
+  is_extension: false
 - name: ext-template-states-run-success-with-extension
   phase: ""
   label: Ext Template
@@ -42,6 +43,7 @@ states:
   executed_by_extension_name: ""
   execution_id: 0
   next_run: false
+  is_extension: false
 - name: task3
   phase: ""
   label: Task 3
@@ -63,6 +65,7 @@ states:
   executed_by_extension_name: ""
   execution_id: 0
   next_run: false
+  is_extension: false
 extension_name: states-run-success-with-extension
 parent_extension_name: ""
 executed_by_extension_name: ""

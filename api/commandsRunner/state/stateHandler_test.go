@@ -46,7 +46,7 @@ func init() {
 	}
 	statesJson = "{\"states\":[{\"name\":\"state1\",\"label\":\"Step 1\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"},{\"name\":\"cr\",\"label\":\"commands-runer\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}]}"
 	stateJson = "{\"name\":\"ext-template\",\"label\":\"Insert\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}"
-	stateInsertDeleteJson = "{\"name\":\"ext-template-insert-delete-handler\",\"label\":\"Insert\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}"
+	stateInsertDeleteJson = "{\"name\":\"ext-template-insert-delete-handler\",\"label\":\"Insert\",\"script\":\"test.sh\",\"status\":\"READY\",\"start_time\":\"\",\"end_time\":\"\",\"reason\":\"\"}"
 }
 
 func TestStatesOk(t *testing.T) {
@@ -126,7 +126,7 @@ func TestStateOk(t *testing.T) {
 
 	// Check the response body is what we expect.
 	var expected bytes.Buffer
-	err = json.Indent(&expected, []byte(`{"name":"state1","phase":"","label":"State 1","log_path":"/tmp/sample-state1.log","status":"READY","start_time":"","end_time":"","reason":"","script":"test","script_timeout":10,"protected":false,"deleted":false, "prerequisite_states":[],"states_to_rerun":[],"rerun_on_run_of_states":[],"previous_states":[],"next_states":["repeat"],"executed_by_extension_name": "","execution_id": 0,"next_run": false}`), "", "  ")
+	err = json.Indent(&expected, []byte(`{"name":"state1","phase":"","label":"State 1","log_path":"/tmp/sample-state1.log","status":"READY","start_time":"","end_time":"","reason":"","script":"test","script_timeout":10,"protected":false,"deleted":false, "prerequisite_states":[],"states_to_rerun":[],"rerun_on_run_of_states":[],"previous_states":[],"next_states":["repeat"],"executed_by_extension_name": "","execution_id": 0,"next_run": false,"is_extension": false}`), "", "  ")
 	if err != nil {
 		t.Error(err.Error())
 	}
