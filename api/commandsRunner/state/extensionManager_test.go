@@ -53,23 +53,23 @@ func TestIsIBMExtension(t *testing.T) {
 	global.RemoveTemp("TestIsIBMExtension")
 }
 
-func TestIsExtension(t *testing.T) {
-	//log.SetLevel(log.DebugLevel)
-	extensionPath, err := global.CopyToTemp("TestIsExtension", "../../test/data/extensions/")
-	if err != nil {
-		t.Fatal(err)
-	}
-	SetExtensionsPath(extensionPath)
-	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
-	isExtension, err := IsExtension("ext-template")
-	if err != nil {
-		t.Error(err.Error())
-	}
-	if !isExtension {
-		t.Error("ext-template is an IBM extension")
-	}
-	global.RemoveTemp("TestIsExtension")
-}
+// func TestIsExtension(t *testing.T) {
+// 	//log.SetLevel(log.DebugLevel)
+// 	extensionPath, err := global.CopyToTemp("TestIsExtension", "../../test/data/extensions/")
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	SetExtensionsPath(extensionPath)
+// 	SetExtensionsEmbeddedFile("../../test/resource/extensions/test-extensions.yml")
+// 	isExtension, err := IsExtension("ext-template")
+// 	if err != nil {
+// 		t.Error(err.Error())
+// 	}
+// 	if !isExtension {
+// 		t.Error("ext-template is an IBM extension")
+// 	}
+// 	global.RemoveTemp("TestIsExtension")
+// }
 
 func TestListRegisteredExtensions(t *testing.T) {
 	//log.SetLevel(log.DebugLevel)

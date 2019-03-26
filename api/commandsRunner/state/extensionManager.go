@@ -405,21 +405,21 @@ func CopyExtensionToEmbeddedExtensionPath(extensionName string) error {
 }
 
 //IsExtension checks if the extensionName is an extension
-func IsExtension(extensionName string) (bool, error) {
-	log.Debug("Entering in... IsExtension")
-	isEmbeddedExtension, err := IsEmbeddedExtension(extensionName)
-	if err != nil {
-		return false, err
-	}
-	isCustomExtension, err := IsCustomExtension(extensionName)
-	if err != nil {
-		return false, err
-	}
-	if isEmbeddedExtension || isCustomExtension {
-		return true, nil
-	}
-	return false, nil
-}
+// func IsExtension(extensionName string) (bool, error) {
+// 	log.Debug("Entering in... IsExtension")
+// 	isEmbeddedExtension, err := IsEmbeddedExtension(extensionName)
+// 	if err != nil {
+// 		return false, err
+// 	}
+// 	isCustomExtension, err := IsCustomExtension(extensionName)
+// 	if err != nil {
+// 		return false, err
+// 	}
+// 	if isEmbeddedExtension || isCustomExtension {
+// 		return true, nil
+// 	}
+// 	return false, nil
+// }
 
 //IsCustomExtension Checks if extensionName is a custom extension
 func IsCustomExtension(extensionName string) (bool, error) {

@@ -279,10 +279,10 @@ func (sm *States) setCalculatedStatesToRerun() error {
 		sm.StateArray[index].CalculatedStatesToRerun = append(sm.StateArray[index].CalculatedStatesToRerun, sm.StateArray[index].PrerequisiteStates...)
 		for _, stateName := range sm.StateArray[index].RerunOnRunOfStates {
 			state, err := sm._getState(stateName)
-			if err != nil {
-				return err
+			//if state is found do update
+			if err == nil {
+				state.CalculatedStatesToRerun = append(state.CalculatedStatesToRerun, sm.StateArray[index].Name)
 			}
-			state.CalculatedStatesToRerun = append(state.CalculatedStatesToRerun, sm.StateArray[index].Name)
 		}
 	}
 	for index := range sm.StateArray {
@@ -451,14 +451,14 @@ func (sm *States) GetStates(status string, extensionsOnly bool, recursive bool, 
 		return nil, err
 	}
 	for i := 0; i < len(sm.StateArray); i++ {
-		isExention, err := IsExtension(sm.StateArray[i].Name)
-		if err != nil {
-			return nil, err
-		}
+		// isExention, err := IsExtension(sm.StateArray[i].Name)
+		// if err != nil {
+		// 	return nil, err
+		// }
 		if _, ok := statuses[sm.StateArray[i].Name]; ok {
 			sm.StateArray[i].NextRun = true
 		}
-		if isExention {
+		if sm.StateArray[i].IsExtension {
 			//			if strings.HasPrefix(sm.StateArray[i].Script, global.ClientPath+" extension") {
 			states.StateArray = append(states.StateArray, sm.StateArray[i])
 			if recursive {
@@ -1429,6 +1429,7 @@ func (sm *States) InsertStateFromString(stateDef string, pos int, stateName stri
 func (sm *States) InsertState(state State, referencePosition int, referenceStateName string, before bool, overwrite bool) error {
 	log.Debug("Entering..... InsertState")
 	log.Debug("Reference State name: " + referenceStateName)
+	log.Debugf("State to be inserted: %v", state)
 	sm.lock()
 	defer sm.unlock()
 	errStates := sm.readStates()
@@ -1442,22 +1443,22 @@ func (sm *States) InsertState(state State, referencePosition int, referenceState
 	if state.Name == "" || (!state.IsExtension && state.Script == "") {
 		return errors.New("The state name or script is missing")
 	}
-	stateAlreadyInserted := false
+	mustUpdateCallerState := false
 	existingPosition := sm.getStatePosition(state.Name)
 	if existingPosition != -1 {
 		if overwrite {
-			stateAlreadyInserted = true
+			mustUpdateCallerState = true
 		} else {
 			return errors.New("State name " + state.Name + " already exists")
 		}
 	}
-	valid, err := IsExtension(state.Name)
-	if err != nil {
-		logger.AddCallerField().Error(err.Error())
-		return err
-	}
+	// valid, err := IsExtension(state.Name)
+	// if err != nil {
+	// 	logger.AddCallerField().Error(err.Error())
+	// 	return err
+	// }
 	//We are inserting an extension and so the extension must be registered
-	if valid {
+	if state.IsExtension {
 		registered := IsExtensionRegistered(state.Name)
 		if !registered {
 			return errors.New("The state name " + state.Name + " is not registered")
@@ -1489,7 +1490,7 @@ func (sm *States) InsertState(state State, referencePosition int, referenceState
 	//The new state doesn't provide relative positionning
 	if len(state.NextStates) == 0 && len(state.PreviousStates) == 0 {
 		//if state already inserted, then just update the state
-		if stateAlreadyInserted {
+		if mustUpdateCallerState {
 			updateState(&sm.StateArray[existingPosition], state)
 		} else {
 			arrayPos := whereToInsertedPosition
@@ -1512,7 +1513,7 @@ func (sm *States) InsertState(state State, referencePosition int, referenceState
 	} else {
 		//if state already inserted update the current state and delete the NextStates reference
 		// referenced in PreviousStats of the current state
-		if stateAlreadyInserted {
+		if mustUpdateCallerState {
 			log.Debug("Not position insertion")
 			for _, stateName := range sm.StateArray[existingPosition].PreviousStates {
 				log.Debugf("Cleaning Referenced NextStates of %s", stateName)
@@ -1547,15 +1548,15 @@ func (sm *States) InsertState(state State, referencePosition int, referenceState
 			}
 		}
 	}
-	if !stateAlreadyInserted {
+	if !mustUpdateCallerState {
 		sm.StateArray = append(sm.StateArray, state)
-		err = sm.setStateStatus(state, StateREADY, true)
+		err := sm.setStateStatus(state, StateREADY, true)
 		if err != nil {
 			logger.AddCallerField().Error(err.Error())
 			return err
 		}
 	}
-	err = sm.topoSort() //	err = sm.hasCycles()
+	err := sm.topoSort() //	err = sm.hasCycles()
 	if err != nil {
 		log.Debugf("bckStateArray: %v", bckStateArray)
 		sm.StateArray = make([]State, 0)
@@ -1569,7 +1570,7 @@ func (sm *States) InsertState(state State, referencePosition int, referenceState
 		return err
 	}
 	//We are inserting an extension
-	if valid {
+	if state.IsExtension {
 		//Update the parent extension name in the inserted extension state-file
 		stateManager, errStateManager := GetStatesManager(state.Name)
 		if errStateManager != nil {
@@ -1602,6 +1603,7 @@ func updateState(currentState *State, newState State) {
 	currentState.RerunOnRunOfStates = newState.RerunOnRunOfStates
 	currentState.PreviousStates = newState.PreviousStates
 	currentState.NextStates = newState.NextStates
+	currentState.IsExtension = newState.IsExtension
 }
 
 //updateCallers update the caller state already inserted in an another extension states-file
@@ -1678,6 +1680,7 @@ func (sm *States) DeleteState(pos int, stateName string) error {
 		return errors.New("The state " + sm.StateArray[arrayPos].Name + " is protected and can not be deleted")
 	}
 	stateNameAux := sm.StateArray[arrayPos].Name
+	isExtension := sm.StateArray[arrayPos].IsExtension
 	copy(sm.StateArray[arrayPos:], sm.StateArray[arrayPos+1:])
 	sm.StateArray[len(sm.StateArray)-1] = State{} // or the zero value of T
 	sm.StateArray = sm.StateArray[:len(sm.StateArray)-1]
@@ -1690,12 +1693,12 @@ func (sm *States) DeleteState(pos int, stateName string) error {
 		return err
 	}
 	//Update the parent extension name in the inserted extension state-file
-	valid, err := IsExtension(stateNameAux)
-	if err != nil {
-		log.Debug(err.Error())
-		return err
-	}
-	if valid {
+	// valid, err := IsExtension(stateNameAux)
+	// if err != nil {
+	// 	log.Debug(err.Error())
+	// 	return err
+	// }
+	if isExtension {
 		stateManager, errStateManager := GetStatesManager(stateNameAux)
 		if errStateManager != nil {
 			logger.AddCallerField().Error(errStateManager.Error())
@@ -2181,12 +2184,12 @@ func (sm *States) executeState(state State, callerState *State, callerOutFile *o
 	}
 	defer outfile.Close()
 	var errExec error
-	isExtension, errExt := IsExtension(state.Name)
-	if errExt != nil {
-		logger.AddCallerField().Error(errExt.Error())
-		return errExt
-	}
-	if isExtension {
+	// isExtension, errExt := IsExtension(state.Name)
+	// if errExt != nil {
+	// 	logger.AddCallerField().Error(errExt.Error())
+	// 	return errExt
+	// }
+	if state.IsExtension {
 		stateManager, errStateManager := GetStatesManager(state.Name)
 		if errStateManager != nil {
 			logger.AddCallerField().Error(errStateManager.Error())

@@ -43,7 +43,7 @@ states:
   executed_by_extension_name: ""
   execution_id: 0
   next_run: false
-  is_extension: false
+  is_extension: true
 - name: task3
   phase: ""
   label: Task 3
