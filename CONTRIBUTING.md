@@ -2,10 +2,10 @@
 Our project welcomes external contributions. If you have an itch, please feel
 free to scratch it.
 
-To contribute code or documentation, please submit a [pull request](https://github.com/ibm/s3mem-go/pulls).
+To contribute code or documentation, please submit a [pull request](https://github.com/ibm/commands-runner/pulls).
 
 A good way to familiarize yourself with the codebase and contribution process is
-to look for and tackle low-hanging fruit in the [issue tracker](https://github.com/ibm/s3mem-go/issues).
+to look for and tackle low-hanging fruit in the [issue tracker](https://github.com/ibm/commands-runner/issues).
 Before embarking on a more ambitious contribution, please quickly [get in touch](#communication) with us.
 
 **Note: We appreciate your effort, and want to avoid a situation where a contribution
@@ -14,14 +14,14 @@ cannot be accepted at all!**
 
 ### Proposing new features
 
-If you would like to implement a new feature, please [raise an issue](https://github.com/ibm/s3mem-go/issues)
+If you would like to implement a new feature, please [raise an issue](https://github.com/ibm/commands-runner/issues)
 before sending a pull request so the feature can be discussed. This is to avoid
 you wasting your valuable time working on a feature that the project developers
 are not interested in accepting into the code base.
 
 ### Fixing bugs
 
-If you would like to fix a bug, please [raise an issue](https://github.com/ibm/s3mem-go/issues) before sending a
+If you would like to fix a bug, please [raise an issue](https://github.com/ibm/commands-runner/issues) before sending a
 pull request so it can be tracked.
 
 ### Merge approval
@@ -95,8 +95,3 @@ If you made changes and want to test, just run `make` in the root directory will
 The project is tested through unit-tests.
 
 ## Coding style guidelines
-
-- For each new S3 API implementation a new go file must be created like [get_object_request.go](https://github.com/IBM/s3mem-go/blob/4c1bd8e44612744d7772d52ca1d3070b400c24bc/s3mem/get_object_request.go#L48) along with a test file. The Non-Implemented method must be removed from the [s3mem.go](https://github.com/IBM/s3mem-go/blob/4c1bd8e44612744d7772d52ca1d3070b400c24bc/s3mem/s3mem.go#L55) file.
-- The [handler.go](https://github.com/IBM/s3mem-go/blob/5395cbaf07722d69baa21a54e3462c2bc0876aa6/s3mem/handlers.go#L38) must be updated to redirect the `send` to the correct method.
-- Errors must be raised using [s3memerr](https://github.com/IBM/s3mem-go/blob/5395cbaf07722d69baa21a54e3462c2bc0876aa6/s3mem/s3memerr/errors.go#L19), it implements awserr.Error.
-  
