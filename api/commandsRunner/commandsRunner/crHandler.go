@@ -1,12 +1,19 @@
 /*
-###############################################################################
-# Licensed Materials - Property of IBM Copyright IBM Corporation 2017, 2019. All Rights Reserved.
-# U.S. Government Users Restricted Rights - Use, duplication or disclosure restricted by GSA ADP
-# Schedule Contract with IBM Corp.
+################################################################################
+# Copyright 2019 IBM Corp. All Rights Reserved.
 #
-# Contributors:
-#  IBM Corporation - initial API and implementation
-###############################################################################
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+################################################################################
 */
 package commandsRunner
 
@@ -17,12 +24,12 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/i18n/i18nUtils"
+	"github.com/IBM/commands-runner/api/commandsRunner/global"
+	"github.com/IBM/commands-runner/api/i18n/i18nUtils"
 
 	log "github.com/sirupsen/logrus"
 
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/logger"
+	"github.com/IBM/commands-runner/api/commandsRunner/logger"
 )
 
 func HandleCR(w http.ResponseWriter, req *http.Request) {
@@ -135,7 +142,7 @@ func SetLogLevelEndpoint(w http.ResponseWriter, req *http.Request) {
 	level := ""
 	levelFound, okLevel := query["level"]
 	if okLevel {
-		log.Debug("level:%s", levelFound)
+		log.Debugf("level:%s", levelFound)
 		level = levelFound[0]
 	}
 	err := SetLogLevel(level)
@@ -152,7 +159,7 @@ func SetLogMaxBackupEndpoint(w http.ResponseWriter, req *http.Request) {
 	logMaxBackups := ""
 	logMaxBackupsFound, okLogMaxBackups := query["max-backups"]
 	if okLogMaxBackups {
-		log.Debug("max-backups:%s", logMaxBackupsFound)
+		log.Debugf("max-backups:%s", logMaxBackupsFound)
 		logMaxBackups = logMaxBackupsFound[0]
 	}
 	maxBackups, errMaxBackup := strconv.Atoi(logMaxBackups)

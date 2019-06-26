@@ -1,26 +1,30 @@
 # Commands Runner
-This project allows you to orchestrate commands by creating a descriptor file which is an array of states. Each state have a command to run, a status, a log locatio, a status which can have values (READY, SKIP, RUNNING, SUCCEEDED and FAILED) and other parameters. The command runner will run the descriptor file and mark the state as SUCCEEDED or FAILED depending on the exit code of the command. You can also extend this project with your own specific requirements.<br>
+
+This project allows you to orchestrate commands by creating a descriptor file which is an array of states. Each state have a command to run, a status, a log locatio, a status which can have values (READY, SKIP, RUNNING, SUCCEEDED and FAILED) and other parameters. The command runner will run the descriptor file and mark the state as SUCCEEDED or FAILED depending on the exit code of the command. You can also extend this project with your own specific requirements.
 
 ## Getting Started
+
 You can run the `commands runner` by installing it as a server or by calling it programmatically. You can also extend the server if needed.
 
 ### Pre-requisites
+
 This project uses `dep` to manage dependencies.<br>
-1. Install [https://github.com/golang/dep/blob/master/docs/installation.md] 
+1. Install [dep install](https://github.com/golang/dep/blob/master/docs/installation.md) 
 2. Create your project
 3. Run `dep init`
 4. In the newly created `Gopkg.toml` file add a `constraint` section. (once the code will be migrated to github.com a simple `dep ensure -add will replace this insertion)
 ```
 [[constraint]]
-  name = "github.ibm.com/IBMPrivateCloud/cfp-commands-runner"
-  source = "git@github.ibm.com:IBMPrivateCloud/cfp-commands-runner.git"
+  name = "github.com/IBM/commands-runner"
+  version="x.x.x"
 ```
 5. Create your client and server (see below)
 6. run `dep ensure -v`, this will download all dependencies.
 
 ### Create a commands-runner server
+
 1. Create server: There a server example at [examples/server](./examples/server). In that example the server is enriched with a `helloWorld` API.
-2. Build server: Once you created the server, you can build it with for example: `go build -o cr-server  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/examples/server`.
+2. Build server: Once you created the server, you can build it with for example: `go build -o cr-server  github.com/IBM/commands-runner/examples/server`.
 3. Create certificates (optional): You can secure the communication between the client and the server using SSL.
   1. `openssl req -x509 -newkey rsa:4096 -keyout <your_data_directory>/cr-key.pem -out  <your_data_directory>/cr-cert.crt  -days 365 -subj "/C=YourContry/ST=YourState/L=YourLocation/O=YourOrg/OU=YourOrgUnit/CN=localhost" -nodes`
   2. Install the certificate on the machine which will run the server.
@@ -32,16 +36,19 @@ This project uses `dep` to manage dependencies.<br>
 A state file example is provided in the [examples/data](./examples/data).
 
 ### Create a commands-runner client
+
 1. Create the client: There a client example at [examples/client](./examples/client). In that example the client is enriched with a command `hello` which call the `helloWorld` API on the server side.
-2. Build the client:  Once you created the client, you can build it with for example: `go build -o cr-cli  github.ibm.com/IBMPrivateCloud/cfp-commands-runner/examples/client`.
+2. Build the client:  Once you created the client, you can build it with for example: `go build -o cr-cli  github.com/IBM/commands-runner/examples/client`.
 3. Create token: The server uses a token for authentication, run the command: `./cr-cli token create > <your_data_directory>/cr-token`, this will create a file `cr-token` in `<your_data_directory>`.
 4. Setup the client: `./cr-cli --url <https_server_url> --token <token> --cacert <cert_path> -e <your_main_extension_name> api save` or simply `./cr-cli --url <http_server_url> --token <token> api save` if you don't want to use SSL. This setup is stored in `$HOME/.commandsRunner.conf` The `<token>` is the content of your `cr-token` file.
 5. launch `./cr-cli` for more information on all available commands. (ie: `./cr-cli states` to check states, `./cr-cli extension deploy` to run the deployment)
 
 ### Use commands-runner in a program.
+
 There is code examples at [examples/code](./examples/code)
 
 ## Sever Overview
+
 The server is in charge of running extensions. An extension contains a file `extension-manifest.yml` which contains the states the extension must execute. You can find an [examples/extensions/simple-custom-extension.yml](./examples/extensions/simple-custom-extension.yml).<br>
 When a extension is registered, the states attribute of the `extension-manifest.yml` is extracted into a file called `states-file.yml`
 The states are executed sequentially but you can alter the sequence by adding for each state what should be the next state, 
@@ -50,7 +57,7 @@ in that case a preprocessing will be done to re-order the states in a topologica
 
 ### States attribute format:
 
-```
+```yml
 states: An array of state
 - name: name of the state
   phase: If the value is "AtEachRun" then this state will run each time whatever the status except if "SKIP"
@@ -70,14 +77,16 @@ states: An array of state
 - name:
   ...
 ```
+
 ### Send config file to the server
+
 You can send a config file to the server before starting the processing of the state engine and this using the client command:
 ```./cr-cli config -e <extension-name> save -c <config_file_path>```
 
 <a name="configFileFormat"></a>
 The config file is a yaml file in the form of:
 
-```
+```yml
 config:
   property1: hello world
   ...
@@ -188,7 +197,7 @@ The label in vmware and groups vmware_config has for key vmware.vmware_config.la
 `<config_name>.<groupe_name>.<attribute_name>`
 description has : `<config_name>.<group_name>.<property_name>.<attribute_name>`
 
-The source code is in `github.ibm.com/IBMPrivateCloud/cfp-commands-runner/migrationTools/convertUIMetadataLocalization`
+The source code is in `github.com/IBM/commands-runner/migrationTools/convertUIMetadataLocalization`
 
 ### Build the localization tool
 
@@ -205,7 +214,7 @@ The source code is in `github.ibm.com/IBMPrivateCloud/cfp-commands-runner/migrat
 ## verify locatization
 Another tool was created to verify if the ui_metadata of an extension can be translated in each languages set in the i18n directory. If a message can not be translated (ie: the key can not be found in the i18n translation file) then an error message is shown.
 
-The source code is in `github.ibm.com/IBMPrivateCloud/cfp-commands-runner/migrationTools/verifyLocalization`
+The source code is in `github.com/IBM/commands-runner/migrationTools/verifyLocalization`
 
 ### Build the localization tool
 

@@ -1,12 +1,19 @@
 /*
-###############################################################################
-# Licensed Materials - Property of IBM Copyright IBM Corporation 2017, 2019. All Rights Reserved.
-# U.S. Government Users Restricted Rights - Use, duplication or disclosure restricted by GSA ADP
-# Schedule Contract with IBM Corp.
+################################################################################
+# Copyright 2019 IBM Corp. All Rights Reserved.
 #
-# Contributors:
-#  IBM Corporation - initial API and implementation
-###############################################################################
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+################################################################################
 */
 package state
 
@@ -24,9 +31,9 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/global"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/commandsRunner/logger"
-	"github.ibm.com/IBMPrivateCloud/cfp-commands-runner/api/i18n/i18nUtils"
+	"github.com/IBM/commands-runner/api/commandsRunner/global"
+	"github.com/IBM/commands-runner/api/commandsRunner/logger"
+	"github.com/IBM/commands-runner/api/i18n/i18nUtils"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -125,20 +132,20 @@ func GetStatesEndpoint(w http.ResponseWriter, req *http.Request) {
 	}
 	status := ""
 	if statusFound, okStatus := m["status"]; okStatus {
-		log.Debug("status:%s", statusFound)
+		log.Debugf("status:%s", statusFound)
 		status = statusFound[0]
 	}
 
 	extensionsString := "false"
 	if extensionsFound, okExtensions := m["extensions-only"]; okExtensions {
-		log.Debug("extensions:%s", extensionsFound)
+		log.Debugf("extensions:%s", extensionsFound)
 		extensionsString = extensionsFound[0]
 	}
 	extensionsOnly, err := strconv.ParseBool(extensionsString)
 
 	recursiveString := "false"
 	if recursiveFound, okRecursive := m["recursive"]; okRecursive {
-		log.Debug("recursive:%s", recursiveFound)
+		log.Debugf("recursive:%s", recursiveFound)
 		recursiveString = recursiveFound[0]
 	}
 	recursive, err := strconv.ParseBool(recursiveString)
@@ -630,7 +637,7 @@ func PutStateEndpoint(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 	}
-	log.Debugf("scriptTimeout:%s", scriptTimeout)
+	log.Debugf("scriptTimeout: %d", scriptTimeout)
 	//Update State
 	err := sm.SetState(params[1], status, reason, script, scriptTimeout, recursivelly)
 	if err != nil {
