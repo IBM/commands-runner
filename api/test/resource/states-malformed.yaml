@@ -1,0 +1,12 @@
+states-malformed
+  - name: state1
+    log_path: "/tmp/sample-state1.log"
+  - name: state2
+    log_path: "/tmp/sample-state2.log"
+  - name: nologpath
+  - nome: emptylogpath
+    log_path: ""
+  - nome: nillogpath
+    log_path: ""
+  - name: wronglogpath
+    log_path:  "/tmp/sample-not-exists.log"

@@ -1,0 +1,6 @@
+---
+template:
+- name: template
+  version: 1.0.0
+  location: "file:///repo_local/ibm-ext-template/1.0.0-776e6c4/linux_amd64"
+  script: "file:///repo_local/ibm-ext-template/1.0.0-776e6c4/install.sh"

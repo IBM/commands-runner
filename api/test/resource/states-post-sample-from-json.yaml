@@ -1,0 +1,21 @@
+states:
+- name: state1
+  phase: ""
+  label: State 1
+  log_path: ""
+  status: READY
+  start_time: ""
+  end_time: ""
+  reason: ""
+  script: ""
+  script_timeout: 0
+- name: state2
+  phase: ""
+  label: State 2
+  log_path: ""
+  status: READY
+  start_time: ""
+  end_time: ""
+  reason: ""
+  script: ""
+  script_timeout: 0

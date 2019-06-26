@@ -1,0 +1,29 @@
+states:
+- name: task1
+  phase: ""
+  label: Task 1
+  log_path: /tmp/mydir/not-executable.log
+  status: READY
+  start_time: ""
+  end_time: ""
+  reason: ""
+  script: ../../test/scripts/no-bin-sh-comment.sh task1
+  script_timeout: 10
+  protected: false
+  deleted: false
+  prerequisite_states: []
+  states_to_rerun: []
+  rerun_on_run_of_states: []
+  previous_states: []
+  next_states: []
+  executed_by_extension_name: ""
+  execution_id: 0
+  next_run: false
+  is_extension: false
+extension_name: states-run-script-not-executable
+parent_extension_name: ""
+executed_by_extension_name: ""
+execution_id: 0
+start_time: ""
+end_time: ""
+status: ""

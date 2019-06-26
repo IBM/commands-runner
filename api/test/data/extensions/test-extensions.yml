@@ -1,0 +1,9 @@
+extensions:
+  ext-template:
+  ext-template-auto:
+  ext-insert-delete:
+  ext-insert-delete-by-name:
+  ext-insert-delete-auto-location:
+  ext-insert-delete-handler:
+  ext-template-insert-delete-handler:
+  

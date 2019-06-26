@@ -1,0 +1,117 @@
+states:
+- name: state1
+  phase: ""
+  label: State 1
+  log_path: /tmp/sample-state1.log
+  status: READY
+  start_time: ""
+  end_time: ""
+  reason: ""
+  script: test
+  script_timeout: 10
+  protected: false
+  deleted: false
+  prerequisite_states: []
+  states_to_rerun: []
+  rerun_on_run_of_states: []
+  previous_states: []
+  next_states:
+  - repeat
+  executed_by_extension_name: ""
+  execution_id: 0
+  next_run: false
+  is_extension: false
+- name: repeat
+  phase: ""
+  label: Repeat
+  log_path: /tmp/sample-state1.log
+  status: READY
+  start_time: ""
+  end_time: ""
+  reason: ""
+  script: test
+  script_timeout: 10
+  protected: false
+  deleted: false
+  prerequisite_states: []
+  states_to_rerun: []
+  rerun_on_run_of_states: []
+  previous_states: []
+  next_states:
+  - state2
+  executed_by_extension_name: ""
+  execution_id: 0
+  next_run: false
+  is_extension: false
+- name: state2
+  phase: ""
+  label: State 2
+  log_path: /tmp/sample-state2.log
+  status: READY
+  start_time: ""
+  end_time: ""
+  reason: ""
+  script: hello.sh
+  script_timeout: 61
+  protected: false
+  deleted: false
+  prerequisite_states: []
+  states_to_rerun: []
+  rerun_on_run_of_states: []
+  previous_states: []
+  next_states:
+  - nologpath
+  executed_by_extension_name: ""
+  execution_id: 0
+  next_run: false
+  is_extension: false
+- name: nologpath
+  phase: ""
+  label: No Log Path
+  log_path: ../../test/data/extensions/custom/nologpath/nologpath-TestSetStateStatusEmptyState.log
+  status: READY
+  start_time: ""
+  end_time: ""
+  reason: ""
+  script: cm extension -n nologpath deploy -w
+  script_timeout: 60
+  protected: false
+  deleted: false
+  prerequisite_states: []
+  states_to_rerun: []
+  rerun_on_run_of_states: []
+  previous_states: []
+  next_states:
+  - wronglogpath
+  executed_by_extension_name: ""
+  execution_id: 0
+  next_run: false
+  is_extension: false
+- name: wronglogpath
+  phase: ""
+  label: wronglogpath
+  log_path: /tmp/sample-not-exists-TestSetStateStatusEmptyState.log
+  status: READY
+  start_time: ""
+  end_time: ""
+  reason: ""
+  script: cm extension -n wronglogpath deploy -w
+  script_timeout: 60
+  protected: false
+  deleted: false
+  prerequisite_states: []
+  states_to_rerun: []
+  rerun_on_run_of_states: []
+  previous_states: []
+  next_states: []
+  executed_by_extension_name: ""
+  execution_id: 0
+  next_run: false
+  is_extension: false
+extension_name: states-TestSetStateStatusEmptyState
+parent_extension_name: ""
+executed_by_extension_name: ""
+execution_id: 0
+start_time: ""
+end_time: ""
+status: ""

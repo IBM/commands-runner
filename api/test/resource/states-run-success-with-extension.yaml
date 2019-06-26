@@ -1,0 +1,75 @@
+states:
+- name: task1
+  phase: ""
+  label: Task 1
+  log_path: /tmp/mydir/task1-success.log
+  status: READY
+  start_time: ""
+  end_time: ""
+  reason: ""
+  script: ../../test/scripts/success.sh task1
+  script_timeout: 10
+  protected: false
+  deleted: false
+  prerequisite_states: []
+  states_to_rerun: []
+  rerun_on_run_of_states: []
+  previous_states: []
+  next_states:
+  - ext-template-states-run-success-with-extension
+  executed_by_extension_name: ""
+  execution_id: 0
+  next_run: false
+  is_extension: false
+- name: ext-template-states-run-success-with-extension
+  phase: ""
+  label: Ext Template
+  log_path: /tmp/ext-template.log
+  status: READY
+  start_time: ""
+  end_time: ""
+  reason: ""
+  script: ../../test/scripts/success.sh task2
+  script_timeout: 10
+  protected: false
+  deleted: false
+  prerequisite_states: []
+  states_to_rerun: []
+  rerun_on_run_of_states: []
+  previous_states:
+  - task1
+  next_states:
+  - task3
+  executed_by_extension_name: ""
+  execution_id: 0
+  next_run: false
+  is_extension: true
+- name: task3
+  phase: ""
+  label: Task 3
+  log_path: /tmp/task3-success.log
+  status: READY
+  start_time: ""
+  end_time: ""
+  reason: ""
+  script: ../../test/scripts/success.sh task3
+  script_timeout: 10
+  protected: false
+  deleted: false
+  prerequisite_states: []
+  states_to_rerun: []
+  rerun_on_run_of_states: []
+  previous_states:
+  - ext-template-states-run-success-with-extension
+  next_states: []
+  executed_by_extension_name: ""
+  execution_id: 0
+  next_run: false
+  is_extension: false
+extension_name: states-run-success-with-extension
+parent_extension_name: ""
+executed_by_extension_name: ""
+execution_id: 0
+start_time: ""
+end_time: ""
+status: ""

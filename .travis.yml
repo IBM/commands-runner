@@ -1,0 +1,10 @@
+language: go
+sudo: required
+
+go:
+  - "1.10"
+
+before_install:
+- make dep-install
+- make copyright-check
+- make

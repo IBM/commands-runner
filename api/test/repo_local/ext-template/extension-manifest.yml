@@ -1,0 +1,25 @@
+extension:
+  name: app-test-release
+  version: 1.0
+uiconfig:
+- name: uiconfig-test
+  title: "Properties for uiconfig-test"
+  properties:
+  - name: parameter1
+    label: "Parameter 1"
+    description: "Description for paramter 1"
+    type: text
+    validation-regex: "^(?:[0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$"
+    mandatory: true
+    hidden: false
+    sample-value: "E.g. 35880"
+states:
+- name: task1
+  phase: ""
+  script: scripts/success.sh task1
+- name: task2
+  phase: ""
+  script: scripts/success.sh task2
+- name: task3
+  phase: ""
+  script: scripts/success.sh task3
