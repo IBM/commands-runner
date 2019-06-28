@@ -33,14 +33,13 @@ This project uses `dep` to manage dependencies.<br>
     2. `update-ca-certificates`
 4. Launch the server: run the command `./cr-server listen -c <your_data_dir>`. The data directory must be an absolute path. (see below for details on states_file). You can specify the log level by setting the global varialbe `CR_TRACE` to debug, info,... (default is `info`)<br>
 
-A state file example is provided in the [examples/data](./examples/data).
-
 ### Create a commands-runner client
 
 1. Create the client: There a client example at [examples/client](./examples/client). In that example the client is enriched with a command `hello` which call the `helloWorld` API on the server side.
 2. Build the client:  Once you created the client, you can build it with for example: `go build -o cr-cli  github.com/IBM/commands-runner/examples/client`.
 3. Create token: The server uses a token for authentication, run the command: `./cr-cli token create > <your_data_directory>/cr-token`, this will create a file `cr-token` in `<your_data_directory>`.
-4. Setup the client: `./cr-cli --url <https_server_url> --token <token> --cacert <cert_path> -e <your_main_extension_name> api save` or simply `./cr-cli --url <http_server_url> --token <token> api save` if you don't want to use SSL. This setup is stored in `$HOME/.commandsRunner.conf` The `<token>` is the content of your `cr-token` file.
+4. Setup the client: `./cr-cli --url <https_server_url> --token <token> --cacert <cert_path> -e <your_main_extension_name> api save` or simply `./cr-cli --url <http_server_url> --token <token> -e <your_main_extension_name> api save` if you don't want to use SSL. This setup is stored in `$HOME/.commandsRunner.conf` The `<token>` is the content of your `cr-token` file.
+In the examples and as you can see in [examples/server/server.go](./examples/server/server.go) the `<your_main_extension_name>` is `default-extension`.
 5. launch `./cr-cli` for more information on all available commands. (ie: `./cr-cli states` to check states, `./cr-cli extension deploy` to run the deployment)
 
 ### Use commands-runner in a program.
@@ -169,13 +168,17 @@ As the previous state and next state are defined in the `call_state` attribute o
 
 When calling the `engine start` command, in fact behind the scene the same code runs as though the command `extension -e crs-name deploy` was launched. Each time a extension is deployed, a state manager is created for that extension name and runs in its own thread. So the commands-runner support concurrency if each concurrent deployment have a different extension name. If a deployment with the same extension name is launched, the commands-runner will stop mentioning that the deployment is already running.
 
-# Migration
+# Localization
+
+An extension can multiple languages, to do so, a directory `i18n` must be created in the root directory of the extension. That directory will contains the translation file for each language. Check [default-extension](examples/extensions/default-extension).
 
 ## Convert uimetadata for localization
-A tool was created to generate from an existing ui_metadata.yml, a new ui_metadata.yml where the labels, descriptions, sample_values and validation_error_messages are replaced by a key and that key references an entry in the generated i18n yaml file.
+If you want to generate the locatiozation files afterward you can this tool.
+
+The tool was created to generate from an existing ui_metadata.yml, a new ui_metadata.yml where the labels, descriptions, sample_values and validation_error_messages are replaced by a key and that key references an entry in the generated i18n yaml file.
 The key is the property path. For exanple in the following ui_metadat:
 
-```
+```yml
 ui_metadata:
   vmware:
     label: vmware.label
@@ -214,13 +217,14 @@ The source code is in `github.com/IBM/commands-runner/migrationTools/convertUIMe
 ## verify locatization
 Another tool was created to verify if the ui_metadata of an extension can be translated in each languages set in the i18n directory. If a message can not be translated (ie: the key can not be found in the i18n translation file) then an error message is shown.
 
-The source code is in `github.com/IBM/commands-runner/migrationTools/verifyLocalization`
+The source code is in [convertUIMetadataLocalization](tools/convertUIMetadataLocalization)
 
 ### Build the localization tool
 
-- `make verify-localization`, the binary is generated in `migrationTools/_build/verify-localization/<platform>/verify-localization`
+- `make verify-localization`, the binary is generated in `tools/_build/verify-localization/<platform>/verify-localization`
 
 ### Run the tool
 
 - `migrationTools/_build/verify-localization verify -p <extension_path> [-l <languages>]`
 
+The source code is in [verifyLocalization](tools/verifyLocalization)
