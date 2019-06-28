@@ -2,16 +2,28 @@ extension:
   name: app-test-release
   version: 1.0
 states:
-- name: ext-task1
+- name: ext-no-version-task1
   phase: ""
-  script: ./success.sh ext-task1
-- name: ext-task2
+  script: ./success.sh ext-no-version-task1
+- name: ext-no-version-task2
   phase: ""
-  script: ./success.sh ext-task2
-- name: ext-task3
+  script: ./success.sh ext-no-version-task2
+- name: ext-no-version-task3
   phase: ""
-  script: ./success.sh ext-task3
-call_state:
-  states_to_rerun: [ "task1" ]
-  previous_states: [ "task2" ]
-  next_states: [ "task2" ]
+  script: ./success.sh ext-no-version-task3
+ui_metadata:
+  default:
+    groups:
+    - name: "main"
+      label: "Ext w/o Version"
+      properties:
+      - name: "number_of_nodes"
+        label: "Number of Nodes"
+        description: "Number of Nodes (1-32)"
+        type: number
+        validation_regex: "^(?:[1-9]|[1-2][0-9]|3[0-2])$"
+        validation_error_message: "The number of cell must be in a range from 1 to 32"
+        mandatory: true
+        #The value is an integer, but the UI expects a string value.
+        sample_value: "E.g. 1" #range from 1-32
+        default: "1"

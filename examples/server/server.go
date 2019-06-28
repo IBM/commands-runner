@@ -56,7 +56,9 @@ func postInitServer() commandsRunner.InitFunc {
 		//The provided value is used when an extension is inserted in the state file
 		//in order to call the commands-runner to execute that extension.
 		//      config.SetClientPath("./cr-cli")
-		cr.SetDefaultExtensionName("simple-embedded-extension-without-version")
+		cr.SetDefaultExtensionName("default-extension")
+		//Specify here the About text, cr.SetAboutURL() can be also use if the server has an API to return the about content.
+		cr.SetAbout("This is an example")
 	})
 }
 

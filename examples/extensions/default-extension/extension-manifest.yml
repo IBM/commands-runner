@@ -2,27 +2,23 @@ extension:
   name: app-test-release
   version: 1.0
 states:
-- name: ext-version-task1
+- name: task1
   phase: ""
-  script: ./success.sh ext-version-task1
-- name: ext-version-task2
+  script: ./success.sh task1
+- name: task2
   phase: ""
-  script: ./success.sh ext-version-task2
-- name: ext-version-task3
+  script: ./success.sh task2
+- name: task3
   phase: ""
-  script: ./success.sh ext-version-task3
-call_state:
-  states_to_rerun: [ "task2" ]
-  previous_states: [ "task1" ]
-  next_states: [ "task2" ]
+  script: ./success.sh task3
 ui_metadata:
   default:
     groups:
     - name: "main"
-      label: "Ext with version"
+      label: main
       properties:
       - name: "number_of_nodes"
-        label: "Number of Nodes"
+        label: main.number_of_nodes
         description: "Number of Nodes (1-32)"
         type: number
         validation_regex: "^(?:[1-9]|[1-2][0-9]|3[0-2])$"

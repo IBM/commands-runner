@@ -17,7 +17,7 @@ tools/_build
 vendor
 _vendor*
 .DS_Store
-simple-custom-extension.zip
+examples/extensions/simple-custom-extension.zip
 .vscode
 cr-server
 cr-cli
@@ -25,3 +25,5 @@ cm-dependency*
 crcli-dependency*
 VERSION
 c.out
+simple-custom-extension.zip
+/i18n
